@@ -1,7 +1,0 @@
-{
-  "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"cd /Users/nojeong-un/devs/monglemongle/Assets/_Project; python3 - <<'EOF'\\np=\\\"Scripts/Editor/SceneBuilder.cs\\\"; s=open(p).read()\\ns=s.replace(\\\"\\\\n            if (clawM != null) Hole(\\\\\\\"...",
-  "error": "Exit code 1\n542:            if (clawM != null) { Hole(\"ClawHole\", ClawPos, 0f, new Vector3(1.5f, 1f, 1.2f)); var cpo = clawM.AddComponent<ParkObstacle>(); cpo.center = ClawPos; cpo.halfSize = new Vector2(0.8f, 0.65f); }",
-  "timestamp": "2026-10-11T15:57:48.610Z",
-  "retry_count": 1
-}

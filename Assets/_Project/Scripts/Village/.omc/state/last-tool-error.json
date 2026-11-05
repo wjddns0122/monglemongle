@@ -1,7 +1,0 @@
-{
-  "tool_name": "mcp__unity-mcp__Unity_RunCommand",
-  "tool_input_preview": "{\"Code\":\"using UnityEditor;\\ninternal class CommandScript : IRunCommand\\n{\\n    public void Execute(ExecutionResult result)\\n    {\\n        AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);\\n    ...",
-  "error": "{\n  \"success\": false,\n  \"error\": \"Unity not detected (no fresh discovery files found)\"\n}",
-  "timestamp": "2026-10-11T17:02:23.351Z",
-  "retry_count": 1
-}

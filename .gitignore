@@ -15,3 +15,6 @@
 *.pdb.meta
 *.mdb.meta
 .DS_Store
+
+# tool state that ends up inside Assets (hidden folders; Unity ignores them anyway)
+.omc/

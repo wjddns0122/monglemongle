@@ -1,7 +1,0 @@
-{
-  "tool_name": "mcp__unity-mcp__Unity_RunCommand",
-  "tool_input_preview": "{\"code\":\"public class CmdRun : IRunCommand { public void Execute(ExecutionResult result){ UnityEditor.AssetDatabase.Refresh(UnityEditor.ImportAssetOptions.ForceUpdate); UnityEditor.Compilation.Compila...",
-  "error": "{\n  \"success\": false,\n  \"error\": \"UNEXPECTED_ERROR: Execution failed:\\nNo logs available\"\n}",
-  "timestamp": "2026-10-21T11:01:20.618Z",
-  "retry_count": 1
-}

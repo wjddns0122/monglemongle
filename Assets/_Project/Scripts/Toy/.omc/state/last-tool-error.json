@@ -1,7 +1,0 @@
-{
-  "tool_name": "mcp__unity-mcp__Unity_RunCommand",
-  "tool_input_preview": "{\"Code\":\"using UnityEditor;\\ninternal class CommandScript : IRunCommand\\n{\\n    public void Execute(ExecutionResult result)\\n    {\\n        if (EditorApplication.isPlaying) { result.Log(\\\"playing; ski...",
-  "error": "{\n  \"success\": false,\n  \"error\": \"Unity not detected (no fresh discovery files found)\"\n}",
-  "timestamp": "2026-10-11T12:04:53.826Z",
-  "retry_count": 1
-}
