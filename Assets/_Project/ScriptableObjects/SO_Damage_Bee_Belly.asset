@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1704af801ee664c3bb470b9159d58a18, type: 3}
+  m_Name: SO_Damage_Bee_Belly
+  m_EditorClassIdentifier: Mongle.Runtime::Mongle.Data.DamageDefinition
+  id: Bee_Belly
+  type: 1
+  phase: 1
+  displayName: "\uBC30\uC758 \uAFC0 \uC5BC\uB8E9"
+  noteText: "\uB048\uC801\uD55C \uAFC0\uC774 \uBC30\uC5D0 \uBB3B\uC5C8\uC5B4\uC694. \uC4F1\uC4F1 \uB2E6\uC544 \uC918\uC694."
+  requiredToolId: Tool_Sponge
+  miniGameKey: Dirt
+  damagePointName: DP_BELLY
+  cameraAnchorName: CA_BELLY
+  repairAnchorName: CA_BELLY
+  lookPointName: 
+  interactionRadius: 0.08
+  hintPriority: 1
+  rewardCoins: 25
+  site: BELLY
+  boneName: Spine
+  visualName: 
+  visualDoneName: 
+  openName: 
+  shapeKey: 
+  grabPointName: 
+  normalPointName: DN_BELLY
+  stitchPrefix: 
+  limpBone: 
+  workPointName: 
+  spread: 0.05
+  blobCount: 20
+  stainColor: {r: 0.93, g: 0.66, b: 0.2, a: 1}
+  cleanColor: {r: 1, g: 0.93, b: 0.72, a: 1}

@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5495f83e218e4de0bbadeb9eb40d432, type: 3}
+  m_Name: SO_Shop_Accessory
+  m_EditorClassIdentifier: Mongle.Runtime::Mongle.Data.ShopDefinition
+  id: Shop_Accessory
+  displayName: "\uCEF5\uCF00\uC774\uD06C \uC545\uC138\uC11C\uB9AC\uC810"
+  keeperName: "\uB2EC\uCF69"
+  items:
+  - {fileID: 11400000, guid: e8f074a816b694564a222c2d22e9a87e, type: 2}
+  - {fileID: 11400000, guid: 9afbdfaa03cba42fda920411fe6ec1d1, type: 2}
+  - {fileID: 11400000, guid: 46a5077b2078845c9bd4e734e9b01164, type: 2}
+  - {fileID: 11400000, guid: 4d1d31f3776e14b1bb0146251533a7b8, type: 2}
+  - {fileID: 11400000, guid: af9567ef518cb4e4f8324ea3e70cc317, type: 2}
+  - {fileID: 11400000, guid: f3ec8efcdd8cf4d98af631c2981cf470, type: 2}
+  - {fileID: 11400000, guid: aafeb7ebdf9774a1c8644ede0de48aff, type: 2}
+  - {fileID: 11400000, guid: 58477b3cdb3d147af81b1343a4b96a0a, type: 2}
+  - {fileID: 11400000, guid: b61669836b13341b6aecb6f8c460db05, type: 2}
+  greetings:
+  - "\uC624\uB298\uC740 \uB204\uAD6C\uB97C \uAFB8\uBA70 \uC904\uAE4C\uC694?"
+  - "\uBC18\uC9DD \uC655\uAD00\uC774\uB791 \uAF43 \uD654\uAD00\uC774 \uC0C8\uB85C \uB4E4\uC5B4\uC654\uC5B4\uC694!"
+  - "\uCE5C\uAD6C\uB4E4\uC774 \uBA4B\uC7C1\uC774\uAC00 \uB418\uBA74 \uB9C8\uC744\uC774 \uB354 \uC990\uAC70\uC6CC\uC694."
+  buyLines:
+  - "{0}, \uC815\uB9D0 \uC798 \uC5B4\uC6B8\uB9B4 \uAC70\uC608\uC694!"
+  - "{0} \uC608\uC058\uAC8C \uD3EC\uC7A5\uD588\uC5B4\uC694!"
+  poorLines:
+  - "\uCF54\uC778\uC774 \uC870\uAE08 \uBAA8\uC790\uB77C\uC694. \uCE5C\uAD6C\uB4E4\uC744 \uACE0\uCCD0 \uC8FC\uBA74 \uBAA8\uC744 \uC218 \uC788\uC5B4\uC694!"
+  - "\uC870\uAE08\uB9CC \uB354 \uBAA8\uC544\uC11C \uB2E4\uC2DC \uC640\uC694!"
+  firstVisitLine: "\uC5B4\uC11C \uC640\uC694! \uC800\uB294 \uB2EC\uCF69\uC774\uC5D0\uC694. \uC218\uC120\uC744 \uB9C8\uCE5C \uCE5C\uAD6C\uB4E4\uC5D0\uAC8C \uC785\uD600 \uC904 \uC608\uC05C \uC545\uC138\uC11C\uB9AC\uB97C \uD314\uC544\uC694."
+  pokeLine: "\uB2E4\uB978 \uAC83\uB3C4 \uAD6C\uACBD\uD574 \uBD10\uC694!"
+  position: {x: 5.4, y: 0, z: -4.1}
+  yaw: 0
+  wallColor: {r: 1, g: 0.86, b: 0.9, a: 1}
+  roofColor: {r: 1, g: 0.6, b: 0.72, a: 1}
+  keeperColor: {r: 1, g: 0.8, b: 0.85, a: 1}

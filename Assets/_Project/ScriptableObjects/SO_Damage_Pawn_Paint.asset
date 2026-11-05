@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1704af801ee664c3bb470b9159d58a18, type: 3}
+  m_Name: SO_Damage_Pawn_Paint
+  m_EditorClassIdentifier: Mongle.Runtime::Mongle.Data.DamageDefinition
+  id: Pawn_Paint
+  type: 7
+  phase: 4
+  displayName: "\uBC97\uACA8\uC9C4 \uC637 \uCE60"
+  noteText: "\uD30C\uB780 \uC637\uC758 \uCE60\uC774 \uAD70\uB370\uAD70\uB370 \uBC97\uACA8\uC84C\uC5B4\uC694. \uBD93\uC73C\uB85C \uC608\uC058\uAC8C \uCE60\uD574 \uC918\uC694."
+  requiredToolId: Tool_Brush
+  miniGameKey: Paint
+  damagePointName: DP_Dress
+  cameraAnchorName: CA_Dress
+  repairAnchorName: CA_Dress
+  lookPointName: 
+  interactionRadius: 0.08
+  hintPriority: 1
+  rewardCoins: 30
+  site: Dress
+  boneName: Spine
+  visualName: 
+  visualDoneName: 
+  openName: 
+  shapeKey: 
+  grabPointName: 
+  normalPointName: DN_Dress
+  stitchPrefix: 
+  limpBone: 
+  workPointName: 
+  spread: 0.05
+  blobCount: 22
+  stainColor: {r: 0.86, g: 0.72, b: 0.55, a: 1}
+  cleanColor: {r: 0.62, g: 0.76, b: 0.98, a: 1}

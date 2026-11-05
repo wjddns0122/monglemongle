@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5495f83e218e4de0bbadeb9eb40d432, type: 3}
+  m_Name: SO_Shop_Plant
+  m_EditorClassIdentifier: Mongle.Runtime::Mongle.Data.ShopDefinition
+  id: Shop_Plant
+  displayName: "\uD1A0\uC21C \uAF43\uC9D1"
+  keeperName: "\uD1A0\uC21C"
+  items:
+  - {fileID: 11400000, guid: 572d9606f425d4907b31b90514fa9921, type: 2}
+  - {fileID: 11400000, guid: abe9ac9576c5142d787b787c752e5864, type: 2}
+  - {fileID: 11400000, guid: 04871f934a5ec4e9e96e10fb17888d4a, type: 2}
+  - {fileID: 11400000, guid: 82b78c8fbfa68436b8695d11e47494c2, type: 2}
+  greetings:
+  - "\uAF43 \uD5A5\uAE30\uAC00 \uC88B\uC8E0?"
+  - "\uBB3C\uC744 \uC790\uC8FC \uC8FC\uBA74 \uC465\uC465 \uC790\uB77C\uC694!"
+  - "\uC5B4\uC11C \uC624\uC138\uC694! \uC624\uB298 \uC0C8\uC2F9\uC774 \uC608\uBED0\uC694."
+  buyLines:
+  - "{0}, \uC798 \uD0A4\uC6CC \uC8FC\uC138\uC694!"
+  - "{0}! \uBB3C \uC8FC\uB294 \uAC70 \uC78A\uC9C0 \uB9D0\uC544\uC694."
+  poorLines:
+  - "\uC544\uC9C1 \uCF54\uC778\uC774 \uBAA8\uC790\uB77C\uC694. \uCC9C\uCC9C\uD788 \uBAA8\uC544\uB3C4 \uAD1C\uCC2E\uC544\uC694."
+  - "\uC870\uAE08\uB9CC \uB354 \uBAA8\uC544\uC11C \uB2E4\uC2DC \uC640\uC694!"
+  firstVisitLine: "\uC5B4\uC11C \uC640\uC694! \uC800\uB294 \uD1A0\uC21C\uC774\uC5D0\uC694. \uD654\uBD84\uC744 \uC0AC\uC11C \uB9C8\uC744\uC5D0 \uB193\uACE0 \uBB3C\uC744 \uC8FC\uBA74 \uAF43\uC774 \uD53C\uC5B4\uC694."
+  pokeLine: "\uAF43 \uAD6C\uACBD \uB354 \uD558\uC138\uC694!"
+  position: {x: 2.3, y: 0, z: -3.95}
+  yaw: 0
+  wallColor: {r: 0.86, g: 0.95, b: 0.84, a: 1}
+  roofColor: {r: 1, g: 0.72, b: 0.78, a: 1}
+  keeperColor: {r: 0.99, g: 0.96, b: 0.94, a: 1}

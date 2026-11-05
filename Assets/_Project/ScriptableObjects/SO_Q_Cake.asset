@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 913cfe64fd56a4c82ab1d6767e64182d, type: 3}
+  m_Name: SO_Q_Cake
+  m_EditorClassIdentifier: Mongle.Runtime::Mongle.Data.QuestDefinition
+  id: Q_Cake
+  giverShopId: Shop_Furniture
+  title: "\uB2EC\uCF64\uD55C \uC9D1"
+  request: "\uCEF5\uCF00\uC774\uD06C \uC9D1\uC744 \uB9C8\uC744\uC5D0 \uB193\uC544 \uC904\uB798\uC694? \uBABD\uC774\uAC00 \uC88B\uC544\uD560 \uAC70\uC608\uC694."
+  acceptLine: "\uCEF5\uCF00\uC774\uD06C \uC9D1\uC744 \uB193\uC73C\uBA74 \uBABD\uC774\uAC00 \uC640\uC11C \uAD6C\uACBD\uD574\uC694."
+  doneLine: "\uB2EC\uCF64\uD55C \uB9C8\uC744\uC774 \uB410\uC5B4\uC694!"
+  eventId: MongiReacted
+  eventParam: Fur_Cake
+  targetCount: 1
+  rewardCoins: 25
+  requires: Q_Chair

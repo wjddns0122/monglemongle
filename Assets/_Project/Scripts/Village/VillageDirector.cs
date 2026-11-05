@@ -1,0 +1,550 @@
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using Mongle.Core;
+using Mongle.Data;
+using Mongle.Photo;
+using Mongle.Repair;
+using Mongle.Toy;
+using Mongle.UI;
+using UnityEngine;
+using UnityEngine.AI;
+using UnityEngine.InputSystem;
+using UnityEngine.UI;
+
+namespace Mongle.Village
+{
+    /// <summary>
+    /// Village scene: places furniture on a small grid, admits the toy as a resident once, observes its autonomous life.
+    /// Placement edits are pending until confirmed; furniture in use cannot be moved (D-001-8).
+    /// </summary>
+    public partial class VillageDirector : MonoBehaviour
+    {
+        public static VillageDirector Current { get; private set; }
+        // default orbit (D-006): a close look at the middle of the big park (the user found 24 m too wide);
+        // right-drag or W/A/S/D slides the view around, scroll zooms out
+        public const float DefaultOrbitYaw = 18f, DefaultOrbitPitch = 38f, DefaultOrbitDistance = 13f;
+        public static readonly Vector3 DefaultOrbitTarget = new Vector3(0.3f, 0.1f, -0.8f); // the shops, the hospital and the old garden
+        /// <summary>Walkable park rectangle (x min, z min, x max, z max) — keep in sync with SceneBuilder.</summary>
+        public static readonly Vector4 ParkRect = new Vector4(-17.9f, -9.5f, 17.9f, 15.3f);
+        /// <summary>The furniture grid: the old garden's cells (0..13, 0..9) keep their numbers, the park adds cells all around them.</summary>
+        public static VillageGrid ParkGrid() => new VillageGrid(-37, -18, 51, 43, 0.4f, new Vector3(-2.8f, 0f, -2.0f));
+        public WorldState World => root.World;
+        public ContentCatalog Catalog { get; private set; }
+        public Sfx Audio => root.Audio;
+        public ToyActor Toy { get; private set; }
+        public ToyAgent Agent { get; private set; }
+        public VillageGrid Grid { get; private set; }
+        public OrbitCamera Orbit { get; private set; }
+        public readonly List<FurnitureObject> Furniture = new List<FurnitureObject>();
+        public bool PlacingMode { get; private set; }
+        public FurnitureObject Selected { get; private set; }
+        public bool PendingValid { get; private set; } = true;
+        public bool Ready { get; private set; }
+        GameRoot root; ToyRuntime state; Camera cam;
+        ShopUI baseUi; Canvas canvas;
+        Text status, banner, bubbleText; GameObject bubble; Transform bubbleAnchor; float bubbleUntil;
+        GameObject placeBar, mainBar, statusPlate; Button placeToggle, storageButton; GameObject storageBadge; Text storageBadgeText;
+        PhotoPanel album;
+        FurniturePlacement pendingOriginal; int pendingRot, pendingX, pendingY;
+        bool dragging;
+        static readonly string[] TalkLines = { "안녕! 와줬구나.", "여기 정말 포근해요.", "고쳐줘서 고마워요!", "오늘은 꽃 향기가 좋아요." };
+        int talkIndex;
+
+        void OnDestroy() { if (Current == this) Current = null; if (root != null) { root.World.Changed -= RefreshCoins; root.World.QuestChanged -= OnQuestChanged; } UnhookFriendQuests(); }
+
+        IEnumerator Start()
+        {
+            Current = this;
+            while ((root = GameRoot.Instance) == null) yield return null;
+            Catalog = root.Catalog; state = root.Toy;
+            var phase = FlowResolver.Resolve(state);
+            if (state == null || (phase != FlowPhase.VillageAdmission && phase != FlowPhase.Village)) { root.GoToCurrentPhase(); yield break; }
+            cam = Camera.main;
+            Grid = ParkGrid();
+            Orbit = cam.gameObject.GetOrAdd<OrbitCamera>();
+            Orbit.target = DefaultOrbitTarget; Orbit.minDistance = 2.2f; Orbit.maxDistance = 24f; Orbit.minPitch = -38f; Orbit.maxPitch = 72f;
+            Orbit.lookUpBelow = 6f; // drag down past a low angle and the view tilts up to the sky, balloons and clouds
+            Orbit.allowPan = true; Orbit.panMin = new Vector2(ParkRect.x, ParkRect.y); Orbit.panMax = new Vector2(ParkRect.z, ParkRect.w);
+            foreach (var o in FindObjectsByType<ParkObstacle>(FindObjectsInactive.Exclude)) Grid.BlockBox(o.center, o.halfSize, 0f);
+            Orbit.SetOrbit(DefaultOrbitYaw, DefaultOrbitPitch, DefaultOrbitDistance); Orbit.degreesPerPixel = 0.2f; Orbit.zoomPerScroll = 0.003f;
+            BuildUi();
+            SpawnFurniture();
+            SpawnToy();
+            if (state.Admitted) { SpawnHouses(); SpawnResidents(); }
+            root.Pointer.Mode = PointerMode.Orbit;
+            root.Audio.StartBgm();
+            SetupShops();
+            SetupRides();
+            SetupClaw();
+            root.World.Changed += RefreshCoins; RefreshCoins();
+            root.World.QuestChanged += OnQuestChanged; RefreshQuestTracker();
+            SetupFriendQuests(); // D-011: friends' "!" requests and "?" questions
+            Ready = true;
+            if (!state.Admitted) BeginAdmission(); else { EnterLife(); WelcomeNewResident(); }
+        }
+
+        // ---------------- setup ----------------
+        List<FurniturePlacement> Defaults()
+        {
+            return Catalog.furniture.Where(d => d.starter).Select(d => new FurniturePlacement { furnitureId = d.id, instanceId = d.id, cellX = d.defaultCell.x, cellY = d.defaultCell.y, rotation = d.id == "Fur_Bench" ? 2 : 0 }).ToList();
+        }
+
+        void SpawnFurniture()
+        {
+            var layout = state.Furniture.Count > 0 ? state.Furniture : Defaults();
+            foreach (var p in layout)
+            {
+                var def = Catalog.Furniture(p.furnitureId); if (def == null) continue;
+                var fo = FurnitureObject.Spawn(def, p, Grid);
+                Furniture.Add(fo);
+                if (def.starter) World.MarkSeen(p.Id); // starter pieces were here before Mongi: no "new!" reaction
+                if (fo.Plant != null) fo.Plant.Init(World, def, p.Id);
+            }
+        }
+
+        void SpawnToy()
+        {
+            Toy = ToyActor.Spawn(Catalog, SafePoint(), Quaternion.Euler(0, 160, 0), false);
+            Toy.ApplyRepairState(state);
+            Toy.SetAccessories(state.Equipped.ToDictionary(k => k.Key, v => v.Value), Catalog);
+            Toy.SetFace(0.5f, 0f);
+            var go = Toy.gameObject;
+            var nav = go.AddComponent<NavMeshAgent>();
+            nav.baseOffset = 0f; nav.autoBraking = true;
+            var col = go.AddComponent<CapsuleCollider>(); col.center = new Vector3(0, 0.22f, 0); col.radius = 0.13f; col.height = 0.46f;
+            Agent = go.AddComponent<ToyAgent>();
+            Agent.Init(Toy, nav, this, new IntentSelector(System.Environment.TickCount) { Personality = Catalog.toy.personality, Favorites = Catalog.toy.favoriteTags });
+            if (NavMesh.SamplePosition(SafePoint(), out var hit, 2f, NavMesh.AllAreas)) nav.Warp(hit.position);
+        }
+
+        public Vector3 SafePoint() => Grid.Origin + new Vector3(2.5f * Grid.Cell, 0, 4.5f * Grid.Cell);
+
+        // ---------------- queries for the agent ----------------
+        public FurnitureObject Find(InteractionTag tag) => Furniture.FirstOrDefault(f => (f.Tags & tag) != 0);
+
+        public bool RandomPoint(out Vector3 p) => RandomPoint(Grid.Middle, 100f, out p);
+
+        /// <summary>A walkable spot on the grid, preferably within <paramref name="radius"/> of <paramref name="near"/> (a stroll, not a march across the park).</summary>
+        public bool RandomPoint(Vector3 near, float radius, out Vector3 p)
+        {
+            float x0 = (Grid.MinX + 1) * Grid.Cell, x1 = (Grid.MaxX - 1) * Grid.Cell, z0 = (Grid.MinY + 1) * Grid.Cell, z1 = (Grid.MaxY - 1) * Grid.Cell;
+            for (int i = 0; i < 16; i++)
+            {
+                var c = Grid.Origin + new Vector3(Random.Range(x0, x1), 0, Random.Range(z0, z1));
+                if (i < 12 && (c - near).sqrMagnitude > radius * radius) continue;
+                if (NavMesh.SamplePosition(c, out var hit, 0.4f, NavMesh.AllAreas)) { p = hit.position; return true; }
+            }
+            p = SafePoint(); return false;
+        }
+
+        // ---------------- admission ----------------
+        void BeginAdmission()
+        {
+            Agent.Disable();
+            status.text = "마을 입구";
+            baseUi.Banner("몽이가 새 집을 기다리고 있어요");
+            mainBar.SetActive(false);
+            baseUi.ShowDialog("몽이의 새 집", "고쳐진 몽이를 마을로 초대해요. 벤치와 꽃이 기다리고 있어요.", "마을로 초대하기", () => StartCoroutine(Admit()));
+            Toy.Play("Happy", 0.1f);
+        }
+
+        IEnumerator Admit()
+        {
+            if (state.Admit(state.ResidentId ?? System.Guid.NewGuid().ToString("N"), Defaults()))
+            {
+                // keep the same objects; just store the layout now in the toy state
+                Debug.Log("[Village] admitted " + state.ResidentId);
+            }
+            root.Audio.Play("success", 0.9f);
+            Fx.Burst(Catalog, Toy.transform.position + Vector3.up * 0.3f, new Color(1f, 0.85f, 0.5f), 36, 0.02f, 0.45f, 1.1f, 0.05f);
+            baseUi.Banner("몽이는 이제 마을 주민이에요!");
+            yield return new WaitForSeconds(1.8f);
+            baseUi.Banner(null);
+            EnterLife();
+        }
+
+        void EnterLife()
+        {
+            root.Say("오른쪽 버튼으로 끌거나 W·A·S·D로 공원을 둘러봐요. 휠로 멀리 볼 수 있어요", 5f);
+            mainBar.SetActive(true);
+            status.text = "몽이의 마을 · " + state.AdmissionDate + " 입주";
+            Agent.Enable();
+        }
+
+        // ---------------- UI ----------------
+
+        /// <summary>One of the right-hand tiles of the Figma HUD: the icon sprite with its small label under it.</summary>
+        // D-029 (아트보드 6 새 파일): the tiles sit 48.6 px further in and 1.9 px higher, on a half-clear cream board
+        const float TileDx = -48.58f, TileDy = -1.94f;
+        Button HudTile(string sprite, string label, float dx, float dy, UnityEngine.Events.UnityAction onClick, string name)
+        {
+            var b = UiKit.FigButton(hud.transform, sprite, () => onClick(), UiKit.Edge.End, UiKit.Edge.Middle, TileDx, TileDy, name);
+            UiKit.FigText(b.transform, label, 20, UiKit.FigBrown2, dx, dy, 150f, 30f);
+            return b;
+        }
+
+        void BuildUi()
+        {
+            baseUi = new GameObject("VillageUI").AddComponent<ShopUI>(); baseUi.Build();
+            baseUi.OnZoom = f => Orbit.ZoomStep(f); baseUi.SetInspectControls(true);
+            canvas = baseUi.Canvas;
+            // Figma D-020 (village HUD): zoom on the left, status in the banner, coins in the pill at the top right,
+            // and the three round-cornered tiles (가구 옮기기 / 앨범 / 보관함) down the right edge
+            baseUi.VillageLayout();
+            var sp = UiKit.Fig(canvas.transform, "hud_banner", UiKit.Edge.Middle, UiKit.Edge.Start, 0f, 0f, false, "Status");
+            statusPlate = sp.gameObject;
+            status = UiKit.FigText(sp.transform, "", 49, UiKit.FigBrown, 0f, 0f, 960f, 80f);   // the top bars share the notebook title size (D-025)
+            UiKit.Slice(sp); UiKit.AutoFit(sp, status, 420f, 140f, 1040f);   // hugs its text; never reaches the coin pill (D-023)
+            mainBar = UiKit.Rect(canvas.transform, "MainBar", Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero).gameObject;
+            mainBar.GetComponent<RectTransform>().gameObject.AddComponent<CanvasGroup>().blocksRaycasts = false;
+            var mb = mainBar.transform;
+            hud = new GameObject("Hud", typeof(RectTransform)); hud.transform.SetParent(canvas.transform, false);
+            var hudRt = (RectTransform)hud.transform; hudRt.anchorMin = Vector2.zero; hudRt.anchorMax = Vector2.one; hudRt.offsetMin = Vector2.zero; hudRt.offsetMax = Vector2.zero;
+            UiKit.Fig(hud.transform, "hud2_tiles_bg", UiKit.Edge.End, UiKit.Edge.Middle, 0f, 0f, false, "TileBoard");
+            placeToggle = HudTile("hud_icon_furniture", "가구 옮기기", 0f, 71f, TogglePlacing, "Btn_가구 옮기기");
+            storageButton = HudTile("hud_icon_storage", "보관함", 3.5f, 75f, ShowStorage, "Btn_보관함");
+            // "new" badge: how many things were bought since the box was last opened (the label itself stays "보관함")
+            var badge = UiKit.Panel(storageButton.transform, "NewBadge", UiKit.Pink, new Vector2(0f, 1f), new Vector2(8, -6), new Vector2(84, 40), false);
+            storageBadge = badge.gameObject; storageBadgeText = UiKit.Label(badge.transform, "", 22, Color.white, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(80, 38));
+            storageBadge.SetActive(false);
+            HudTile("hud_icon_album", "앨범", 1f, 69f, ShowAlbum, "Btn_앨범");
+            BuildQuestButton();
+            var cb = UiKit.Fig(hud.transform, "hud_coin_pill", UiKit.Edge.End, UiKit.Edge.Start, 0f, 0f, false, "Coins");
+            coinText = UiKit.FigText(cb.transform, "0", 40, UiKit.FigBrown, 40f, 2f, 190f, 80f);
+            BuildShopUi();
+            mainBar.SetActive(false);
+            // placement bar (fits a 4:3 screen: 1420 wide); "나가기" always ends placing, ESC too
+            placeBar = UiKit.Panel(canvas.transform, "PlaceBar", UiKit.Paper, new Vector2(0.5f, 0f), new Vector2(0, 110), new Vector2(1420, 150), false).gameObject;
+            UiKit.MakeButton(placeBar.transform, "돌리기", UiKit.Sky, new Vector2(0.5f, 0.5f), new Vector2(-560, 0), new Vector2(240, 100), RotateSelected, 38);
+            UiKit.MakeButton(placeBar.transform, "보관함에 넣기", new Color(0.95f, 0.85f, 0.6f, 1f), new Vector2(0.5f, 0.5f), new Vector2(-275, 0), new Vector2(300, 100), StoreSelected, 34);
+            UiKit.MakeButton(placeBar.transform, "여기에 두기", UiKit.Peach, new Vector2(0.5f, 0.5f), new Vector2(40, 0), new Vector2(300, 100), () => ConfirmPlacement(), 36);
+            UiKit.MakeButton(placeBar.transform, "취소", UiKit.Mint, new Vector2(0.5f, 0.5f), new Vector2(295, 0), new Vector2(180, 100), CancelOrExitPlacing, 36);
+            UiKit.MakeButton(placeBar.transform, "나가기", UiKit.Pink, new Vector2(0.5f, 0.5f), new Vector2(535, 0), new Vector2(270, 100), ExitPlacing, 38);
+            // plain pills on the stitched bar (D-026: one dashed line is enough)
+            foreach (var b in placeBar.GetComponentsInChildren<Button>(true)) UiKit.NoStitch(b.GetComponent<Image>());
+            placeBar.SetActive(false);
+            // speech bubble: the Figma speech plate (cream, tail at the bottom-left, D-022); the tail tip hangs just above the head
+            var bp = UiKit.SpriteImage(canvas.transform, "Bubble", "shop_plate_left", Vector2.zero, new Vector2(0.03f, 0f), Vector2.zero, new Vector2(420, 108));
+            UiKit.Slice(bp);
+            bubble = bp.gameObject; bubbleText = UiKit.Label(bp.transform, "", 32, UiKit.FigBrown, new Vector2(0.5f, 0.5f), new Vector2(0, 4), new Vector2(390, 90));
+            bubble.SetActive(false);
+            // album (the 수선 기록 window is gone: not needed in the game, D-022)
+            album = new PhotoPanel(canvas.transform, "닫기", "다음 사진");
+            album.Primary.onClick.AddListener(() => { album.Hide(); });
+            album.Secondary.onClick.AddListener(() => { albumIndex++; ShowAlbumPage(); root.Audio.Play("click", 0.5f, 1.2f); });
+        }
+
+        public void ShowBubble(ToyActor actor, string line, float seconds) => ShowBubble(actor.Node("Head") ?? actor.transform, line, seconds);
+
+        public void ShowBubble(Transform anchor, string line, float seconds)
+        {
+            bubbleText.text = line; bubble.SetActive(true); bubbleAnchor = anchor; bubbleUntil = Time.time + seconds;
+            // longer lines (the friends' requests and memories, D-011) get a wider, taller bubble
+            float w = line != null && line.Length > 20 ? 560f : 420f;
+            bubbleText.rectTransform.sizeDelta = new Vector2(w - 50f, 90f);
+            float h = Mathf.Max(92f, bubbleText.preferredHeight + 30f);
+            // the plate has 8 units of clear room on top and its tail below the body
+            ((RectTransform)bubble.transform).sizeDelta = new Vector2(w, h + 16f); bubbleText.rectTransform.sizeDelta = new Vector2(w - 50f, h - 10f);
+            bubbleLift = 24f;
+        }
+        float bubbleLift = 80f;
+
+        // ---------------- album: Mongi's first photo, then every friend's (D-005) ----------------
+        int albumIndex; Texture2D albumTex;
+
+        public List<(PhotoRecord photo, string name)> AlbumEntries()
+        {
+            var list = new List<(PhotoRecord, string)>();
+            if (state.Photo != null) list.Add((state.Photo, Catalog.toy != null ? Catalog.toy.displayName : "몽이"));
+            foreach (var r in root.Residents)
+            {
+                var rec = SaveMapper.FromPhotoSave(r.photo); if (rec == null) continue;
+                var def = Catalog.ToyDef(r.kindId); list.Add((rec, def != null ? def.displayName : r.kindId));
+            }
+            return list;
+        }
+
+        void ShowAlbum() { CloseQuestUi(); albumIndex = 0; ShowAlbumPage(); }
+
+        void ShowAlbumPage()
+        {
+            var entries = AlbumEntries();
+            if (albumTex != null) { Destroy(albumTex); albumTex = null; }
+            album.Secondary.gameObject.SetActive(entries.Count > 1);
+            if (entries.Count == 0) { album.Show(null, "", "아직 사진이 없어요"); return; }
+            albumIndex = ((albumIndex % entries.Count) + entries.Count) % entries.Count;
+            var (ph, name) = entries[albumIndex];
+            albumTex = PhotoStore.Load(root.Saves, ph);
+            string page = entries.Count > 1 ? "   " + (albumIndex + 1) + "/" + entries.Count : "";
+            album.Show(albumTex, ph.takenAt + " · " + name + " · " + PhotoDirector.PoseKorean(ph.pose) + page);
+        }
+        public int AlbumCount => AlbumEntries().Count;
+
+        // ---------------- update ----------------
+        void Update()
+        {
+            if (!Ready) return;
+            if (statusPlate != null) statusPlate.SetActive(!baseUi.BannerShown);   // one banner place: messages take over from the status line
+            if (bubble.activeSelf)
+            {
+                if (Time.time > bubbleUntil || bubbleAnchor == null) bubble.SetActive(false);
+                else
+                {
+                    var sp = cam.WorldToScreenPoint(bubbleAnchor.position + Vector3.up * 0.12f);
+                    var scale = canvas.GetComponent<Canvas>().scaleFactor;
+                    ((RectTransform)bubble.transform).anchoredPosition = new Vector2(sp.x, sp.y) / scale + new Vector2(0, bubbleLift);
+                }
+            }
+            var f = root.Pointer.World;
+            UpdateFriendQuests(); // bubbles, the star hunt and riding together also run while watching a ride
+            UpdateClaw();
+            if (ViewingRide != null) { UpdateRideView(); return; } // watching a ride up close: only the "back" button acts
+            HandleEscape();
+            UpdatePlaceRing(); PulseStorageBadge();
+            UpdateHousePlacing();
+            if ((PlacingMode || HousePlacing || !AnyPanelOpen) && state.Admitted) PollKeyboardPan(); // W/A/S/D also while placing (user)
+            if (PlacingMode) UpdatePlacing(f);
+            else
+            {
+                if (f.pressed) pressAt = f.position;
+                if (f.released && (f.position - pressAt).magnitude < 8f) TryClickWorld(f.position);
+            }
+        }
+
+        Vector2 pressAt;
+
+        /// <summary>W/A/S/D or the arrow keys slide the view over the park (Mongi is not steered by the player any more).</summary>
+        void PollKeyboardPan()
+        {
+            var kb = Keyboard.current; if (kb == null || Orbit.Focusing) return;
+            float x = ((kb.dKey.isPressed || kb.rightArrowKey.isPressed) ? 1f : 0f) - ((kb.aKey.isPressed || kb.leftArrowKey.isPressed) ? 1f : 0f);
+            float y = ((kb.wKey.isPressed || kb.upArrowKey.isPressed) ? 1f : 0f) - ((kb.sKey.isPressed || kb.downArrowKey.isPressed) ? 1f : 0f);
+            if (x == 0f && y == 0f) return;
+            var fwd = cam.transform.forward; fwd.y = 0; fwd.Normalize();
+            var right = cam.transform.right; right.y = 0; right.Normalize();
+            Orbit.Slide((right * x + fwd * y) * (2f + Orbit.distance * 0.5f) * Time.deltaTime);
+        }
+
+        /// <summary>Steer Mongi relative to the camera (what W/A/S/D and the arrow keys call).</summary>
+        public void DriveToy(Vector2 input)
+        {
+            var fwd = cam.transform.forward; fwd.y = 0; fwd.Normalize();
+            var right = cam.transform.right; right.y = 0; right.Normalize();
+            Agent.Drive(input, fwd, right);
+        }
+
+        public bool TryClickToy(Vector2 screen)
+        {
+            if (state.Admitted == false || Agent == null || Agent.State == AgentState.Disabled) return false;
+            var ray = cam.ScreenPointToRay(screen);
+            if (Physics.Raycast(ray, out var hit, 30f) && hit.collider.GetComponentInParent<ToyAgent>() == Agent)
+            {
+                Agent.TryTalk(ChatLine(Agent, TalkLines[talkIndex++ % TalkLines.Length])); // may remember what the player told it (D-011)
+                OpenDress(Agent); // Mongi can change clothes too
+                return true;
+            }
+            return false;
+        }
+
+        // ---------------- placement ----------------
+        void TogglePlacing()
+        {
+            if (PlacingMode) { CancelPlacement(); SetPlacing(false); }
+            else SetPlacing(true);
+        }
+
+        void SetPlacing(bool on)
+        {
+            PlacingMode = on;
+            if (on)
+            {
+                // panels opened earlier (a friend's dress-up, the album) used to sit on top of the bar and swallow its buttons
+                CloseDress(); album.Hide(); CloseQuestUi();
+                placeBar.transform.SetAsLastSibling();
+            }
+            placeBar.SetActive(on);
+            UiKit.SetButtonText(placeToggle, on ? "옮기기 끝내기" : "가구 옮기기");
+            baseUi.Banner(on ? "옮길 가구를 눌러서 끌어요 · 다 옮겼으면 '나가기'" : null);
+            dragging = false; Orbit.allowRotate = true;
+            if (!on && placeRing != null) placeRing.SetActive(false);
+            root.Audio.Play("click", 0.5f);
+        }
+
+        /// <summary>"취소" puts the piece being moved back; with nothing picked it leaves placing like "나가기".</summary>
+        void CancelOrExitPlacing()
+        {
+            if (Selected != null) CancelPlacement();
+            else ExitPlacing();
+        }
+
+        // ---------------- ground ring under the piece being placed ----------------
+        GameObject placeRing; LineRenderer placeRingLine;
+
+        void UpdatePlaceRing()
+        {
+            bool show = PlacingMode && Selected != null;
+            if (!show) { if (placeRing != null && placeRing.activeSelf) placeRing.SetActive(false); return; }
+            if (placeRing == null)
+            {
+                placeRing = new GameObject("PlaceRing");
+                placeRingLine = placeRing.AddComponent<LineRenderer>();
+                placeRingLine.loop = true; placeRingLine.useWorldSpace = false; placeRingLine.positionCount = 40; placeRingLine.widthMultiplier = 0.05f;
+                for (int i = 0; i < 40; i++) { float a = i / 40f * Mathf.PI * 2f; placeRingLine.SetPosition(i, new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a))); }
+                var m = Catalog.Mat("M_Marker"); if (m != null) placeRingLine.sharedMaterial = m;
+                placeRingLine.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            }
+            if (!placeRing.activeSelf) placeRing.SetActive(true);
+            var s = VillageGrid.Size(Selected.Def.footprint, pendingRot);
+            float r = (Mathf.Max(s.x, s.y) * 0.5f + 0.25f) * Grid.Cell * (1f + 0.08f * Mathf.Sin(Time.unscaledTime * 6f));
+            placeRing.transform.position = Grid.CenterOf(Selected.Def.footprint, pendingX, pendingY, pendingRot) + Vector3.up * 0.03f;
+            placeRing.transform.localScale = new Vector3(r, 1f, r);
+            var c = PendingValid ? new Color(0.45f, 0.9f, 0.6f, 1f) : new Color(1f, 0.45f, 0.45f, 1f);
+            placeRingLine.startColor = placeRingLine.endColor = c;
+        }
+
+        /// <summary>Glides the park view over to a spot (the new piece, a friend) without leaving the park bounds.</summary>
+        public void LookAt(Vector3 world)
+        {
+            Orbit.target = new Vector3(Mathf.Clamp(world.x, ParkRect.x, ParkRect.z), Orbit.target.y, Mathf.Clamp(world.z, ParkRect.y, ParkRect.w));
+        }
+
+        // ---------------- keyboard: ESC leaves whatever is open ----------------
+        bool HandleEscape()
+        {
+            var kb = Keyboard.current; if (kb == null || !kb.escapeKey.wasPressedThisFrame) return false;
+            if (HousePlacing) { HouseLater(); return true; }
+            if (ClawOpen) { CloseClaw(); return true; }
+            if (PlacingMode) { ExitPlacing(); return true; }
+            if (FriendDialogOpen) { OfferLater(talking); return true; }
+            if (QuestBoardOpen) { CloseQuestBoard(); return true; }
+            if (Shop != null && Shop.Visible) { CloseShop(); return true; }
+            if (Storage != null && Storage.Visible) { CloseStorage(); return true; }
+            if (DressOpen) { CloseDress(); return true; }
+            if (album.Root.activeSelf) { album.Hide(); return true; }
+            return false;
+        }
+
+        FurnitureObject PickFurniture(Vector2 screen)
+        {
+            var ray = cam.ScreenPointToRay(screen);
+            var hits = Physics.RaycastAll(ray, 30f);
+            foreach (var h in hits.OrderBy(h => h.distance)) { var f = h.collider.GetComponentInParent<FurnitureObject>(); if (f != null) return f; }
+            return null;
+        }
+
+        void UpdatePlacing(PointerFrame f)
+        {
+            if (f.pressed)
+            {
+                var pick = PickFurniture(f.position);
+                if (pick != null)
+                {
+                    if (pick.InUse) { root.Say("몽이가 쓰고 있어요. 조금 이따 옮겨요"); root.Audio.Play("wrong", 0.4f); }
+                    else
+                    {
+                        if (Selected != pick) { RestoreSelectedIfInvalid(); Select(pick); }
+                        dragging = true; Orbit.allowRotate = false; root.Audio.Play("grab", 0.5f);
+                    }
+                }
+            }
+            if (dragging && f.held && Selected != null)
+            {
+                var ray = cam.ScreenPointToRay(f.position);
+                if (new Plane(Vector3.up, Vector3.zero).Raycast(ray, out float d))
+                {
+                    var cell = Grid.SnapOrigin(Selected.Def.footprint, pendingRot, ray.GetPoint(d));
+                    if (cell.x != pendingX || cell.y != pendingY) { pendingX = cell.x; pendingY = cell.y; Preview(); root.Audio.Play("click", 0.15f, 1.5f); }
+                }
+            }
+            if (f.released) { dragging = false; Orbit.allowRotate = true; }
+        }
+
+        void Select(FurnitureObject f)
+        {
+            if (Selected != null && Selected != f) Selected.SetTint(null);
+            Selected = f;
+            pendingOriginal = new FurniturePlacement { furnitureId = f.Placement.furnitureId, cellX = f.Placement.cellX, cellY = f.Placement.cellY, rotation = f.Placement.rotation };
+            pendingX = f.Placement.cellX; pendingY = f.Placement.cellY; pendingRot = f.Placement.rotation;
+            Preview();
+        }
+
+        IEnumerable<(Vector2Int, FurniturePlacement)> OthersOf(FurnitureObject me) =>
+            Furniture.Where(x => x != me).Select(x => (x.Def.footprint, x.Placement));
+
+        void Preview()
+        {
+            if (Selected == null) return;
+            PendingValid = Grid.IsValid(OthersOf(Selected), Selected.Def.footprint, pendingX, pendingY, pendingRot);
+            Selected.Apply(Grid, Mathf.Clamp(pendingX, Grid.MinX, Grid.MaxX - 1), Mathf.Clamp(pendingY, Grid.MinY, Grid.MaxY - 1), pendingRot);
+            Selected.SetTint(PendingValid ? new Color(0.65f, 1f, 0.7f) : new Color(1f, 0.55f, 0.55f));
+        }
+
+        void RotateSelected()
+        {
+            if (Selected == null) { root.Say("먼저 옮길 가구를 눌러요"); return; }
+            pendingRot = (pendingRot + 1) & 3;
+            var s = VillageGrid.Size(Selected.Def.footprint, pendingRot);
+            pendingX = Mathf.Clamp(pendingX, Grid.MinX, Mathf.Max(Grid.MinX, Grid.MaxX - s.x)); pendingY = Mathf.Clamp(pendingY, Grid.MinY, Mathf.Max(Grid.MinY, Grid.MaxY - s.y));
+            Preview(); root.Audio.Play("click", 0.5f, 1.2f);
+        }
+
+        void RestoreSelectedIfInvalid()
+        {
+            if (Selected == null) return;
+            // moving on to another piece discards an unconfirmed edit of this one
+            if (Selected.IsNew) { DiscardNew(Selected, "보관함으로 돌아갔어요"); return; }
+            Selected.Apply(Grid); Selected.SetTint(null); Selected = null;
+        }
+
+        public bool ConfirmPlacement()
+        {
+            if (Selected == null) { root.Say("먼저 옮길 가구를 눌러요"); return false; }
+            if (!PendingValid) { root.Say("여기에는 둘 수 없어요"); root.Audio.Play("wrong", 0.5f); return false; }
+            if (Selected.InUse) { root.Say("몽이가 쓰고 있어요"); return false; }
+            var f = Selected;
+            f.Placement.cellX = pendingX; f.Placement.cellY = pendingY; f.Placement.rotation = pendingRot;
+            f.Apply(Grid); f.SetTint(null);
+            if (f.IsNew)
+            {
+                if (!World.TakeFromInventory(f.Def.id)) { DiscardNew(f, "보관함에 없는 물건이에요"); return false; }
+                state.Furniture.Add(new FurniturePlacement { furnitureId = f.Def.id, instanceId = f.Placement.Id, cellX = pendingX, cellY = pendingY, rotation = pendingRot });
+                f.IsNew = false; f.Pending = false;
+                World.Report("ItemPlaced", f.Def.id);
+                if (f.Def.IsPlant) { World.EnsurePlant(f.Placement.Id, f.Def.id); f.Plant.Refresh(false); }
+                f.Wobble();
+            }
+            else
+            {
+                var entry = state.Furniture.FirstOrDefault(x => x.Id == f.Placement.Id);
+                if (entry != null) { entry.cellX = pendingX; entry.cellY = pendingY; entry.rotation = pendingRot; }
+                else state.Furniture.Add(new FurniturePlacement { furnitureId = f.Placement.furnitureId, instanceId = f.Placement.Id, cellX = pendingX, cellY = pendingY, rotation = pendingRot });
+            }
+            root.Persist("furniture");
+            Agent.OnFurnitureChanged(f);
+            root.Audio.Play("success", 0.5f);
+            root.Say("가구를 놓았어요");
+            Selected = null;
+            return true;
+        }
+
+        public void CancelPlacement()
+        {
+            if (Selected != null && Selected.IsNew) DiscardNew(Selected, "보관함으로 돌아갔어요");
+            else if (Selected != null) { Selected.Apply(Grid); Selected.SetTint(null); Selected = null; }
+            root.Audio.Play("click", 0.4f, 0.8f);
+        }
+
+        public void ExitPlacing() { CancelPlacement(); SetPlacing(false); }
+
+        // test hooks
+        public void QaBeginPlacing() { if (!PlacingMode) SetPlacing(true); }
+        public bool QaMove(string furnitureId, int cx, int cy, int rot)
+        {
+            var f = Furniture.FirstOrDefault(x => x.Def.id == furnitureId); if (f == null) return false;
+            if (f.InUse) return false;
+            Select(f); pendingX = cx; pendingY = cy; pendingRot = rot; Preview();
+            return ConfirmPlacement();
+        }
+    }
+}

@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1704af801ee664c3bb470b9159d58a18, type: 3}
+  m_Name: SO_Damage_Car_Fuel
+  m_EditorClassIdentifier: Mongle.Runtime::Mongle.Data.DamageDefinition
+  id: Car_Fuel
+  type: 5
+  phase: 3
+  displayName: "\uD145 \uBE48 \uC5F0\uB8CC\uD1B5"
+  noteText: "\uC5F0\uB8CC\uAC00 \uBC14\uB2E5\uB098\uC11C \uBD80\uB989\uBD80\uB989 \uC18C\uB9AC\uAC00 \uC548 \uB098\uC694. \uC8FC\uC720\uAE30\uB85C \uAC00\uB4DD \uCC44\uC6CC \uC918\uC694."
+  requiredToolId: Tool_FuelNozzle
+  miniGameKey: Fuel
+  damagePointName: DP_Fuel
+  cameraAnchorName: CA_Fuel
+  repairAnchorName: CA_Fuel
+  lookPointName: 
+  interactionRadius: 0.08
+  hintPriority: 1
+  rewardCoins: 35
+  site: Fuel
+  boneName: Spine
+  visualName: DMG_FuelCap_Fuel
+  visualDoneName: 
+  openName: DMG_FuelOpen_Fuel
+  shapeKey: 
+  grabPointName: 
+  normalPointName: DN_Fuel
+  stitchPrefix: 
+  limpBone: 
+  workPointName: FP_Fuel
+  spread: 0.06
+  blobCount: 26
+  stainColor: {r: 1, g: 0.68, b: 0.55, a: 1}
+  cleanColor: {r: 0.95, g: 0.88, b: 0.72, a: 1}

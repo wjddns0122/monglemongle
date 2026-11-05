@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 24dc0cfc01e774461871173aff31b01b, type: 3}
+  m_Name: SO_Fur_Table
+  m_EditorClassIdentifier: Mongle.Runtime::Mongle.Data.FurnitureDefinition
+  id: Fur_Table
+  displayName: "\uCC3B\uC0C1"
+  prefab: {fileID: 3340005036190037084, guid: 7d4671f8b8a0443a5be54e5d8ec412db, type: 3}
+  footprint: {x: 2, y: 1}
+  tags: 64
+  capacity: 1
+  defaultCell: {x: 0, y: 0}
+  category: 0
+  price: 40
+  description: "\uCC3B\uC8FC\uC804\uC790\uC640 \uCEF5\uC774 \uB193\uC778 \uC791\uC740 \uD0C1\uC790."
+  uiColor: {r: 0.85, g: 0.66, b: 0.46, a: 1}
+  starter: 0
+  stageWaters: 0200000005000000i
+  waterCooldownSeconds: 25
+  bloomReward: 15

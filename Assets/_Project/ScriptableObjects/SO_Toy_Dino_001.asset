@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: faf1a59ea410742c7881ab1689395fdf, type: 3}
+  m_Name: SO_Toy_Dino_001
+  m_EditorClassIdentifier: Mongle.Runtime::Mongle.Data.ToyDefinition
+  kindId: Dino_001
+  displayName: "\uB514\uB178"
+  category: 0
+  personality: 5
+  favoriteTags: 68
+  shortBackstory: "\uB514\uB178\uB294 \uAF2C\uB9AC\uB97C \uD754\uB4E4\uBA70 \uCFF5\uCFF5 \uAC77\uB358 \uACF5\uB8E1 \uC778\uD615\uC774\uC5D0\uC694.\n\uAF2C\uB9AC \uC19C\uC774 \uBE60\uC9C0\uACE0 \uBC1C\uC5D0 \uAC00\uC2DC\uAC00 \uBC15\uD614\uB300\uC694."
+  prefab: {fileID: 8483639342357527978, guid: bcd512a64a7a749abb0a327e77cc6573, type: 3}
+  heightMeters: 0.45
+  damageSequence:
+  - {fileID: 11400000, guid: 9727921c3d9014b449f1a2adb05892f9, type: 2}
+  - {fileID: 11400000, guid: e69506093c38642eea6d71ae5317e9e4, type: 2}
+  - {fileID: 11400000, guid: 42e1b07c1eb344482be471a2ea1522ed, type: 2}
+  accessories:
+  - {fileID: 11400000, guid: 38a2078da07b248c9bc9783e86d459ca, type: 2}
+  - {fileID: 11400000, guid: b00002cde4b544e76b028a7e2401b3f6, type: 2}
+  - {fileID: 11400000, guid: 4d500938d69784ea9af183bc4d917766, type: 2}
+  - {fileID: 11400000, guid: a6fbb5129721841e2a49b44d3286b3d7, type: 2}
+  - {fileID: 11400000, guid: 50a0dcf8425944e4fa080897f0459047, type: 2}
+  - {fileID: 11400000, guid: ae5d0d6c246254492bbea62267297f7c, type: 2}
+  - {fileID: 11400000, guid: 2f785835aca77451da0e6a1ba0abdf5b, type: 2}
+  - {fileID: 11400000, guid: c21b7141af6b847a286aedaf3db2c0ff, type: 2}
+  - {fileID: 11400000, guid: ab294fac6fb9944ca8a5641205432b6b, type: 2}
+  giftAccessories: []
+  stampRewardCoins: 30
+  wording: []

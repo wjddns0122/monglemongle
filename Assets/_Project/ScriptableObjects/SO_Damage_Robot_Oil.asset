@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1704af801ee664c3bb470b9159d58a18, type: 3}
+  m_Name: SO_Damage_Robot_Oil
+  m_EditorClassIdentifier: Mongle.Runtime::Mongle.Data.DamageDefinition
+  id: Robot_Oil
+  type: 1
+  phase: 1
+  displayName: "\uAC00\uC2B4\uC758 \uAE30\uB984 \uC5BC\uB8E9"
+  noteText: "\uAC00\uC2B4\uC5D0 \uB048\uC801\uD55C \uAE30\uB984 \uC5BC\uB8E9\uC774 \uBB3B\uC5C8\uC5B4\uC694. \uBC18\uC9DD\uBC18\uC9DD \uB2E6\uC544 \uC918\uC694."
+  requiredToolId: Tool_Sponge
+  miniGameKey: Dirt
+  damagePointName: DP_Chest
+  cameraAnchorName: CA_Chest
+  repairAnchorName: CA_Chest
+  lookPointName: 
+  interactionRadius: 0.08
+  hintPriority: 2
+  rewardCoins: 25
+  site: Chest
+  boneName: Spine
+  visualName: 
+  visualDoneName: 
+  openName: 
+  shapeKey: 
+  grabPointName: 
+  normalPointName: DN_Chest
+  stitchPrefix: 
+  limpBone: 
+  workPointName: 
+  spread: 0.05
+  blobCount: 20
+  stainColor: {r: 0.24, g: 0.22, b: 0.25, a: 1}
+  cleanColor: {r: 0.93, g: 0.94, b: 0.97, a: 1}

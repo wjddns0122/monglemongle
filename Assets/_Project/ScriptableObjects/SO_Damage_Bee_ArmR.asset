@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1704af801ee664c3bb470b9159d58a18, type: 3}
+  m_Name: SO_Damage_Bee_ArmR
+  m_EditorClassIdentifier: Mongle.Runtime::Mongle.Data.DamageDefinition
+  id: Bee_ArmR
+  type: 3
+  phase: 3
+  displayName: "\uD640\uCB49\uD574\uC9C4 \uC624\uB978\uD314"
+  noteText: "\uC624\uB978\uD314 \uC19C\uC774 \uBE60\uC838\uC11C \uD798\uC774 \uD558\uB098\uB3C4 \uC5C6\uB300\uC694. \uC19C\uC744 \uAFB9\uAFB9 \uCC44\uC6CC \uC918\uC694."
+  requiredToolId: Tool_CottonInjector
+  miniGameKey: Cotton
+  damagePointName: DP_ArmR
+  cameraAnchorName: CA_ArmR
+  repairAnchorName: CA_ArmR
+  lookPointName: 
+  interactionRadius: 0.08
+  hintPriority: 2
+  rewardCoins: 35
+  site: ArmR
+  boneName: Arm_R
+  visualName: DMG_FillOpen_ArmR
+  visualDoneName: 
+  openName: 
+  shapeKey: Deflated_ArmR
+  grabPointName: 
+  normalPointName: DN_ArmR
+  stitchPrefix: 
+  limpBone: 
+  workPointName: FP_ArmR
+  spread: 0.06
+  blobCount: 26
+  stainColor: {r: 0.36, g: 0.25, b: 0.15, a: 1}
+  cleanColor: {r: 0.95, g: 0.88, b: 0.72, a: 1}

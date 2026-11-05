@@ -1,0 +1,17 @@
+# Only the Unity project itself is kept: Assets, Packages, ProjectSettings (+ this file and the README).
+# Everything Unity regenerates (Library, Temp, Logs, UserSettings, *.csproj, *.slnx) and the local work folders
+# (Builds, BlenderWork, docs, work) stay out.
+/*
+!/.gitignore
+!/README.md
+!/Assets/
+!/Packages/
+!/ProjectSettings/
+
+# test-runner leftovers and OS junk
+/Assets/InitTestScene*.unity
+/Assets/InitTestScene*.unity.meta
+*.pidb.meta
+*.pdb.meta
+*.mdb.meta
+.DS_Store

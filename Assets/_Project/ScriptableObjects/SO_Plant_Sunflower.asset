@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 24dc0cfc01e774461871173aff31b01b, type: 3}
+  m_Name: SO_Plant_Sunflower
+  m_EditorClassIdentifier: Mongle.Runtime::Mongle.Data.FurnitureDefinition
+  id: Plant_Sunflower
+  displayName: "\uD574\uBC14\uB77C\uAE30 \uD654\uBD84"
+  prefab: {fileID: 3720526339516497489, guid: 90c1e329d703344e78f18cbc32521811, type: 3}
+  footprint: {x: 1, y: 1}
+  tags: 16
+  capacity: 1
+  defaultCell: {x: 0, y: 0}
+  category: 1
+  price: 25
+  description: "\uD0A4\uAC00 \uC465! \uCEE4\uB2E4\uB780 \uD574\uBC14\uB77C\uAE30\uAC00 \uD53C\uC5B4\uC694."
+  uiColor: {r: 1, g: 0.85, b: 0.35, a: 1}
+  starter: 0
+  stageWaters: 0200000005000000i
+  waterCooldownSeconds: 25
+  bloomReward: 15

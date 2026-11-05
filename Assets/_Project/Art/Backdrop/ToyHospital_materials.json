@@ -1,0 +1,239 @@
+{
+ "materials": [
+  {
+   "name": "TH_Base",
+   "color": [
+    0.9357,
+    0.8962,
+    0.964
+   ],
+   "smoothness": 0.4,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "TH_Wall",
+   "color": [
+    1.0,
+    0.9261,
+    0.9163
+   ],
+   "smoothness": 0.5,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "TH_Pink",
+   "color": [
+    1.0,
+    0.7484,
+    0.8323
+   ],
+   "smoothness": 0.6,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "TH_Wall2",
+   "color": [
+    0.8095,
+    0.9547,
+    0.9163
+   ],
+   "smoothness": 0.5,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "TH_Roof",
+   "color": [
+    1.0,
+    0.8095,
+    0.8756
+   ],
+   "smoothness": 0.55,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "TH_Trim",
+   "color": [
+    1.0,
+    0.9867,
+    0.9686
+   ],
+   "smoothness": 0.5,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "TH_Dome",
+   "color": [
+    0.7674,
+    0.8962,
+    1.0
+   ],
+   "smoothness": 0.65,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "TH_Glass",
+   "color": [
+    0.8434,
+    0.9357,
+    1.0
+   ],
+   "smoothness": 0.92,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "TH_Gold",
+   "color": [
+    1.0,
+    0.8962,
+    0.68
+   ],
+   "smoothness": 0.7,
+   "metallic": 0.8,
+   "emission": null
+  },
+  {
+   "name": "TH_White",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "smoothness": 0.6,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "TH_Door",
+   "color": [
+    0.722,
+    0.9163,
+    0.8756
+   ],
+   "smoothness": 0.6,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "TH_Wood",
+   "color": [
+    0.9357,
+    0.8323,
+    0.722
+   ],
+   "smoothness": 0.4,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "TH_FlowerA",
+   "color": [
+    1.0,
+    0.8543,
+    0.9163
+   ],
+   "smoothness": 0.4,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "TH_FlowerB",
+   "color": [
+    1.0,
+    0.964,
+    0.7674
+   ],
+   "smoothness": 0.4,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "TH_Leaf",
+   "color": [
+    0.7354,
+    0.9163,
+    0.7858
+   ],
+   "smoothness": 0.4,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "TH_Text",
+   "color": [
+    0.9357,
+    0.5469,
+    0.722
+   ],
+   "smoothness": 0.6,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "TH_Bandage",
+   "color": [
+    1.0,
+    0.9261,
+    0.8434
+   ],
+   "smoothness": 0.3,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "TH_Pad",
+   "color": [
+    1.0,
+    0.9777,
+    0.9547
+   ],
+   "smoothness": 0.2,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "TH_Stitch",
+   "color": [
+    0.7354,
+    0.6343,
+    0.7736
+   ],
+   "smoothness": 0.4,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "TH_Thread",
+   "color": [
+    1.0,
+    0.7736,
+    0.865
+   ],
+   "smoothness": 0.4,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "TH_Glow",
+   "color": [
+    1.0,
+    0.9547,
+    0.8543
+   ],
+   "smoothness": 0.6,
+   "metallic": 0.0,
+   "emission": [
+    1.4,
+    1.26,
+    0.98
+   ]
+  }
+ ]
+}

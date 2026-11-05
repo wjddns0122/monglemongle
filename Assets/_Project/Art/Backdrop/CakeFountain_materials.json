@@ -1,0 +1,158 @@
+{
+ "materials": [
+  {
+   "name": "FT_Chocolate",
+   "color": [
+    0.4235,
+    0.2314,
+    0.1529
+   ],
+   "smoothness": 0.66,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "FT_Cream",
+   "color": [
+    0.9647,
+    0.9333,
+    0.8941
+   ],
+   "smoothness": 0.35,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "FT_Leaf",
+   "color": [
+    0.4863,
+    0.7686,
+    0.4157
+   ],
+   "smoothness": 0.35,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "FT_Marsh_Lemon",
+   "color": [
+    0.9765,
+    0.9059,
+    0.6431
+   ],
+   "smoothness": 0.35,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "FT_Marsh_Lilac",
+   "color": [
+    0.8314,
+    0.7569,
+    0.949
+   ],
+   "smoothness": 0.35,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "FT_Marsh_Mint",
+   "color": [
+    0.7137,
+    0.9059,
+    0.8235
+   ],
+   "smoothness": 0.35,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "FT_Marsh_Pink",
+   "color": [
+    0.9725,
+    0.7412,
+    0.8157
+   ],
+   "smoothness": 0.35,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "FT_Marsh_Sky",
+   "color": [
+    0.7098,
+    0.851,
+    0.9569
+   ],
+   "smoothness": 0.35,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "FT_PoolFloor",
+   "color": [
+    0.7373,
+    0.8902,
+    0.9333
+   ],
+   "smoothness": 0.4,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "FT_Seed",
+   "color": [
+    1.0,
+    0.9451,
+    0.6824
+   ],
+   "smoothness": 0.4,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "FT_Sponge",
+   "color": [
+    0.9647,
+    0.8706,
+    0.6196
+   ],
+   "smoothness": 0.25,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "FT_Strawberry",
+   "color": [
+    0.9098,
+    0.2588,
+    0.3059
+   ],
+   "smoothness": 0.5,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "FT_Water",
+   "color": [
+    0.651,
+    0.8745,
+    0.9412
+   ],
+   "smoothness": 0.94,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "FT_Whip",
+   "color": [
+    1.0,
+    0.9843,
+    0.9569
+   ],
+   "smoothness": 0.3,
+   "metallic": 0.0,
+   "emission": null
+  }
+ ]
+}

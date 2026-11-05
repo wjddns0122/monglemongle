@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1704af801ee664c3bb470b9159d58a18, type: 3}
+  m_Name: SO_Damage_Frog_Tummy
+  m_EditorClassIdentifier: Mongle.Runtime::Mongle.Data.DamageDefinition
+  id: Frog_Tummy
+  type: 1
+  phase: 1
+  displayName: "\uBC30\uC758 \uC9C4\uD759 \uC5BC\uB8E9"
+  noteText: "\uC5F0\uBABB\uAC00 \uC9C4\uD759\uC774 \uBC30\uC5D0 \uC794\uB729 \uBB3B\uC5C8\uC5B4\uC694. \uC4F1\uC4F1 \uB2E6\uC544 \uC918\uC694."
+  requiredToolId: Tool_Sponge
+  miniGameKey: Dirt
+  damagePointName: DP_Tummy
+  cameraAnchorName: CA_Tummy
+  repairAnchorName: CA_Tummy
+  lookPointName: 
+  interactionRadius: 0.08
+  hintPriority: 3
+  rewardCoins: 25
+  site: Tummy
+  boneName: Spine
+  visualName: 
+  visualDoneName: 
+  openName: 
+  shapeKey: 
+  grabPointName: 
+  normalPointName: DN_Tummy
+  stitchPrefix: 
+  limpBone: 
+  workPointName: 
+  spread: 0.05
+  blobCount: 20
+  stainColor: {r: 0.42, g: 0.3, b: 0.18, a: 1}
+  cleanColor: {r: 0.95, g: 0.88, b: 0.72, a: 1}

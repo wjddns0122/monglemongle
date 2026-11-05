@@ -1,0 +1,164 @@
+{
+ "materials": [
+  {
+   "name": "CM_Cap_Lemon",
+   "color": [
+    1.0,
+    0.902,
+    0.4863
+   ],
+   "smoothness": 0.72,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "CM_Cap_Lilac",
+   "color": [
+    0.7686,
+    0.6627,
+    0.949
+   ],
+   "smoothness": 0.72,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "CM_Cap_Mint",
+   "color": [
+    0.5529,
+    0.8784,
+    0.7529
+   ],
+   "smoothness": 0.72,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "CM_Cap_Pink",
+   "color": [
+    0.9686,
+    0.5529,
+    0.698
+   ],
+   "smoothness": 0.72,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "CM_Cap_Sky",
+   "color": [
+    0.5529,
+    0.7961,
+    0.9647
+   ],
+   "smoothness": 0.72,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "CM_Cream",
+   "color": [
+    1.0,
+    0.8667,
+    0.9098
+   ],
+   "smoothness": 0.68,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "CM_Dark",
+   "color": [
+    0.3686,
+    0.2941,
+    0.4235
+   ],
+   "smoothness": 0.5,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "CM_Glass",
+   "color": [
+    0.8118,
+    0.9137,
+    0.9725,
+    0.08
+   ],
+   "smoothness": 0.96,
+   "metallic": 0.0,
+   "emission": null,
+   "alpha": 0.08
+  },
+  {
+   "name": "CM_Metal",
+   "color": [
+    0.8275,
+    0.8431,
+    0.8784
+   ],
+   "smoothness": 0.65,
+   "metallic": 0.35,
+   "emission": null
+  },
+  {
+   "name": "CM_Mint",
+   "color": [
+    0.651,
+    0.902,
+    0.8118
+   ],
+   "smoothness": 0.7,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "CM_Orange",
+   "color": [
+    1.0,
+    0.6431,
+    0.3686
+   ],
+   "smoothness": 0.68,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "CM_Pink",
+   "color": [
+    0.9725,
+    0.7059,
+    0.7961
+   ],
+   "smoothness": 0.7,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "CM_Screen",
+   "color": [
+    0.498,
+    0.8667,
+    0.7333
+   ],
+   "smoothness": 0.8,
+   "metallic": 0.0,
+   "emission": [
+    0.096,
+    0.325,
+    0.224
+   ]
+  },
+  {
+   "name": "CM_Yellow",
+   "color": [
+    1.0,
+    0.851,
+    0.3608
+   ],
+   "smoothness": 0.7,
+   "metallic": 0.0,
+   "emission": null
+  }
+ ]
+}

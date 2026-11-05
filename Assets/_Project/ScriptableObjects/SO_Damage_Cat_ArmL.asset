@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1704af801ee664c3bb470b9159d58a18, type: 3}
+  m_Name: SO_Damage_Cat_ArmL
+  m_EditorClassIdentifier: Mongle.Runtime::Mongle.Data.DamageDefinition
+  id: Cat_ArmL
+  type: 2
+  phase: 2
+  displayName: "\uB35C\uB801\uAC70\uB9AC\uB294 \uC67C\uD314"
+  noteText: "\uC67C\uD314 \uC5B4\uAE68 \uC194\uAE30\uAC00 \uD130\uC838\uC11C \uD314\uC774 \uB35C\uB801\uAC70\uB824\uC694. \uAF3C\uAF3C\uD788 \uAFF0\uB9E4 \uC918\uC694."
+  requiredToolId: Tool_Needle
+  miniGameKey: Sew
+  damagePointName: DP_ArmL
+  cameraAnchorName: CA_ArmL
+  repairAnchorName: CA_ArmL
+  lookPointName: 
+  interactionRadius: 0.08
+  hintPriority: 1
+  rewardCoins: 40
+  site: ArmL
+  boneName: Spine
+  visualName: DMG_Tear_ArmL
+  visualDoneName: 
+  openName: 
+  shapeKey: 
+  grabPointName: 
+  normalPointName: DN_ArmL
+  stitchPrefix: SP_ArmL_
+  limpBone: Arm_L
+  workPointName: 
+  spread: 0.06
+  blobCount: 26
+  stainColor: {r: 0.36, g: 0.25, b: 0.15, a: 1}
+  cleanColor: {r: 0.95, g: 0.88, b: 0.72, a: 1}

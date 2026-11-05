@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: faf1a59ea410742c7881ab1689395fdf, type: 3}
+  m_Name: SO_Toy_Frog_001
+  m_EditorClassIdentifier: Mongle.Runtime::Mongle.Data.ToyDefinition
+  kindId: Frog_001
+  displayName: "\uAC1C\uAD74\uC774"
+  category: 0
+  personality: 4
+  favoriteTags: 17
+  shortBackstory: "\uAC1C\uAD74\uC774\uB294 \uC5F0\uC78E \uC6B0\uC0B0\uC744 \uC4F0\uACE0 \uC5F0\uBABB\uAC00\uB97C \uC0B0\uCC45\uD558\uB358 \uAC1C\uAD6C\uB9AC \uC778\uD615\uC774\uC5D0\uC694.\n\uBBF8\uB044\uB7EC\uC838\uC11C \uB208\uC774 \uB5A8\uC5B4\uC9C0\uACE0 \uC67C\uD314 \uC19C\uC774 \uBE60\uC84C\uB300\uC694."
+  prefab: {fileID: 103099648783855540, guid: 4a2731d5c9a894c1d9ce54711494670c, type: 3}
+  heightMeters: 0.45
+  damageSequence:
+  - {fileID: 11400000, guid: 23bd0fbb9039c43c9ac5d323502e3e73, type: 2}
+  - {fileID: 11400000, guid: 97edee250d3814e9f950fe0987cca185, type: 2}
+  - {fileID: 11400000, guid: cfaaa1d01ef7f4158acd5a6b4afa3327, type: 2}
+  accessories:
+  - {fileID: 11400000, guid: 38a2078da07b248c9bc9783e86d459ca, type: 2}
+  - {fileID: 11400000, guid: b00002cde4b544e76b028a7e2401b3f6, type: 2}
+  - {fileID: 11400000, guid: 4d500938d69784ea9af183bc4d917766, type: 2}
+  - {fileID: 11400000, guid: a6fbb5129721841e2a49b44d3286b3d7, type: 2}
+  - {fileID: 11400000, guid: 50a0dcf8425944e4fa080897f0459047, type: 2}
+  - {fileID: 11400000, guid: ae5d0d6c246254492bbea62267297f7c, type: 2}
+  - {fileID: 11400000, guid: 2f785835aca77451da0e6a1ba0abdf5b, type: 2}
+  - {fileID: 11400000, guid: c21b7141af6b847a286aedaf3db2c0ff, type: 2}
+  - {fileID: 11400000, guid: ab294fac6fb9944ca8a5641205432b6b, type: 2}
+  giftAccessories: []
+  stampRewardCoins: 30
+  wording: []

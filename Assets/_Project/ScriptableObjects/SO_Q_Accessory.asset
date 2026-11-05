@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 913cfe64fd56a4c82ab1d6767e64182d, type: 3}
+  m_Name: SO_Q_Accessory
+  m_EditorClassIdentifier: Mongle.Runtime::Mongle.Data.QuestDefinition
+  id: Q_Accessory
+  giverShopId: Shop_Accessory
+  title: "\uCCAB \uC545\uC138\uC11C\uB9AC"
+  request: "\uC545\uC138\uC11C\uB9AC\uB97C \uC0AC\uC11C \uCE5C\uAD6C\uC5D0\uAC8C \uC785\uD600 \uC904\uB798\uC694? \uB2E4\uB4E4 \uBA4B\uC7C1\uC774\uAC00 \uB420 \uAC70\uC608\uC694!"
+  acceptLine: "\uC0B0 \uC545\uC138\uC11C\uB9AC\uB294 \uCE5C\uAD6C\uAC00 \uC218\uC120\uC744 \uB9C8\uCE5C \uB4A4 \uAFB8\uBBF8\uAE30\uC5D0\uC11C, \uB610\uB294 \uB9C8\uC744\uC5D0\uC11C \uCE5C\uAD6C\uB97C \uD074\uB9AD\uD574\uC11C \uC785\uD600 \uC904 \uC218 \uC788\uC5B4\uC694."
+  doneLine: "\uC815\uB9D0 \uC798 \uC5B4\uC6B8\uB824\uC694!"
+  eventId: AccessoryWorn
+  eventParam: 
+  targetCount: 1
+  rewardCoins: 25
+  requires: 

@@ -1,0 +1,276 @@
+fileFormatVersion: 2
+guid: 5d6b8422c71be4aa280ef4d81a02fc3c
+ModelImporter:
+  serializedVersion: 24600
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: HS_Biscuit
+    second: {fileID: 2100000, guid: 8fd2c085b9a514051b93ae1e79aa35dc, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: HS_CandyPink
+    second: {fileID: 2100000, guid: f98d0c734b16945c8b06a06e98203be2, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: HS_Cherry
+    second: {fileID: 2100000, guid: 066ab7bf6b52c4bec9e06a45647a6639, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: HS_Choco
+    second: {fileID: 2100000, guid: 7981ccea64bcb4051baf0ca349a45bdb, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: HS_Cream
+    second: {fileID: 2100000, guid: f7bfa242d70134233a6c04997c36c8ad, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: HS_DoorMint
+    second: {fileID: 2100000, guid: dbf47dd3a55dc4a99a96500c310229e0, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: HS_DoorPink
+    second: {fileID: 2100000, guid: 351280c102db949f286e2ff97afedcd4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: HS_DoorSky
+    second: {fileID: 2100000, guid: 0575e3985ede04d69a7f7b58388eb1e6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: HS_DoorWood
+    second: {fileID: 2100000, guid: 441fab69de6a9452482e808d8e4d5763, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: HS_Frame
+    second: {fileID: 2100000, guid: 932bf913696bc4de3828c6d62aa17a8b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: HS_FrostingPink
+    second: {fileID: 2100000, guid: 45c0908806db54000a32d98f49d6c0e8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: HS_Ginger
+    second: {fileID: 2100000, guid: edbaefba1d30648a88617455da75927b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: HS_GingerDark
+    second: {fileID: 2100000, guid: af7131b287b2944d6a0211fadebff105, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: HS_GingerLight
+    second: {fileID: 2100000, guid: 4334cb34cc47947d7a248ef90d2cefd1, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: HS_Glass
+    second: {fileID: 2100000, guid: 34b8cd6d43afd43f58632a9e498ad87a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: HS_Knob
+    second: {fileID: 2100000, guid: 72628ca8bed8e4461800fa57baa992b2, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: HS_LolliPink
+    second: {fileID: 2100000, guid: b6d09443126d848bb81e8411cdbf31dd, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: HS_MacaronMint
+    second: {fileID: 2100000, guid: a1b16aa06a5304280814a7a8cc355fb0, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: HS_MacaronPink
+    second: {fileID: 2100000, guid: fb75bd79d5954472abf6373c2a4cd59a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: HS_Meringue
+    second: {fileID: 2100000, guid: 6334215ad6ee94d8e9be9820c5059f6a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: HS_Pumpkin
+    second: {fileID: 2100000, guid: e77f4579a99f04c04b6c118cd5da14ad, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: HS_RoofIcing
+    second: {fileID: 2100000, guid: ebc34f911723f43e0bc4f2f199ecd441, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: HS_Sponge
+    second: {fileID: 2100000, guid: f350e847fee074c95b7e860938076f36, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: HS_Sprinkle_Lilac
+    second: {fileID: 2100000, guid: 954afd4986f7c499d89848f562c8bc26, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: HS_Sprinkle_Mint
+    second: {fileID: 2100000, guid: 0126e6ba8ff7949139104bc808a658c4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: HS_Sprinkle_Orange
+    second: {fileID: 2100000, guid: d782d25baa9824be1ac89adbbff9b144, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: HS_Sprinkle_Pink
+    second: {fileID: 2100000, guid: 8c18b25043e6f401c934597d84a89377, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: HS_Sprinkle_Sky
+    second: {fileID: 2100000, guid: 96a369dfd5c2f4058baaffbc12fd6ce9, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: HS_Sprinkle_Yellow
+    second: {fileID: 2100000, guid: cbbfd8b71101d415088f4a5a7125841a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: HS_Stem
+    second: {fileID: 2100000, guid: 2ed83379881ab4bf19fff3ec4be95225, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: HS_Wafer
+    second: {fileID: 2100000, guid: ef17c1c9ce30044b8bc35063b4b0b3a3, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: HS_Wrapper
+    second: {fileID: 2100000, guid: 75cdb9a7734b74c078a698b6c2ae8cfe, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+    searchTexturesGlobally: 0
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    removeConstantScaleCurves: 0
+    motionNodeName: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    importAnimatedCustomProperties: 0
+    importConstraints: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    extraUserProperties: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    useSRGBMaterialColor: 1
+    sortHierarchyByName: 1
+    preBakeConvexCollisionMesh: 0
+    preBakeTriangleCollisionMesh: 0
+    importPhysicalCameras: 1
+    importVisibility: 1
+    importBlendShapes: 1
+    importCameras: 0
+    importLights: 0
+    nodeNameCollisionStrategy: 1
+    fileIdsGeneration: 2
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    keepQuads: 0
+    weldVertices: 1
+    bakeAxisConversion: 0
+    preserveHierarchy: 0
+    skinWeightsMode: 0
+    maxBonesPerVertex: 4
+    minBoneWeight: 0.001
+    optimizeBones: 1
+    generateMeshLods: 0
+    meshLodGenerationFlags: 0
+    maximumMeshLod: -1
+    importUVs: -1
+    importVertexColors: 1
+    meshOptimizationFlags: -1
+    indexFormat: 0
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVMarginMethod: 1
+    secondaryUVMinLightmapResolution: 40
+    secondaryUVMinObjectScale: 1
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+    strictVertexDataChecks: 0
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalCalculationMode: 4
+    legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0
+    blendShapeNormalImportMode: 1
+    normalSmoothingSource: 0
+    calculateBlendshapeNormalsDeltaFromImportedNormals: 0
+  referencedClips: []
+  importAnimation: 1
+  humanDescription:
+    serializedVersion: 3
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    globalScale: 1
+    rootMotionBoneName: 
+    hasTranslationDoF: 0
+    hasExtraRoot: 0
+    skeletonHasParents: 1
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  autoGenerateAvatarMappingIfUnspecified: 1
+  animationType: 2
+  humanoidOversampling: 1
+  avatarSetup: 0
+  addHumanoidExtraRootOnlyWhenUsingAvatar: 1
+  importBlendShapeDeformPercent: 1
+  remapMaterialsIfMaterialImportModeIsNone: 0
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

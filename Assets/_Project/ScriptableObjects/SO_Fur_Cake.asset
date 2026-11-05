@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 24dc0cfc01e774461871173aff31b01b, type: 3}
+  m_Name: SO_Fur_Cake
+  m_EditorClassIdentifier: Mongle.Runtime::Mongle.Data.FurnitureDefinition
+  id: Fur_Cake
+  displayName: "\uCEF5\uCF00\uC774\uD06C \uC9D1"
+  prefab: {fileID: 6654207203251991234, guid: 0e44eec7ac9464bd5a5e3142903443e0, type: 3}
+  footprint: {x: 1, y: 1}
+  tags: 64
+  capacity: 1
+  defaultCell: {x: 0, y: 0}
+  category: 0
+  price: 0
+  description: "\uCCB4\uB9AC\uAC00 \uC62C\uB77C\uAC04 \uB2EC\uCF64\uD55C \uC791\uC740 \uC9D1."
+  uiColor: {r: 1, g: 0.8, b: 0.85, a: 1}
+  starter: 0
+  stageWaters: 0200000005000000i
+  waterCooldownSeconds: 25
+  bloomReward: 15

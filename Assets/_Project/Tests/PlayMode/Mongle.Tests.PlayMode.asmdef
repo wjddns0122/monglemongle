@@ -1,0 +1,10 @@
+{
+  "name": "Mongle.Tests.PlayMode",
+  "rootNamespace": "Mongle.Tests",
+  "references": ["Mongle.Runtime","UnityEngine.TestRunner","UnityEditor.TestRunner","Unity.InputSystem"],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "overrideReferences": true,
+  "precompiledReferences": ["nunit.framework.dll"],
+  "defineConstraints": ["UNITY_INCLUDE_TESTS"]
+}

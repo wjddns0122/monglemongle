@@ -1,0 +1,7 @@
+{
+  "tool_name": "mcp__unity-mcp__Unity_RunCommand",
+  "tool_input_preview": "{\"code\":\"public class CmdRun : IRunCommand { public void Execute(ExecutionResult result){ UnityEditor.AssetDatabase.Refresh(UnityEditor.ImportAssetOptions.ForceUpdate); UnityEditor.Compilation.Compila...",
+  "error": "{\n  \"success\": false,\n  \"error\": \"COMPILATION_IN_PROGRESS: Unity is still compiling scripts after waiting. Retry after a few seconds.\",\n  \"data\": {\n    \"isCompiling\": true\n  }\n}",
+  "timestamp": "2026-10-21T12:52:36.498Z",
+  "retry_count": 1
+}

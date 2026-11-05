@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: faf1a59ea410742c7881ab1689395fdf, type: 3}
+  m_Name: SO_Toy_Robot_001
+  m_EditorClassIdentifier: Mongle.Runtime::Mongle.Data.ToyDefinition
+  kindId: Robot_001
+  displayName: "\uC090\uC090"
+  category: 1
+  personality: 3
+  favoriteTags: 68
+  shortBackstory: "\uC090\uC090\uB294 \uD638\uAE30\uC2EC \uB9CE\uC740 \uC7A5\uB09C\uAC10 \uB85C\uBD07\uC774\uC5D0\uC694.\n\uAC74\uC804\uC9C0\uAC00 \uB2E4 \uB2F3\uC544\uC11C \uB208\uBE5B\uC774 \uAE5C\uBE61\uAE5C\uBE61\uD574\uC694."
+  prefab: {fileID: 9081694956751195243, guid: 5f68b7f7a5236485abe9a0ff5ce50682, type: 3}
+  heightMeters: 0.45
+  damageSequence:
+  - {fileID: 11400000, guid: e3a8e7c43ac4643d98de8976fa67a1e1, type: 2}
+  - {fileID: 11400000, guid: db4828472ab7142f48714047b908d21d, type: 2}
+  accessories:
+  - {fileID: 11400000, guid: 38a2078da07b248c9bc9783e86d459ca, type: 2}
+  - {fileID: 11400000, guid: b00002cde4b544e76b028a7e2401b3f6, type: 2}
+  - {fileID: 11400000, guid: 4d500938d69784ea9af183bc4d917766, type: 2}
+  - {fileID: 11400000, guid: a6fbb5129721841e2a49b44d3286b3d7, type: 2}
+  - {fileID: 11400000, guid: 50a0dcf8425944e4fa080897f0459047, type: 2}
+  - {fileID: 11400000, guid: ae5d0d6c246254492bbea62267297f7c, type: 2}
+  - {fileID: 11400000, guid: 2f785835aca77451da0e6a1ba0abdf5b, type: 2}
+  - {fileID: 11400000, guid: c21b7141af6b847a286aedaf3db2c0ff, type: 2}
+  - {fileID: 11400000, guid: ab294fac6fb9944ca8a5641205432b6b, type: 2}
+  giftAccessories: []
+  stampRewardCoins: 30
+  wording: []

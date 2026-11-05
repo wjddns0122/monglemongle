@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 24dc0cfc01e774461871173aff31b01b, type: 3}
+  m_Name: SO_Plant_Sapling
+  m_EditorClassIdentifier: Mongle.Runtime::Mongle.Data.FurnitureDefinition
+  id: Plant_Sapling
+  displayName: "\uBC9A\uB098\uBB34 \uBB18\uBAA9"
+  prefab: {fileID: 5480629762092952660, guid: 76cd6d4791c8c486a9bf6eb3d6a512d0, type: 3}
+  footprint: {x: 1, y: 1}
+  tags: 16
+  capacity: 1
+  defaultCell: {x: 0, y: 0}
+  category: 1
+  price: 70
+  description: "\uC815\uC131\uAECF \uD0A4\uC6B0\uBA74 \uBC9A\uAF43\uC774 \uD65C\uC9DD \uD53C\uC5B4\uC694."
+  uiColor: {r: 1, g: 0.78, b: 0.84, a: 1}
+  starter: 0
+  stageWaters: 0200000005000000i
+  waterCooldownSeconds: 25
+  bloomReward: 25

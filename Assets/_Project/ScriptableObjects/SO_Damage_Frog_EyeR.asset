@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1704af801ee664c3bb470b9159d58a18, type: 3}
+  m_Name: SO_Damage_Frog_EyeR
+  m_EditorClassIdentifier: Mongle.Runtime::Mongle.Data.DamageDefinition
+  id: Frog_EyeR
+  type: 4
+  phase: 2
+  displayName: "\uB5A8\uC5B4\uC9C4 \uB208"
+  noteText: "\uC5F0\uBABB\uAC00\uC5D0\uC11C \uBBF8\uB044\uB7EC\uC838 \uC624\uB978\uCABD \uB208\uC774 \uB300\uB871\uB300\uB871 \uB9E4\uB2EC\uB838\uC5B4\uC694! \uBC14\uB298\uB85C \uB2E4\uC2DC \uAFF0\uB9E4 \uC918\uC694."
+  requiredToolId: Tool_Needle
+  miniGameKey: Sew
+  damagePointName: DP_EyeR
+  cameraAnchorName: CA_EyeR
+  repairAnchorName: CA_EyeR
+  lookPointName: 
+  interactionRadius: 0.08
+  hintPriority: 1
+  rewardCoins: 40
+  site: EyeR
+  boneName: Head
+  visualName: DMG_EyeLoose_EyeR
+  visualDoneName: 
+  openName: 
+  shapeKey: EyeGone_EyeR
+  grabPointName: 
+  normalPointName: DN_EyeR
+  stitchPrefix: SP_EyeR_
+  limpBone: 
+  workPointName: 
+  spread: 0.06
+  blobCount: 26
+  stainColor: {r: 0.36, g: 0.25, b: 0.15, a: 1}
+  cleanColor: {r: 0.95, g: 0.88, b: 0.72, a: 1}

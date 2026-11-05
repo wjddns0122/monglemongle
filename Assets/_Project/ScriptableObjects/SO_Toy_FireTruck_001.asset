@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: faf1a59ea410742c7881ab1689395fdf, type: 3}
+  m_Name: SO_Toy_FireTruck_001
+  m_EditorClassIdentifier: Mongle.Runtime::Mongle.Data.ToyDefinition
+  kindId: FireTruck_001
+  displayName: "\uC6A9\uAC10\uC774"
+  category: 1
+  personality: 4
+  favoriteTags: 65
+  shortBackstory: "\uC6A9\uAC10\uC774\uB294 \uB9C8\uC744\uC744 \uC9C0\uD0A4\uB358 \uC7A5\uB09C\uAC10 \uC18C\uBC29\uCC28\uC608\uC694.\n\uBB3C\uD0F1\uD06C\uAC00 \uD145 \uBE44\uACE0 \uC0AC\uC774\uB80C\uC5D0 \uAC00\uC2DC\uAC00 \uAC78\uB838\uB300\uC694."
+  prefab: {fileID: 6867304791163382821, guid: 758da8bed2f3c4aa5a12afdabd56f5f8, type: 3}
+  heightMeters: 0.45
+  damageSequence:
+  - {fileID: 11400000, guid: 86f492b23d115424196799cdec92b1ef, type: 2}
+  - {fileID: 11400000, guid: 9cfa4656970cb4119b036066ef2c3fab, type: 2}
+  - {fileID: 11400000, guid: 7473b319415164431980c164d5ec3d7b, type: 2}
+  accessories:
+  - {fileID: 11400000, guid: 38a2078da07b248c9bc9783e86d459ca, type: 2}
+  - {fileID: 11400000, guid: b00002cde4b544e76b028a7e2401b3f6, type: 2}
+  - {fileID: 11400000, guid: 4d500938d69784ea9af183bc4d917766, type: 2}
+  - {fileID: 11400000, guid: a6fbb5129721841e2a49b44d3286b3d7, type: 2}
+  - {fileID: 11400000, guid: 50a0dcf8425944e4fa080897f0459047, type: 2}
+  - {fileID: 11400000, guid: ae5d0d6c246254492bbea62267297f7c, type: 2}
+  - {fileID: 11400000, guid: 2f785835aca77451da0e6a1ba0abdf5b, type: 2}
+  - {fileID: 11400000, guid: c21b7141af6b847a286aedaf3db2c0ff, type: 2}
+  - {fileID: 11400000, guid: ab294fac6fb9944ca8a5641205432b6b, type: 2}
+  giftAccessories: []
+  stampRewardCoins: 30
+  wording: []

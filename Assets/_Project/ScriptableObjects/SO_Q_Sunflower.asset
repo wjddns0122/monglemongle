@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 913cfe64fd56a4c82ab1d6767e64182d, type: 3}
+  m_Name: SO_Q_Sunflower
+  m_EditorClassIdentifier: Mongle.Runtime::Mongle.Data.QuestDefinition
+  id: Q_Sunflower
+  giverShopId: Shop_Plant
+  title: "\uD574\uBC14\uB77C\uAE30 \uD65C\uC9DD"
+  request: "\uD574\uBC14\uB77C\uAE30\uB97C \uD65C\uC9DD \uD53C\uC6CC \uC904\uB798\uC694? \uC544\uC8FC \uD06C\uAC8C \uC790\uB77C\uC694!"
+  acceptLine: "\uD574\uBC14\uB77C\uAE30\uB97C \uC0AC\uC11C \uB193\uACE0 \uBB3C\uC744 \uB2E4\uC12F \uBC88 \uC8FC\uBA74 \uD65C\uC9DD \uD3B4\uC694."
+  doneLine: "\uC640, \uD574\uBC14\uB77C\uAE30\uAC00 \uD65C\uC9DD \uD3C8\uB124\uC694!"
+  eventId: PlantBloomed
+  eventParam: Plant_Sunflower
+  targetCount: 1
+  rewardCoins: 40
+  requires: Q_Water

@@ -1,0 +1,10 @@
+{
+  "name": "Mongle.Runtime",
+  "rootNamespace": "Mongle",
+  "references": ["Unity.InputSystem","Unity.AI.Navigation","Unity.Timeline"],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "autoReferenced": true
+}

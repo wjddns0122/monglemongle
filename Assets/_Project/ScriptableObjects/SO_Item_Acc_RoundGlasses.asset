@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 24dc0cfc01e774461871173aff31b01b, type: 3}
+  m_Name: SO_Item_Acc_RoundGlasses
+  m_EditorClassIdentifier: Mongle.Runtime::Mongle.Data.FurnitureDefinition
+  id: Acc_RoundGlasses
+  displayName: "\uB3D9\uADF8\uB780 \uC548\uACBD"
+  prefab: {fileID: 919132149155446097, guid: 9faedd31b38d1468f9add59fc47ee4a2, type: 3}
+  footprint: {x: 1, y: 1}
+  tags: 0
+  capacity: 1
+  defaultCell: {x: 0, y: 0}
+  category: 2
+  price: 25
+  description: "\uB3D9\uADF8\uB780 \uC548\uACBD. \uC4F0\uBA74 \uB611\uB611\uD574 \uBCF4\uC5EC\uC694!"
+  uiColor: {r: 1, g: 0.92, b: 0.65, a: 1}
+  starter: 0
+  stageWaters: 0200000005000000i
+  waterCooldownSeconds: 25
+  bloomReward: 15

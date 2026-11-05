@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1704af801ee664c3bb470b9159d58a18, type: 3}
+  m_Name: SO_Damage_Dirt
+  m_EditorClassIdentifier: Mongle.Runtime::Mongle.Data.DamageDefinition
+  id: Dirt
+  type: 1
+  phase: 1
+  displayName: "\uBC30\uC758 \uC5BC\uB8E9"
+  noteText: "\uBC30\uC5D0 \uC5BC\uB8E9\uC774 \uC794\uB729 \uBB3B\uC5B4 \uC788\uC5B4\uC694. \uB2E6\uC544\uC8FC\uBA74 \uC88B\uC544\uD560 \uAC70\uC608\uC694."
+  requiredToolId: Tool_Sponge
+  miniGameKey: Dirt
+  damagePointName: DP_BELLY
+  cameraAnchorName: CA_BELLY
+  repairAnchorName: CA_BELLY
+  lookPointName: 
+  interactionRadius: 0.08
+  hintPriority: 2
+  rewardCoins: 25
+  site: 
+  boneName: 
+  visualName: 
+  visualDoneName: 
+  openName: 
+  shapeKey: 
+  grabPointName: 
+  normalPointName: 
+  stitchPrefix: 
+  limpBone: 
+  workPointName: 
+  spread: 0.06
+  blobCount: 26
+  stainColor: {r: 0.36, g: 0.25, b: 0.15, a: 1}
+  cleanColor: {r: 0.95, g: 0.88, b: 0.72, a: 1}

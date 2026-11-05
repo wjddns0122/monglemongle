@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1704af801ee664c3bb470b9159d58a18, type: 3}
+  m_Name: SO_Damage_Thorn
+  m_EditorClassIdentifier: Mongle.Runtime::Mongle.Data.DamageDefinition
+  id: Thorn
+  type: 0
+  phase: 0
+  displayName: "\uADC0\uC758 \uAC00\uC2DC"
+  noteText: "\uC67C\uCABD \uADC0\uC5D0 \uAC00\uC2DC\uAC00 \uBC15\uD600 \uC788\uC5B4\uC694! \uB9CE\uC774 \uB530\uB054\uD588\uACA0\uC5B4\uC694."
+  requiredToolId: Tool_Tweezer
+  miniGameKey: Thorn
+  damagePointName: DP_EAR_L
+  cameraAnchorName: CA_EAR_L
+  repairAnchorName: CA_EAR_L
+  lookPointName: GP_THORN
+  interactionRadius: 0.085
+  hintPriority: 1
+  rewardCoins: 25
+  site: 
+  boneName: 
+  visualName: 
+  visualDoneName: 
+  openName: 
+  shapeKey: 
+  grabPointName: 
+  normalPointName: 
+  stitchPrefix: 
+  limpBone: 
+  workPointName: 
+  spread: 0.06
+  blobCount: 26
+  stainColor: {r: 0.36, g: 0.25, b: 0.15, a: 1}
+  cleanColor: {r: 0.95, g: 0.88, b: 0.72, a: 1}

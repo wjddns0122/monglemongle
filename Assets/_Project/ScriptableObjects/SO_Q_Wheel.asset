@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 913cfe64fd56a4c82ab1d6767e64182d, type: 3}
+  m_Name: SO_Q_Wheel
+  m_EditorClassIdentifier: Mongle.Runtime::Mongle.Data.QuestDefinition
+  id: Q_Wheel
+  giverShopId: Shop_Furniture
+  title: "\uAD00\uB78C\uCC28 \uBAA8\uD615 \uB180\uC774"
+  request: "\uD558\uD2B8 \uAD00\uB78C\uCC28 \uBAA8\uD615 \uC606\uC5D0\uC11C \uBABD\uC774\uAC00 \uB450 \uBC88 \uB180\uAC8C \uD574 \uC918\uC694!"
+  acceptLine: "\uAD00\uB78C\uCC28 \uBAA8\uD615\uC744 \uB193\uACE0 \uAE30\uB2E4\uB9AC\uBA74 \uBABD\uC774\uAC00 \uC640\uC11C \uB180\uC544\uC694. \uBAA8\uD615\uC744 \uD074\uB9AD\uD558\uBA74 \uB354 \uBE68\uB9AC \uB3CC\uC544\uC694."
+  doneLine: "\uBABD\uC774\uAC00 \uC2E0\uB098 \uBCF4\uC5EC\uC694!"
+  eventId: MongiPlayed
+  eventParam: Fur_Wheel
+  targetCount: 2
+  rewardCoins: 50
+  requires: Q_Chair

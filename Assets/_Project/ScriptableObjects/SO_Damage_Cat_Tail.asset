@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1704af801ee664c3bb470b9159d58a18, type: 3}
+  m_Name: SO_Damage_Cat_Tail
+  m_EditorClassIdentifier: Mongle.Runtime::Mongle.Data.DamageDefinition
+  id: Cat_Tail
+  type: 0
+  phase: 0
+  displayName: "\uAF2C\uB9AC\uC758 \uAC00\uC2DC"
+  noteText: "\uAF2C\uB9AC \uB05D\uC5D0 \uAC00\uC2DC\uAC00 \uCF55 \uBC15\uD600 \uC788\uC5B4\uC694! \uD540\uC14B\uC73C\uB85C \uC0B4\uC0B4 \uBE7C \uC918\uC694."
+  requiredToolId: Tool_Tweezer
+  miniGameKey: Thorn
+  damagePointName: DP_Tail
+  cameraAnchorName: CA_Tail
+  repairAnchorName: CA_Tail
+  lookPointName: 
+  interactionRadius: 0.08
+  hintPriority: 2
+  rewardCoins: 25
+  site: Tail
+  boneName: Tail
+  visualName: DMG_Thorn_Tail
+  visualDoneName: 
+  openName: 
+  shapeKey: 
+  grabPointName: GP_THORN_Tail
+  normalPointName: DN_Tail
+  stitchPrefix: 
+  limpBone: 
+  workPointName: 
+  spread: 0.06
+  blobCount: 26
+  stainColor: {r: 0.36, g: 0.25, b: 0.15, a: 1}
+  cleanColor: {r: 0.95, g: 0.88, b: 0.72, a: 1}

@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 913cfe64fd56a4c82ab1d6767e64182d, type: 3}
+  m_Name: SO_Q_Chair
+  m_EditorClassIdentifier: Mongle.Runtime::Mongle.Data.QuestDefinition
+  id: Q_Chair
+  giverShopId: Shop_Furniture
+  title: "\uBABD\uC774\uC758 \uC758\uC790"
+  request: "\uBABD\uC774\uAC00 \uC549\uC744 \uD3EC\uADFC\uD55C \uC758\uC790\uB97C \uB193\uC544 \uC904\uB798\uC694? \uC549\uB294 \uAC78 \uBCF4\uACE0 \uC2F6\uC5B4\uC694!"
+  acceptLine: "\uC758\uC790\uB97C \uB9C8\uC744\uC5D0 \uB193\uC73C\uBA74 \uBABD\uC774\uAC00 \uB2E4\uAC00\uC640\uC11C \uC549\uC544 \uBCFC \uAC70\uC608\uC694."
+  doneLine: "\uBABD\uC774\uAC00 \uD3B8\uC548\uD574 \uBCF4\uC5EC\uC694!"
+  eventId: MongiSat
+  eventParam: Fur_Armchair
+  targetCount: 1
+  rewardCoins: 30
+  requires: 

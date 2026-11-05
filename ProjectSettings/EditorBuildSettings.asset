@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1045 &1
+EditorBuildSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Scenes:
+  - enabled: 1
+    path: Assets/_Project/Scenes/Bootstrap.unity
+    guid: 82ec5f52b3f6f43de958b27792ae5037
+  - enabled: 1
+    path: Assets/_Project/Scenes/RepairShop.unity
+    guid: c5c27b55ecb7f473f8f5f4ada53e6c66
+  - enabled: 1
+    path: Assets/_Project/Scenes/PhotoStudio.unity
+    guid: 9fa3dcd6246c047268242c1088883eb4
+  - enabled: 1
+    path: Assets/_Project/Scenes/Village.unity
+    guid: d256e692f45be490791751b0ac0c389c
+  m_configObjects:
+    com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

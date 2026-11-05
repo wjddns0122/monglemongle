@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: faf1a59ea410742c7881ab1689395fdf, type: 3}
+  m_Name: SO_Toy_TeddyBear_001
+  m_EditorClassIdentifier: Mongle.Runtime::Mongle.Data.ToyDefinition
+  kindId: TeddyBear_001
+  displayName: "\uBABD\uC774"
+  category: 0
+  personality: 0
+  favoriteTags: 17
+  shortBackstory: "\uBABD\uC774\uB294 \uC624\uB7AB\uB3D9\uC548 \uC0AC\uB791\uBC1B\uC544 \uC870\uAE08 \uC9C0\uCE5C \uACF0\uC778\uD615\uC774\uC5D0\uC694.\n\uB2E4\uC2DC \uD3EC\uADFC\uD574\uC9C8 \uC218 \uC788\uB3C4\uB85D \uB3C4\uC640\uC8FC\uC138\uC694."
+  prefab: {fileID: 487762714806063637, guid: a33299d9534a74b01b6ec777205523b9, type: 3}
+  heightMeters: 0.45
+  damageSequence:
+  - {fileID: 11400000, guid: e4cd5f06e4cc94d519bf979f9f43a7a4, type: 2}
+  - {fileID: 11400000, guid: addc44b1f41764126b7c50800914e3f7, type: 2}
+  - {fileID: 11400000, guid: e024899e93165484985924947831786d, type: 2}
+  - {fileID: 11400000, guid: 42188d74ba2d147e489721ccfea8c909, type: 2}
+  accessories:
+  - {fileID: 11400000, guid: 38a2078da07b248c9bc9783e86d459ca, type: 2}
+  - {fileID: 11400000, guid: b00002cde4b544e76b028a7e2401b3f6, type: 2}
+  - {fileID: 11400000, guid: 4d500938d69784ea9af183bc4d917766, type: 2}
+  - {fileID: 11400000, guid: a6fbb5129721841e2a49b44d3286b3d7, type: 2}
+  - {fileID: 11400000, guid: 50a0dcf8425944e4fa080897f0459047, type: 2}
+  - {fileID: 11400000, guid: ae5d0d6c246254492bbea62267297f7c, type: 2}
+  - {fileID: 11400000, guid: 2f785835aca77451da0e6a1ba0abdf5b, type: 2}
+  - {fileID: 11400000, guid: c21b7141af6b847a286aedaf3db2c0ff, type: 2}
+  - {fileID: 11400000, guid: ab294fac6fb9944ca8a5641205432b6b, type: 2}
+  giftAccessories:
+  - {fileID: 11400000, guid: 38a2078da07b248c9bc9783e86d459ca, type: 2}
+  - {fileID: 11400000, guid: b00002cde4b544e76b028a7e2401b3f6, type: 2}
+  - {fileID: 11400000, guid: 4d500938d69784ea9af183bc4d917766, type: 2}
+  stampRewardCoins: 30
+  wording: []

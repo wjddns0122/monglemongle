@@ -1,0 +1,7 @@
+{
+  "name": "Mongle.Editor",
+  "rootNamespace": "Mongle.EditorTools",
+  "references": ["Mongle.Runtime","Unity.InputSystem","Unity.AI.Navigation","Unity.AI.Navigation.Editor","Unity.RenderPipelines.Core.Runtime","Unity.RenderPipelines.Universal.Runtime"],
+  "includePlatforms": ["Editor"],
+  "excludePlatforms": []
+}

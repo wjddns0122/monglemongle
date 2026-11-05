@@ -1,0 +1,188 @@
+{
+ "materials": [
+  {
+   "name": "HB_GoreA",
+   "color": [
+    1.0,
+    0.7977,
+    0.8911
+   ],
+   "smoothness": 0.5,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "HB_GoreB",
+   "color": [
+    1.0,
+    0.9731,
+    0.9453
+   ],
+   "smoothness": 0.5,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "HB_Accent",
+   "color": [
+    0.8434,
+    0.7736,
+    0.9912
+   ],
+   "smoothness": 0.5,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "HB_Tape",
+   "color": [
+    1.0,
+    0.9867,
+    0.9686
+   ],
+   "smoothness": 0.5,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "HB_Trim",
+   "color": [
+    1.0,
+    0.8962,
+    0.68
+   ],
+   "smoothness": 0.7,
+   "metallic": 0.8,
+   "emission": null
+  },
+  {
+   "name": "HB_Rope",
+   "color": [
+    0.964,
+    0.9261,
+    0.8543
+   ],
+   "smoothness": 0.3,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "HB_Basket",
+   "color": [
+    0.9063,
+    0.7736,
+    0.6343
+   ],
+   "smoothness": 0.3,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "HB_BasketLight",
+   "color": [
+    0.9686,
+    0.8808,
+    0.7484
+   ],
+   "smoothness": 0.3,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "HB_BasketFloor",
+   "color": [
+    0.7674,
+    0.65,
+    0.5469
+   ],
+   "smoothness": 0.2,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "HB_Rim",
+   "color": [
+    0.8095,
+    0.722,
+    0.9777
+   ],
+   "smoothness": 0.55,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "HB_Star",
+   "color": [
+    1.0,
+    0.9453,
+    0.7354
+   ],
+   "smoothness": 0.65,
+   "metallic": 0.0,
+   "emission": [
+    0.42,
+    0.37,
+    0.21
+   ]
+  },
+  {
+   "name": "HB_Flame",
+   "color": [
+    1.0,
+    0.7858,
+    0.7014
+   ],
+   "smoothness": 0.5,
+   "metallic": 0.0,
+   "emission": [
+    2.24,
+    1.299,
+    1.008
+   ]
+  },
+  {
+   "name": "HB_Sand",
+   "color": [
+    0.9822,
+    0.9547,
+    0.8962
+   ],
+   "smoothness": 0.2,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "HB_Flag0",
+   "color": [
+    1.0,
+    0.8095,
+    0.8962
+   ],
+   "smoothness": 0.4,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "HB_Flag1",
+   "color": [
+    0.7484,
+    0.9453,
+    0.8962
+   ],
+   "smoothness": 0.4,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "HB_Flag2",
+   "color": [
+    1.0,
+    0.9547,
+    0.7674
+   ],
+   "smoothness": 0.4,
+   "metallic": 0.0,
+   "emission": null
+  }
+ ]
+}

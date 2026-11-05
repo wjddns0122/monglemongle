@@ -1,0 +1,301 @@
+fileFormatVersion: 2
+guid: 76a47916ff4f342aab44aa20a9195573
+ModelImporter:
+  serializedVersion: 24600
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: C_Bulb
+    second: {fileID: 2100000, guid: 637ae9de07797413ab3cd03381dca8c7, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: C_Cream
+    second: {fileID: 2100000, guid: 53fb40758c83942dcbc0b22080fb5c6b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: C_Lav
+    second: {fileID: 2100000, guid: 57b0aaf85a0f74cd8ac6f9dcc4e8c03b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: C_Mint
+    second: {fileID: 2100000, guid: 1fdf4af4240b14f30a84169288972552, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: C_Mirror
+    second: {fileID: 2100000, guid: 5e2f347bef8544ef793b5e06b73a2c39, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: C_Pink
+    second: {fileID: 2100000, guid: b3615031d13ba44ec8f3c7f8fdc9e61d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: C_PinkDeep
+    second: {fileID: 2100000, guid: faf45c2d660d64e32a929b325334ab9e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: C_PinkLight
+    second: {fileID: 2100000, guid: ba01014cf8bae4a35b7c3f7e75082bad, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: C_Sky
+    second: {fileID: 2100000, guid: fd507932cd6014cc5a1f13db6df1dfb8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: C_StarGlow
+    second: {fileID: 2100000, guid: e47aa9e2ccbf64b16bfef02a6598c115, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: C_Window
+    second: {fileID: 2100000, guid: bf860a2fabbd84e2ea3d2ddecff9e4f0, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: H_Blanket
+    second: {fileID: 2100000, guid: 5e2f05bd1790a4f3b92ae784fe5ece6c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: H_BlanketLav
+    second: {fileID: 2100000, guid: 80e5f0e1401c14ff5abefb7feeab35fd, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: H_BlanketSky
+    second: {fileID: 2100000, guid: 6c6436b06f0d14582a7ce7c862dc4cc8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: H_Blush
+    second: {fileID: 2100000, guid: 4a35fd3aef9a94a258838871bca835a4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: H_Bridle
+    second: {fileID: 2100000, guid: 86a305334f61a44bc82d7e80572d45d1, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: H_BridleLav
+    second: {fileID: 2100000, guid: c2e08775e030d4663b12582c373a693c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: H_BridleSky
+    second: {fileID: 2100000, guid: 9cee9614e7df34705ad9ac494c0046b4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: H_EarIn
+    second: {fileID: 2100000, guid: 52d0d63d0544d44a1ad3970fe0deebba, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: H_Eye
+    second: {fileID: 2100000, guid: a36724e97c32b41a29c158a28870057e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: H_EyeHi
+    second: {fileID: 2100000, guid: 597fbe0fc2d864a32a03db720689e937, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: H_FlowerP
+    second: {fileID: 2100000, guid: 7f2622640fe2440b29f1c71f7a9a7fd7, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: H_FlowerW
+    second: {fileID: 2100000, guid: 052c661b3a2bd4d0196b4032c23aac5f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: H_Gold
+    second: {fileID: 2100000, guid: a3795e1f8b48c475c841585fe133db8b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: H_Horn
+    second: {fileID: 2100000, guid: da207f1624be44d98a722e1cee759400, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: H_Lash
+    second: {fileID: 2100000, guid: 029b0179037b4452088ada3b0bc61961, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: H_Leaf
+    second: {fileID: 2100000, guid: a3366104d677348a9ab8db6e8b65657e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: H_ManeLav
+    second: {fileID: 2100000, guid: 0c6117883d13a454fb2de34822d5e0b6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: H_ManeMint
+    second: {fileID: 2100000, guid: 6bcbc49dba84e45a794eb4a7156b90bc, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: H_ManePeach
+    second: {fileID: 2100000, guid: 6bbd8f84d144045dcaf09a6026bcb9cc, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: H_ManePink
+    second: {fileID: 2100000, guid: b9bb7b54aa3364a58a17e1155e67fceb, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: H_ManeSky
+    second: {fileID: 2100000, guid: b722b89926b684e228a78a7c35f15a1c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: H_Porcelain
+    second: {fileID: 2100000, guid: 130fc063dce0247eb931b9b5f1632b58, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: H_Pupil
+    second: {fileID: 2100000, guid: 0b816fd12a39549249ddfc924deffabc, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: H_Saddle
+    second: {fileID: 2100000, guid: 0d783d25d630d42cb89078fec312d609, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: H_SaddleMint
+    second: {fileID: 2100000, guid: 0e527736e9dc64d0e9c378ca076f7565, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: H_SaddlePink
+    second: {fileID: 2100000, guid: 8d5b748d36297452b9ab86e8bb976c85, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+    searchTexturesGlobally: 0
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    removeConstantScaleCurves: 0
+    motionNodeName: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    importAnimatedCustomProperties: 0
+    importConstraints: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    extraUserProperties: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    useSRGBMaterialColor: 1
+    sortHierarchyByName: 1
+    preBakeConvexCollisionMesh: 0
+    preBakeTriangleCollisionMesh: 0
+    importPhysicalCameras: 1
+    importVisibility: 1
+    importBlendShapes: 1
+    importCameras: 0
+    importLights: 0
+    nodeNameCollisionStrategy: 1
+    fileIdsGeneration: 2
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    keepQuads: 0
+    weldVertices: 1
+    bakeAxisConversion: 0
+    preserveHierarchy: 0
+    skinWeightsMode: 0
+    maxBonesPerVertex: 4
+    minBoneWeight: 0.001
+    optimizeBones: 1
+    generateMeshLods: 0
+    meshLodGenerationFlags: 0
+    maximumMeshLod: -1
+    importUVs: -1
+    importVertexColors: 1
+    meshOptimizationFlags: -1
+    indexFormat: 0
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVMarginMethod: 1
+    secondaryUVMinLightmapResolution: 40
+    secondaryUVMinObjectScale: 1
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+    strictVertexDataChecks: 0
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalCalculationMode: 4
+    legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0
+    blendShapeNormalImportMode: 1
+    normalSmoothingSource: 0
+    calculateBlendshapeNormalsDeltaFromImportedNormals: 0
+  referencedClips: []
+  importAnimation: 1
+  humanDescription:
+    serializedVersion: 3
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    globalScale: 1
+    rootMotionBoneName: 
+    hasTranslationDoF: 0
+    hasExtraRoot: 0
+    skeletonHasParents: 1
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  autoGenerateAvatarMappingIfUnspecified: 1
+  animationType: 2
+  humanoidOversampling: 1
+  avatarSetup: 0
+  addHumanoidExtraRootOnlyWhenUsingAvatar: 1
+  importBlendShapeDeformPercent: 1
+  remapMaterialsIfMaterialImportModeIsNone: 0
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

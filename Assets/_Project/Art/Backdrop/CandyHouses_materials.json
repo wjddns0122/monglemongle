@@ -1,0 +1,360 @@
+{
+ "materials": [
+  {
+   "name": "HS_Biscuit",
+   "color": [
+    0.9412,
+    0.8314,
+    0.6275
+   ],
+   "smoothness": 0.3,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "HS_CandyPink",
+   "color": [
+    0.949,
+    0.5294,
+    0.6941
+   ],
+   "smoothness": 0.42,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "HS_Cherry",
+   "color": [
+    0.898,
+    0.2941,
+    0.4118
+   ],
+   "smoothness": 0.5,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "HS_Choco",
+   "color": [
+    0.4824,
+    0.2824,
+    0.1922
+   ],
+   "smoothness": 0.38,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "HS_Cream",
+   "color": [
+    1.0,
+    0.9412,
+    0.8549
+   ],
+   "smoothness": 0.38,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "HS_DoorMint",
+   "color": [
+    0.5608,
+    0.8275,
+    0.7373
+   ],
+   "smoothness": 0.36,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "HS_DoorPink",
+   "color": [
+    0.9333,
+    0.6157,
+    0.7137
+   ],
+   "smoothness": 0.36,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "HS_DoorSky",
+   "color": [
+    0.5843,
+    0.7647,
+    0.9255
+   ],
+   "smoothness": 0.36,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "HS_DoorWood",
+   "color": [
+    0.5608,
+    0.3333,
+    0.2118
+   ],
+   "smoothness": 0.34,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "HS_Frame",
+   "color": [
+    1.0,
+    0.9804,
+    0.9529
+   ],
+   "smoothness": 0.4,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "HS_FrostingPink",
+   "color": [
+    0.9569,
+    0.6471,
+    0.7686
+   ],
+   "smoothness": 0.4,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "HS_Ginger",
+   "color": [
+    0.8314,
+    0.5725,
+    0.3412
+   ],
+   "smoothness": 0.3,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "HS_GingerDark",
+   "color": [
+    0.6902,
+    0.4235,
+    0.2314
+   ],
+   "smoothness": 0.3,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "HS_GingerLight",
+   "color": [
+    0.8902,
+    0.6863,
+    0.4549
+   ],
+   "smoothness": 0.3,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "HS_Glass",
+   "color": [
+    1.0,
+    0.8824,
+    0.651
+   ],
+   "smoothness": 0.55,
+   "metallic": 0.0,
+   "emission": [
+    0.448,
+    0.337,
+    0.171
+   ]
+  },
+  {
+   "name": "HS_Knob",
+   "color": [
+    0.949,
+    0.7529,
+    0.3412
+   ],
+   "smoothness": 0.5,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "HS_LolliPink",
+   "color": [
+    0.9451,
+    0.5373,
+    0.7059
+   ],
+   "smoothness": 0.42,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "HS_MacaronMint",
+   "color": [
+    0.6353,
+    0.8667,
+    0.7725
+   ],
+   "smoothness": 0.34,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "HS_MacaronPink",
+   "color": [
+    0.9608,
+    0.6706,
+    0.7569
+   ],
+   "smoothness": 0.34,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "HS_Meringue",
+   "color": [
+    0.8235,
+    0.7216,
+    0.949
+   ],
+   "smoothness": 0.38,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "HS_Pumpkin",
+   "color": [
+    0.9529,
+    0.6157,
+    0.3216
+   ],
+   "smoothness": 0.34,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "HS_RoofIcing",
+   "color": [
+    0.9922,
+    0.9765,
+    0.9569
+   ],
+   "smoothness": 0.38,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "HS_Sponge",
+   "color": [
+    0.9098,
+    0.7098,
+    0.4863
+   ],
+   "smoothness": 0.3,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "HS_Sprinkle_Lilac",
+   "color": [
+    0.7137,
+    0.5882,
+    0.9176
+   ],
+   "smoothness": 0.45,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "HS_Sprinkle_Mint",
+   "color": [
+    0.4745,
+    0.8275,
+    0.698
+   ],
+   "smoothness": 0.45,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "HS_Sprinkle_Orange",
+   "color": [
+    0.9608,
+    0.6118,
+    0.3569
+   ],
+   "smoothness": 0.45,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "HS_Sprinkle_Pink",
+   "color": [
+    0.9608,
+    0.5216,
+    0.6824
+   ],
+   "smoothness": 0.45,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "HS_Sprinkle_Sky",
+   "color": [
+    0.5098,
+    0.7451,
+    0.9412
+   ],
+   "smoothness": 0.45,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "HS_Sprinkle_Yellow",
+   "color": [
+    0.9686,
+    0.8314,
+    0.3725
+   ],
+   "smoothness": 0.45,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "HS_Stem",
+   "color": [
+    0.4314,
+    0.5961,
+    0.2941
+   ],
+   "smoothness": 0.34,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "HS_Wafer",
+   "color": [
+    0.9529,
+    0.6902,
+    0.7608
+   ],
+   "smoothness": 0.32,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "HS_Wrapper",
+   "color": [
+    0.651,
+    0.851,
+    0.902
+   ],
+   "smoothness": 0.34,
+   "metallic": 0.0,
+   "emission": null
+  }
+ ]
+}

@@ -1,0 +1,427 @@
+{
+ "materials": [
+  {
+   "name": "C_Bulb",
+   "color": [
+    1.0,
+    0.9357,
+    0.7977
+   ],
+   "smoothness": 0.6,
+   "metallic": 0.0,
+   "emission": [
+    2.52,
+    2.167,
+    1.512
+   ]
+  },
+  {
+   "name": "C_Cream",
+   "color": [
+    1.0,
+    0.9686,
+    0.9547
+   ],
+   "smoothness": 0.75,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "C_Lav",
+   "color": [
+    0.886,
+    0.8323,
+    0.9912
+   ],
+   "smoothness": 0.75,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "C_Mint",
+   "color": [
+    0.7736,
+    0.95,
+    0.9163
+   ],
+   "smoothness": 0.75,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "C_Mirror",
+   "color": [
+    1.0,
+    0.9357,
+    0.9777
+   ],
+   "smoothness": 0.94,
+   "metallic": 1.0,
+   "emission": null
+  },
+  {
+   "name": "C_Pink",
+   "color": [
+    1.0,
+    0.821,
+    0.9063
+   ],
+   "smoothness": 0.75,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "C_PinkDeep",
+   "color": [
+    0.9822,
+    0.7152,
+    0.8434
+   ],
+   "smoothness": 0.75,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "C_PinkLight",
+   "color": [
+    1.0,
+    0.9163,
+    0.9453
+   ],
+   "smoothness": 0.75,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "C_Sky",
+   "color": [
+    0.7977,
+    0.8911,
+    1.0
+   ],
+   "smoothness": 0.75,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "C_StarGlow",
+   "color": [
+    1.0,
+    0.9453,
+    0.7674
+   ],
+   "smoothness": 0.6,
+   "metallic": 0.0,
+   "emission": [
+    1.96,
+    1.725,
+    1.078
+   ]
+  },
+  {
+   "name": "C_Window",
+   "color": [
+    1.0,
+    0.886,
+    0.7354
+   ],
+   "smoothness": 0.6,
+   "metallic": 0.0,
+   "emission": [
+    1.12,
+    0.851,
+    0.56
+   ]
+  },
+  {
+   "name": "H_Blanket",
+   "color": [
+    1.0,
+    0.8434,
+    0.9163
+   ],
+   "smoothness": 0.4,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "H_BlanketLav",
+   "color": [
+    0.8962,
+    0.8323,
+    1.0
+   ],
+   "smoothness": 0.4,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "H_BlanketSky",
+   "color": [
+    0.7977,
+    0.8962,
+    1.0
+   ],
+   "smoothness": 0.4,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "H_Blush",
+   "color": [
+    1.0,
+    0.8323,
+    0.8756
+   ],
+   "smoothness": 0.45,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "H_Bridle",
+   "color": [
+    1.0,
+    0.7354,
+    0.865
+   ],
+   "smoothness": 0.75,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "H_BridleLav",
+   "color": [
+    0.8434,
+    0.7484,
+    0.9777
+   ],
+   "smoothness": 0.75,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "H_BridleSky",
+   "color": [
+    0.722,
+    0.8434,
+    1.0
+   ],
+   "smoothness": 0.75,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "H_EarIn",
+   "color": [
+    1.0,
+    0.865,
+    0.9063
+   ],
+   "smoothness": 0.5,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "H_Eye",
+   "color": [
+    0.6343,
+    0.5064,
+    0.8095
+   ],
+   "smoothness": 0.75,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "H_EyeHi",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "smoothness": 0.7,
+   "metallic": 0.0,
+   "emission": [
+    1.12,
+    1.12,
+    1.12
+   ]
+  },
+  {
+   "name": "H_FlowerP",
+   "color": [
+    1.0,
+    0.8323,
+    0.9163
+   ],
+   "smoothness": 0.55,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "H_FlowerW",
+   "color": [
+    1.0,
+    0.9867,
+    0.9912
+   ],
+   "smoothness": 0.55,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "H_Gold",
+   "color": [
+    1.0,
+    0.8756,
+    0.6343
+   ],
+   "smoothness": 0.78,
+   "metallic": 1.0,
+   "emission": null
+  },
+  {
+   "name": "H_Horn",
+   "color": [
+    1.0,
+    0.9357,
+    0.8095
+   ],
+   "smoothness": 0.82,
+   "metallic": 0.55,
+   "emission": null
+  },
+  {
+   "name": "H_Lash",
+   "color": [
+    0.3811,
+    0.2934,
+    0.4614
+   ],
+   "smoothness": 0.6,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "H_Leaf",
+   "color": [
+    0.7354,
+    0.9163,
+    0.8095
+   ],
+   "smoothness": 0.55,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "H_ManeLav",
+   "color": [
+    0.8323,
+    0.7611,
+    0.9777
+   ],
+   "smoothness": 0.75,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "H_ManeMint",
+   "color": [
+    0.7484,
+    0.9453,
+    0.9063
+   ],
+   "smoothness": 0.75,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "H_ManePeach",
+   "color": [
+    1.0,
+    0.8756,
+    0.8095
+   ],
+   "smoothness": 0.75,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "H_ManePink",
+   "color": [
+    1.0,
+    0.7858,
+    0.8962
+   ],
+   "smoothness": 0.75,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "H_ManeSky",
+   "color": [
+    0.7674,
+    0.8756,
+    1.0
+   ],
+   "smoothness": 0.75,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "H_Porcelain",
+   "color": [
+    0.9912,
+    0.98,
+    0.9731
+   ],
+   "smoothness": 0.75,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "H_Pupil",
+   "color": [
+    0.2478,
+    0.1718,
+    0.3492
+   ],
+   "smoothness": 0.55,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "H_Saddle",
+   "color": [
+    0.7858,
+    0.6944,
+    0.9547
+   ],
+   "smoothness": 0.75,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "H_SaddleMint",
+   "color": [
+    0.68,
+    0.9063,
+    0.8543
+   ],
+   "smoothness": 0.75,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "H_SaddlePink",
+   "color": [
+    1.0,
+    0.7484,
+    0.8756
+   ],
+   "smoothness": 0.75,
+   "metallic": 0.0,
+   "emission": null
+  }
+ ]
+}

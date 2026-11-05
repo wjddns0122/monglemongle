@@ -1,0 +1,83 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3847cd175c80e4368bd2d3e7b4b76218, type: 3}
+  m_Name: ContentCatalog
+  m_EditorClassIdentifier: Mongle.Runtime::Mongle.Data.ContentCatalog
+  toy: {fileID: 11400000, guid: 0d1d03910e89349bdac840d8fb073c70, type: 2}
+  friends:
+  - {fileID: 11400000, guid: 5cc0f8783825a468b9b479681f395531, type: 2}
+  - {fileID: 11400000, guid: 5285d81c6cd2542bf8e79b9d09db39d4, type: 2}
+  - {fileID: 11400000, guid: eca2c01f997fb4fa5901b3b26ebcca60, type: 2}
+  - {fileID: 11400000, guid: 757ac7b80b0484081bb37957acbdaa0a, type: 2}
+  - {fileID: 11400000, guid: 20cacf93b97074bf1a4b02d7b391fcdd, type: 2}
+  - {fileID: 11400000, guid: f8e9a8773146a4cceb79e2701256845a, type: 2}
+  - {fileID: 11400000, guid: 4a870f5d95c064bfcb6aea0c466fe463, type: 2}
+  - {fileID: 11400000, guid: 06aef8ed7bd0b4397a709629f4df2579, type: 2}
+  - {fileID: 11400000, guid: cf5dc8ea8b7d049b8a53c2289ada34d3, type: 2}
+  - {fileID: 11400000, guid: ce91dc06fb7d54a0b9ca221728b296ea, type: 2}
+  tools:
+  - {fileID: 11400000, guid: edad7eb795072447d9957a0380034685, type: 2}
+  - {fileID: 11400000, guid: 8d80f89f1d1044040970d7faf51713fe, type: 2}
+  - {fileID: 11400000, guid: e2fe70a80e807429491c742d4831b165, type: 2}
+  - {fileID: 11400000, guid: 2df9c08afa81c4061bb48ea6fa4b2080, type: 2}
+  - {fileID: 11400000, guid: 80aa680882a31410caf8a6a92b6bf984, type: 2}
+  - {fileID: 11400000, guid: dae8fa2dde8c04fcc8853617d84a1c90, type: 2}
+  - {fileID: 11400000, guid: 1f7c63f4bd59443c0b1f8157f8fe0e60, type: 2}
+  furniture:
+  - {fileID: 11400000, guid: d62a96d25f2104f02938cbd2a8a2e0b2, type: 2}
+  - {fileID: 11400000, guid: e7e8fdca0c40d4d7ca455a2a96f40355, type: 2}
+  - {fileID: 11400000, guid: 692e20921cc9e407ea9ff866c9cb4444, type: 2}
+  - {fileID: 11400000, guid: 9e98b8050ebe148769ef5d6fada95904, type: 2}
+  - {fileID: 11400000, guid: da3f33843f9e240fbb5e6817eef76ea4, type: 2}
+  - {fileID: 11400000, guid: 634ed968ad9cc4126a80c047c41c52b4, type: 2}
+  - {fileID: 11400000, guid: b97e29422c39a4b54bee0c30e376d78e, type: 2}
+  - {fileID: 11400000, guid: 6c9f7b0a3ecdd4ade846900f1eb78cdd, type: 2}
+  - {fileID: 11400000, guid: bf6a9d5581cd74f53831eac694b20254, type: 2}
+  - {fileID: 11400000, guid: 572d9606f425d4907b31b90514fa9921, type: 2}
+  - {fileID: 11400000, guid: abe9ac9576c5142d787b787c752e5864, type: 2}
+  - {fileID: 11400000, guid: 04871f934a5ec4e9e96e10fb17888d4a, type: 2}
+  - {fileID: 11400000, guid: 82b78c8fbfa68436b8695d11e47494c2, type: 2}
+  - {fileID: 11400000, guid: e8f074a816b694564a222c2d22e9a87e, type: 2}
+  - {fileID: 11400000, guid: 9afbdfaa03cba42fda920411fe6ec1d1, type: 2}
+  - {fileID: 11400000, guid: 46a5077b2078845c9bd4e734e9b01164, type: 2}
+  - {fileID: 11400000, guid: 4d1d31f3776e14b1bb0146251533a7b8, type: 2}
+  - {fileID: 11400000, guid: af9567ef518cb4e4f8324ea3e70cc317, type: 2}
+  - {fileID: 11400000, guid: f3ec8efcdd8cf4d98af631c2981cf470, type: 2}
+  - {fileID: 11400000, guid: aafeb7ebdf9774a1c8644ede0de48aff, type: 2}
+  - {fileID: 11400000, guid: 58477b3cdb3d147af81b1343a4b96a0a, type: 2}
+  - {fileID: 11400000, guid: b61669836b13341b6aecb6f8c460db05, type: 2}
+  shops:
+  - {fileID: 11400000, guid: eb00411ac973d4c34a46d2450d206702, type: 2}
+  - {fileID: 11400000, guid: c85d96306fbbf425081290bb8a1d77c8, type: 2}
+  - {fileID: 11400000, guid: a415af2250d4f4e9eb42ca1092834e09, type: 2}
+  wateringCan: {fileID: 6375972514478116446, guid: 4da88ece309b94bfba450f4288a77640, type: 3}
+  houses:
+  - {fileID: 8383667537280631726, guid: 9d06db866e3394682a6e27a36b008bd1, type: 3}
+  - {fileID: 4996326878878604883, guid: 24e1c551292ec4b73a9ec000bdab0847, type: 3}
+  - {fileID: 5923077193032676710, guid: e421583d3e7b64fefb04d97a243a9c88, type: 3}
+  - {fileID: 6301125457676083129, guid: 7d5db87cf19cb4cffa8a96035b615095, type: 3}
+  - {fileID: 1562714590311548105, guid: 13e868e9e04f242c9b608516ddb85a03, type: 3}
+  - {fileID: 964990227936385982, guid: 290eec6d10f60418fb4cb5440c098c8a, type: 3}
+  - {fileID: 7477602399802313282, guid: 9eb79f9ef869f40f486590da0a70eefb, type: 3}
+  - {fileID: 6616651669025337266, guid: 75c6489e5d87b4332b02c358d50f3737, type: 3}
+  quests:
+  - {fileID: 11400000, guid: 736a9abab9e7142f4a7a7dce4fd8d58b, type: 2}
+  - {fileID: 11400000, guid: 1fd8ca34734e84c9096c5cb7ae4fdf7d, type: 2}
+  - {fileID: 11400000, guid: 4090ee54f11984948b49531f4a6ace01, type: 2}
+  - {fileID: 11400000, guid: b01257ea0d1e64bd1abc0e62d8110e8b, type: 2}
+  - {fileID: 11400000, guid: 8750925557fa8486dabf416d8cc1a209, type: 2}
+  - {fileID: 11400000, guid: e01803e9c641d48119a24d426b5d5dfb, type: 2}
+  materials:
+  - {fileID: 2100000, guid: a2f58889a7ac744b5994edb22c2b1082, type: 2}
+  - {fileID: 2100000, guid: ee4225d4f0e5e46daa65d939083bb65a, type: 2}
+  - {fileID: 2100000, guid: 00151f31b3a194d828def3a6e7ed5b67, type: 2}
+  - {fileID: 2100000, guid: 97542dea85b5048af818f0fbdc938b95, type: 2}

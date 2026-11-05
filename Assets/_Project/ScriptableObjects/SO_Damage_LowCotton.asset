@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1704af801ee664c3bb470b9159d58a18, type: 3}
+  m_Name: SO_Damage_LowCotton
+  m_EditorClassIdentifier: Mongle.Runtime::Mongle.Data.DamageDefinition
+  id: LowCotton
+  type: 3
+  phase: 3
+  displayName: "\uC19C\uC774 \uBD80\uC871\uD55C \uBAB8"
+  noteText: "\uBAB8\uC774 \uCD95 \uCC98\uC838 \uC788\uC5B4\uC694. \uC19C\uC774 \uBAA8\uC790\uB780\uAC00 \uBD10\uC694."
+  requiredToolId: Tool_CottonInjector
+  miniGameKey: Cotton
+  damagePointName: DP_BODY
+  cameraAnchorName: CA_BODY
+  repairAnchorName: CA_FILL
+  lookPointName: 
+  interactionRadius: 0.075
+  hintPriority: 4
+  rewardCoins: 40
+  site: 
+  boneName: 
+  visualName: 
+  visualDoneName: 
+  openName: 
+  shapeKey: 
+  grabPointName: 
+  normalPointName: 
+  stitchPrefix: 
+  limpBone: 
+  workPointName: 
+  spread: 0.06
+  blobCount: 26
+  stainColor: {r: 0.36, g: 0.25, b: 0.15, a: 1}
+  cleanColor: {r: 0.95, g: 0.88, b: 0.72, a: 1}

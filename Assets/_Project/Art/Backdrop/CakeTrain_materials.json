@@ -1,0 +1,195 @@
+{
+ "materials": [
+  {
+   "name": "TR_Biscuit",
+   "color": [
+    0.9216,
+    0.7608,
+    0.5412
+   ],
+   "smoothness": 0.35,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "TR_BiscuitDark",
+   "color": [
+    0.8314,
+    0.6039,
+    0.3608
+   ],
+   "smoothness": 0.35,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "TR_Cream",
+   "color": [
+    1.0,
+    0.9725,
+    0.9373
+   ],
+   "smoothness": 0.4,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "TR_Headlight",
+   "color": [
+    1.0,
+    0.851,
+    0.5412
+   ],
+   "smoothness": 0.6,
+   "metallic": 0.0,
+   "emission": [
+    1.26,
+    0.874,
+    0.32
+   ]
+  },
+  {
+   "name": "TR_Lavender",
+   "color": [
+    0.8353,
+    0.7647,
+    0.9529
+   ],
+   "smoothness": 0.35,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "TR_Leaf",
+   "color": [
+    0.4706,
+    0.7608,
+    0.4784
+   ],
+   "smoothness": 0.35,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "TR_Lemon",
+   "color": [
+    1.0,
+    0.9059,
+    0.6118
+   ],
+   "smoothness": 0.35,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "TR_Mint",
+   "color": [
+    0.6392,
+    0.8863,
+    0.8275
+   ],
+   "smoothness": 0.35,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "TR_Pink",
+   "color": [
+    0.9608,
+    0.6392,
+    0.7529
+   ],
+   "smoothness": 0.35,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "TR_PinkDeep",
+   "color": [
+    0.9255,
+    0.498,
+    0.6471
+   ],
+   "smoothness": 0.35,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "TR_PinkLight",
+   "color": [
+    0.9882,
+    0.8353,
+    0.8902
+   ],
+   "smoothness": 0.35,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "TR_Rail",
+   "color": [
+    0.6431,
+    0.6549,
+    0.702
+   ],
+   "smoothness": 0.65,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "TR_Seed",
+   "color": [
+    0.9843,
+    0.902,
+    0.6353
+   ],
+   "smoothness": 0.35,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "TR_Smoke",
+   "color": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "smoothness": 0.2,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "TR_Sponge",
+   "color": [
+    0.9843,
+    0.8863,
+    0.6275
+   ],
+   "smoothness": 0.35,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "TR_Strawberry",
+   "color": [
+    0.9098,
+    0.2549,
+    0.3098
+   ],
+   "smoothness": 0.45,
+   "metallic": 0.0,
+   "emission": null
+  },
+  {
+   "name": "TR_StrawberryIn",
+   "color": [
+    1.0,
+    0.7882,
+    0.8118
+   ],
+   "smoothness": 0.35,
+   "metallic": 0.0,
+   "emission": null
+  }
+ ]
+}

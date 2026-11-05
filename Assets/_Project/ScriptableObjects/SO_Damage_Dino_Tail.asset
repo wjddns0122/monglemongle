@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1704af801ee664c3bb470b9159d58a18, type: 3}
+  m_Name: SO_Damage_Dino_Tail
+  m_EditorClassIdentifier: Mongle.Runtime::Mongle.Data.DamageDefinition
+  id: Dino_Tail
+  type: 3
+  phase: 3
+  displayName: "\uD640\uCB49\uD574\uC9C4 \uAF2C\uB9AC"
+  noteText: "\uAF2C\uB9AC\uC5D0\uC11C \uC19C\uC774 \uBE60\uC838\uC11C \uCD95 \uB298\uC5B4\uC84C\uC5B4\uC694. \uC19C\uC744 \uAFB9\uAFB9 \uCC44\uC6CC \uC918\uC694."
+  requiredToolId: Tool_CottonInjector
+  miniGameKey: Cotton
+  damagePointName: DP_Tail
+  cameraAnchorName: CA_Tail
+  repairAnchorName: CA_Tail
+  lookPointName: 
+  interactionRadius: 0.08
+  hintPriority: 1
+  rewardCoins: 35
+  site: Tail
+  boneName: Tail
+  visualName: DMG_FillOpen_Tail
+  visualDoneName: 
+  openName: 
+  shapeKey: Deflated_Tail
+  grabPointName: 
+  normalPointName: DN_Tail
+  stitchPrefix: 
+  limpBone: 
+  workPointName: FP_Tail
+  spread: 0.06
+  blobCount: 26
+  stainColor: {r: 0.36, g: 0.25, b: 0.15, a: 1}
+  cleanColor: {r: 0.95, g: 0.88, b: 0.72, a: 1}
