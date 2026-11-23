@@ -34,7 +34,7 @@ namespace Mongle.Village
 
         void BuildShopUi()
         {
-            Shop = new ShopPanel(canvas.transform) { OnBuy = d => TryBuy(d), OnPlace = d => BeginPlaceFromInventory(d), OnDress = d => DressFromBox(d), OnClose = CloseShop, OnAcceptQuest = AcceptQuest, OnClaimQuest = ClaimQuest };
+            Shop = new ShopPanel(canvas.transform) { OnBuy = d => TryBuy(d), OnPlace = d => BeginPlaceFromInventory(d), OnDress = d => DressFromBox(d), OnClose = CloseShop, OnAcceptQuest = AcceptQuest, OnClaimQuest = ClaimQuest, Skin = SkinPart };
             // D-026: under the 퀘스트 button, in the same half-clear notice pill (no stitch); it hangs from its top-left corner,
             // grows with its lines (D-024) and opens the quest window like the button
             var qb = UiKit.SpriteButton(hud.transform, "QuestTracker", "hud_toast", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(24f, -157f), new Vector2(560f, 120f), ToggleQuestBoard);   // under the top bar, so it may grow wide
@@ -42,7 +42,7 @@ namespace Mongle.Village
             questText = UiKit.TitleLabel(questPanel.transform, "", 28, UiKit.FigBrown, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(530, 100), TextAnchor.MiddleLeft);
             questText.lineSpacing = 1.1f;
             questPanel.gameObject.SetActive(false);
-            Storage = new ShopPanel(canvas.transform) { OnPlace = d => BeginPlaceFromInventory(d), OnDress = d => DressFromBox(d), OnClose = CloseStorage };
+            Storage = new ShopPanel(canvas.transform, "StoragePanel") { OnPlace = d => BeginPlaceFromInventory(d), OnDress = d => DressFromBox(d), OnClose = CloseStorage, Skin = SkinPart };
         }
 
         public string CoinsShown => coinText != null ? coinText.text : "";

@@ -39,7 +39,7 @@ namespace Mongle.Core
             catalog = root.Catalog; state = root.ActiveToy;
             Cam = Camera.main; Orbit = Cam.gameObject.GetOrAdd<OrbitCamera>();
             Orbit.target = new Vector3(0, 0.22f, 0);
-            UI = new GameObject("ShopUI").AddComponent<ShopUI>(); UI.Build();
+            UI = new GameObject("ShopUI").AddComponent<ShopUI>(); UI.Build(); UI.ApplySkin("RepairScreen");   // edit it in Resources/UI/Skins (D-035)
             UI.OnZoom = f => Orbit.ZoomStep(f);
             root.Audio.StartBgm();
             if (state == null) { GoBootstrap(); yield break; }

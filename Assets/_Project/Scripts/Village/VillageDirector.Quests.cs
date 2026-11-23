@@ -50,17 +50,24 @@ namespace Mongle.Village
             questBadge.SetActive(false);
         }
 
+        /// <summary>The friends' quest marks layer, the star hunt pill, the speech bubble with choices and the quest window.</summary>
+        void BuildQuestUi()
+        {
+            markLayer = UiKit.Rect(canvas.transform, "QuestMarks", Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            markLayer.SetAsFirstSibling(); // under every panel
+            BuildHuntHud();
+            Dialog = new FriendDialog(canvas.transform) { Skin = SkinPart };
+            QuestWindow = new QuestBoard(canvas.transform) { OnClose = CloseQuestBoard, OnTab = t => { boardTab = t; RefreshQuestBoard(); root.Audio.Play("click", 0.4f, 1.2f); }, Skin = SkinPart };
+            SkinPart(huntHud);
+        }
+
         void SetupFriendQuests()
         {
             QuestProps.Begin();
             foreach (var po in FindObjectsByType<ParkObstacle>(FindObjectsInactive.Exclude))
                 if (po.name == "CandyTree") { var t = FruitTree.Ensure(po.gameObject); if (t != null && !FruitTrees.Contains(t)) FruitTrees.Add(t); }
             foreach (var t in FindObjectsByType<FruitTree>(FindObjectsInactive.Exclude)) if (!FruitTrees.Contains(t)) FruitTrees.Add(t);
-            markLayer = UiKit.Rect(canvas.transform, "QuestMarks", Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-            markLayer.SetAsFirstSibling(); // under every panel
-            BuildHuntHud();
-            Dialog = new FriendDialog(canvas.transform);
-            QuestWindow = new QuestBoard(canvas.transform) { OnClose = CloseQuestBoard, OnTab = t => { boardTab = t; RefreshQuestBoard(); root.Audio.Play("click", 0.4f, 1.2f); } };
+            BuildQuestUi();
             Book.QuestChanged += OnFriendQuestChanged;
             Book.HoldOffers(Book.FirstDelay);
             if (state.Admitted) GreetBirthday();

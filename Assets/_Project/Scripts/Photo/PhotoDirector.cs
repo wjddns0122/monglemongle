@@ -106,7 +106,20 @@ namespace Mongle.Photo
             panel.Secondary.onClick.AddListener(() => { panel.Hide(); controls.SetActive(true); frameGroup.SetActive(true); });
             var fr = UiKit.Rect(canvas.transform, "Flash", Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             flash = fr.gameObject.AddComponent<Image>(); flash.color = new Color(1, 1, 1, 0); flash.raycastTarget = false;
+            UiSkin.Apply(canvas.transform, SkinName);   // the photo screen's prefab, edited in Unity (Resources/UI/Skins, D-035)
         }
+
+        /// <summary>D-035: the editable prefab of the photo screen.</summary>
+        public const string SkinName = "PhotoScreen";
+#if UNITY_EDITOR
+        /// <summary>The photo screen with sample contents, for its editable prefab (UiSkinBaker); the photo sheet is switched off.</summary>
+        public GameObject BuildSkinSample()
+        {
+            BuildUi();
+            panel.Show(null, "2026-03-02 · 몽이 · 활짝 웃기"); panel.Hide();
+            return canvas.gameObject;
+        }
+#endif
 
         public void SetPose(string pose)
         {

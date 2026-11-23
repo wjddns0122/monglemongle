@@ -16,6 +16,7 @@ namespace Mongle.UI
         RectTransform notebook; readonly List<Image> rowIcons = new List<Image>(), rowChecks = new List<Image>(); readonly List<Text> rowIconTexts = new List<Text>(); readonly List<Text> rowNames = new List<Text>();
         readonly List<Image> rowPanels = new List<Image>();
         RectTransform shelf; readonly Dictionary<string, Image> toolButtons = new Dictionary<string, Image>();
+        TipBubble toolTip; const float ToolTileH = 176f;
         Button back, zoomIn, zoomOut;
         GameObject dialog; Text dialogTitle, dialogBody; Button dialogButton, dialogButton2;
         RectTransform stampPanel; Button stampButton; Image stampImage;
@@ -53,6 +54,16 @@ namespace Mongle.UI
         }
 
         public bool BannerShown => bannerPanel != null && bannerPanel.gameObject.activeSelf;
+
+        string skin;
+        /// <summary>
+        /// D-035: lays the screen's editable prefab (Resources/UI/Skins/&lt;name&gt;, edited in Unity) over what the code just built.
+        /// Parts made later — the tool tiles, the dress-up list — get theirs when they are made.
+        /// </summary>
+        public void ApplySkin(string name) { skin = name; UiSkin.Apply(Canvas.transform, name); }
+        /// <summary>Lays the screen's prefab over a part made after <see cref="ApplySkin"/> (a panel, a list filled again).</summary>
+        public void ApplySkinTo(Transform part) { if (skin != null && part != null) UiSkin.ApplyUnder(Canvas.transform, part, skin); }
+        public string Skin => skin;
 
         /// <summary>The village layout (Figma): the zoom buttons sit at the left edge, away from the tiles on the right.</summary>
         Button settings;
@@ -159,12 +170,26 @@ namespace Mongle.UI
             for (int i = 0; i < tools.Length; i++)
             {
                 var t = tools[i]; string id = t.id;
-                var b = UiKit.MakeButton(shelf, "", t.uiColor, new Vector2(0.5f, 0.5f), new Vector2(x0 + i * step, 0), new Vector2(w, 190), () => onPick(id));
-                UiKit.SetButtonText(b, ""); UiKit.NoStitch(b.GetComponent<Image>());   // plain tools on the stitched shelf (D-027)
-                var name = UiKit.Label(b.transform, t.displayName, Mathf.RoundToInt(Mathf.Lerp(30f, 36f, (k - 0.75f) * 4f)), UiKit.Brown, new Vector2(0.5f, 0.5f), new Vector2(0, 25), new Vector2(w - 5f, 60));
-                var hint = UiKit.Label(b.transform, t.shortHint, k < 0.99f ? 22 : 24, UiKit.Brown, new Vector2(0.5f, 0.5f), new Vector2(0, -35), new Vector2(w - 12f, 70), TextAnchor.UpperCenter, FontStyle.Normal);
+                // D-034: one plain tile for every tool — the HUD's square button look (cream, light-blue edge, 26 px corners, Figma shadow) —
+                // with the tool's picture (Resources/UI/Tools/<id>.png, D-033; any picture of that name will do) and its name;
+                // the one-line hint pops up in a speech bubble while the pointer is over the tile
+                var b = UiKit.SpriteButton(shelf, "Btn_" + t.displayName, "kit_tile", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(x0 + i * step, 0), new Vector2(w, ToolTileH), () => onPick(id));
+                UiKit.Slice(b.GetComponent<Image>());   // the 2x sprite drawn at design scale, so the corners stay 26 px
+                var pic = UiKit.UiSprite("Tools/" + t.id);
+                int nameSize = Mathf.RoundToInt(Mathf.Lerp(27f, 32f, (k - 0.75f) * 4f));
+                var name = UiKit.Label(b.transform, t.displayName, nameSize, UiKit.Brown, new Vector2(0.5f, 0.5f), pic != null ? new Vector2(0, -ToolTileH / 2f + 30f) : Vector2.zero, new Vector2(w - 14f, 36));
+                name.verticalOverflow = VerticalWrapMode.Truncate; name.resizeTextForBestFit = true; name.resizeTextMinSize = 18; name.resizeTextMaxSize = nameSize;
+                if (pic != null)
+                {
+                    float iconSize = Mathf.Lerp(96f, 112f, (k - 0.75f) * 4f);
+                    var icon = UiKit.Fixed(b.transform, "Icon", new Vector2(0.5f, 0.5f), new Vector2(0, 18), new Vector2(iconSize, iconSize)).gameObject.AddComponent<Image>();
+                    icon.sprite = pic; icon.preserveAspect = true; icon.raycastTarget = false;
+                }
+                if (toolTip == null) toolTip = TipBubble.Create(Canvas.transform);
+                var tip = b.gameObject.AddComponent<HoverTip>(); tip.text = t.shortHint; tip.bubble = toolTip;
                 toolButtons[id] = b.GetComponent<Image>();
             }
+            ApplySkinTo(shelf); if (toolTip != null) ApplySkinTo(toolTip.transform);   // the tiles and the hint bubble exist now (D-035)
         }
 
         public void ShowShelf(bool on) { shelf.gameObject.SetActive(on); }
@@ -327,6 +352,7 @@ namespace Mongle.UI
             if (accs.Length == 0 && !string.IsNullOrEmpty(emptyHint))
                 UiKit.Label(custom, emptyHint, 30, UiKit.Brown, new Vector2(0.5f, 0.5f), new Vector2(0, 10), new Vector2(440, 360), TextAnchor.MiddleCenter, FontStyle.Normal);
             confirmButton = UiKit.MakeButton(custom, "이대로 확정!", UiKit.Peach, new Vector2(0.5f, 0f), new Vector2(0, 80), new Vector2(440, 110), onConfirm, 42);
+            ApplySkinTo(custom);   // D-035
         }
 
         public void SetAccessorySelected(string id, bool on)

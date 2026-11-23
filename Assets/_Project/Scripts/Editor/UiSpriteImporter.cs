@@ -36,6 +36,8 @@ namespace Mongle.EditorTools
             else if (name == "dlg_bubble") ti.spriteBorder = new Vector4(170f, 170f, 170f, 170f);
             else if (name == "dlg_tag") ti.spriteBorder = new Vector4(166f, 0f, 166f, 0f);
             else if (name == "dlg_choice") ti.spriteBorder = new Vector4(240f, 240f, 240f, 240f);
+            // the rounded rect of UiKit.Round saved as a picture (D-035): 22 px corners
+            else if (name == "kit_round") ti.spriteBorder = new Vector4(24f, 24f, 24f, 24f);
             // everything else: the border build.py measured (transparent margin + corner radius), so any sprite can be 9-sliced
             else if (Mongle.UI.FigmaLayout.Borders.TryGetValue(name, out var b)) ti.spriteBorder = b;
         }

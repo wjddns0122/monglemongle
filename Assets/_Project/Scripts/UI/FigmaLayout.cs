@@ -153,6 +153,7 @@ namespace Mongle.UI
             { "kit_sheet", new Vector4(60, 60, 60, 60) },
             { "kit_sheet_stitch", new Vector4(60, 60, 60, 60) },
             { "kit_sheet_stitch_w", new Vector4(60, 60, 60, 60) },
+            { "kit_tile", new Vector4(61, 64, 64, 61) },
             { "nb_check", new Vector4(72, 73, 72, 73) },
             { "nb_icon_done", new Vector4(29, 29, 29, 29) },
             { "ph2_circle_frame", new Vector4(153, 155, 153, 155) },

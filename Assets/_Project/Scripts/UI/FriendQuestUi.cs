@@ -25,6 +25,8 @@ namespace Mongle.UI
 
         public const int PerPage = 4;   // rows visible at once (the list scrolls, D-023)
         public Action OnClose; public Action<int> OnTab;
+        /// <summary>Called with the window after every redraw (D-035: the screen's prefab is laid over it).</summary>
+        public Action<Transform> Skin;
         public bool Visible => root.activeSelf;
         public int Tab { get; private set; }
         public IEnumerable<string> RowNames => list.Cast<Transform>().Select(t => t.name);
@@ -116,6 +118,7 @@ namespace Mongle.UI
             Canvas.ForceUpdateCanvases();
             scroll.verticalNormalizedPosition = newTab ? 1f : keep;
             scroll.verticalScrollbar.gameObject.SetActive(rows.Count > PerPage);
+            Skin?.Invoke(root.transform);
         }
 
         void BuildRow(Row r, float top)
@@ -178,6 +181,8 @@ namespace Mongle.UI
         }
 
         public bool Visible => root.activeSelf;
+        /// <summary>Called with the bubble after every new line (D-035: the screen's prefab is laid over it).</summary>
+        public Action<Transform> Skin;
         public string LineShown => line.text;
         public IEnumerable<string> ButtonLabels => root.GetComponentsInChildren<Button>(false).Select(b => b.GetComponentInChildren<Text>()?.text ?? "");
 
@@ -242,11 +247,19 @@ namespace Mongle.UI
             h = Mathf.Max(h, 300f);
             rt.sizeDelta = new Vector2(Width, h); rt.anchoredPosition = new Vector2(0, 36f + h / 2f);
             root.SetActive(true); root.transform.SetAsLastSibling();
+            Skin?.Invoke(root.transform);
         }
 
         public void Hide() { root.SetActive(false); }
 
-        static void Clear(RectTransform t) { for (int i = t.childCount - 1; i >= 0; i--) UnityEngine.Object.Destroy(t.GetChild(i).gameObject); }
+        static void Clear(RectTransform t)
+        {
+            for (int i = t.childCount - 1; i >= 0; i--)
+            {
+                var c = t.GetChild(i).gameObject; c.transform.SetParent(null);   // gone from the list at once (the prefab is laid over it next)
+                if (Application.isPlaying) UnityEngine.Object.Destroy(c); else UnityEngine.Object.DestroyImmediate(c);
+            }
+        }
 
         // ---- test hooks ----
         public bool QaClick(string label)

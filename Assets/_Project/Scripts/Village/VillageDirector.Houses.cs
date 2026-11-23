@@ -84,6 +84,7 @@ namespace Mongle.Village
             UiKit.MakeButton(bar.transform, "돌리기 (R)", UiKit.Sky, new Vector2(0.5f, 0f), new Vector2(40, 52), new Vector2(290, 86), HouseRotate, 34);
             UiKit.MakeButton(bar.transform, "나중에", UiKit.Mint, new Vector2(0.5f, 0f), new Vector2(340, 52), new Vector2(230, 86), HouseLater, 34);
             houseBar.SetActive(false);
+            SkinPart(bar);
         }
 
         /// <summary>A moved-in friend (or one still without a house from before) asks for its place, once things are quiet.</summary>

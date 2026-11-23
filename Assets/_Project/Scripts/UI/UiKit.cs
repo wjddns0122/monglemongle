@@ -171,6 +171,8 @@ namespace Mongle.UI
             get
             {
                 if (round != null) return round;
+                // D-035: the same rounded rect saved as a picture (Resources/UI/kit_round), so screens saved as prefabs keep it
+                round = UiSprite("kit_round"); if (round != null) return round;
                 const int s = 64; const float r = 22f;
                 var tex = new Texture2D(s, s, TextureFormat.RGBA32, false) { filterMode = FilterMode.Bilinear, wrapMode = TextureWrapMode.Clamp };
                 for (int y = 0; y < s; y++)

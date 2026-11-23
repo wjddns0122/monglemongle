@@ -20,6 +20,8 @@ namespace Mongle.UI
         public Action<FurnitureDefinition> OnDress;
         public Action<QuestDefinition> OnAcceptQuest, OnClaimQuest;
         public Action OnClose;
+        /// <summary>Called with the panel after every rebuild (D-035: the screen's prefab is laid over it).</summary>
+        public Action<Transform> Skin;
         public bool Visible => root != null && root.activeSelf;
         public bool StorageMode { get; private set; }
 
@@ -43,10 +45,11 @@ namespace Mongle.UI
 
         public bool QuestTabOpen => questMode;
         public IEnumerable<string> VisibleCardNames => cards.Cast<Transform>().Select(c => c.name);
+        public RectTransform CardsRoot => cards;
 
-        public ShopPanel(Transform canvas)
+        public ShopPanel(Transform canvas, string name = "ShopPanel")
         {
-            var rt = UiKit.FigRoot(canvas, "ShopPanel"); root = rt.gameObject;
+            var rt = UiKit.FigRoot(canvas, name); root = rt.gameObject;
             // ---- shop sheet ----
             shopGroup = UiKit.FigRoot(rt, "Shop").gameObject;
             UiKit.Fig(shopGroup.transform, "shop_panel", UiKit.Edge.Middle, UiKit.Edge.Middle, 0, 0, true);
@@ -71,6 +74,8 @@ namespace Mongle.UI
             prev = UiKit.FigButton(shopGroup.transform, "shop_pager_prev", () => SetPage(page - 1), UiKit.Edge.Middle, UiKit.Edge.Middle, 0, 0, "Btn_prev");
             next = UiKit.FigButton(shopGroup.transform, "shop_pager_next", () => SetPage(page + 1), UiKit.Edge.Middle, UiKit.Edge.Middle, 0, 0, "Btn_next");
             pageLabel = UiKit.FigLabel(shopGroup.transform, "", 36, UiKit.FigBrown, 1238f, 937f, 120f, 60f);
+            // own names: these move between the two sheets, and the prefab finds them by name (D-035)
+            title.name = "Title"; keeper.name = "Keeper"; line.name = "Line"; pageLabel.name = "Page"; tabLabel.name = "TabLabel"; lineActionLabel.name = "ActionLabel";
             // ---- storage sheet (보관함) ----
             storeGroup = UiKit.FigRoot(rt, "Storage").gameObject;
             // D-025: the Figma sheet would run under the top bar and the gear; it is drawn at 88 % and centred below them
@@ -97,7 +102,7 @@ namespace Mongle.UI
             // ---- shared ----
             cards = UiKit.Rect(rt, "Cards", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
             cards.sizeDelta = new Vector2(4 * Pitch, CardH);
-            emptyLabel = UiKit.FigLabel(rt, "", 40, UiKit.FigBrown, 1230f, 640f, 1000f, 200f);
+            emptyLabel = UiKit.FigLabel(rt, "", 40, UiKit.FigBrown, 1230f, 640f, 1000f, 200f); emptyLabel.name = "Empty";
             root.SetActive(false);
         }
 
@@ -166,7 +171,9 @@ namespace Mongle.UI
 
         void SetPage(int p) { page = Mathf.Clamp(p, 0, Mathf.Max(0, (items.Count - 1) / PerPage)); Rebuild(); }
 
-        void Rebuild()
+        void Rebuild() { RebuildCards(); Skin?.Invoke(root.transform); }
+
+        void RebuildCards()
         {
             shopGroup.SetActive(!StorageMode); storeGroup.SetActive(StorageMode);
             // the keeper's field (name + line) only belongs to the shop; the 보관함 sheet shows its hint under the tab instead
@@ -197,7 +204,11 @@ namespace Mongle.UI
                 ((RectTransform)prev.transform).anchoredPosition = new Vector2(pr.center.x - 960f, -(pr.center.y - 540f)); ((RectTransform)next.transform).anchoredPosition = new Vector2(nr.center.x - 960f, -(nr.center.y - 540f));
                 cards.anchoredPosition = new Vector2(1246.3f - 960f, -(678f - 540f));
             }
-            for (int i = cards.childCount - 1; i >= 0; i--) UnityEngine.Object.Destroy(cards.GetChild(i).gameObject);
+            for (int i = cards.childCount - 1; i >= 0; i--)
+            {
+                var c = cards.GetChild(i).gameObject; c.transform.SetParent(null);   // gone from the list at once (the prefab is laid over it next)
+                if (Application.isPlaying) UnityEngine.Object.Destroy(c); else UnityEngine.Object.DestroyImmediate(c);
+            }
             bool hasQuests = !StorageMode && quests.Count > 0;
             tabButton.gameObject.SetActive(hasQuests);
             if (hasQuests)

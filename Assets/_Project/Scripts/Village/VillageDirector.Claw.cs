@@ -56,6 +56,11 @@ namespace Mongle.Village
             Grid.BlockBox(claw.transform.position, new Vector2(0.75f, 0.6f), claw.transform.eulerAngles.y);
             claw.Stock = World.ClawCaps;
             claw.Finished += OnClawFinished;
+            BuildClawUi();
+        }
+
+        void BuildClawUi()
+        {
             // D-027: three rows that never overlap — hearts + timer on top, the tip line, then the d-pad / 시작 / 그만하기 row
             var bar = UiKit.Panel(canvas.transform, "ClawBar", UiKit.Paper, new Vector2(0.5f, 0f), new Vector2(0, 165), new Vector2(1120, 290), true);
             clawBar = bar.gameObject;
@@ -89,8 +94,9 @@ namespace Mongle.Village
             // plain pills on the stitched bar, like the other bars (D-026)
             foreach (var b in bar.GetComponentsInChildren<Button>(true)) UiKit.NoStitch(b.GetComponent<Image>());
             clawResult = UiKit.Label(canvas.transform, "", 54, UiKit.Brown, new Vector2(0.5f, 0.5f), new Vector2(0, 260), new Vector2(1000, 220));
-            clawResult.gameObject.SetActive(false);
+            clawResult.name = "ClawResult"; clawResult.gameObject.SetActive(false);
             clawBar.SetActive(false);
+            SkinPart(bar); SkinPart(clawResult);
         }
 
         public bool OpenClaw(ClawMachine m)

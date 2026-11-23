@@ -137,16 +137,19 @@ namespace Mongle.Village
         public void OpenDress(ToyAgent a)
         {
             if (WornBy(a) == null) return;
-            if (dressPanel == null)
-            {
-                var p = UiKit.Panel(canvas.transform, "DressPanel", UiKit.Paper, new Vector2(0.5f, 0f), new Vector2(0, 150), new Vector2(1500, 240), true);
-                dressPanel = p.gameObject;
-                dressTitle = UiKit.Label(p.transform, "", 36, UiKit.Brown, new Vector2(0.5f, 1f), new Vector2(-120, -36), new Vector2(1100, 50));
-                dressList = UiKit.Rect(p.transform, "List", new Vector2(0f, 0f), new Vector2(1f, 1f), new Vector2(20, 14), new Vector2(-300, -70));
-                UiKit.MakeButton(p.transform, "닫기", UiKit.Peach, new Vector2(1f, 0.5f), new Vector2(-150, -10), new Vector2(240, 100), CloseDress, 36);
-            }
+            if (dressPanel == null) BuildDressPanel();
             Dressing = a; dressPanel.SetActive(true);
             RefreshDress();
+        }
+
+        void BuildDressPanel()
+        {
+            var p = UiKit.Panel(canvas.transform, "DressPanel", UiKit.Paper, new Vector2(0.5f, 0f), new Vector2(0, 150), new Vector2(1500, 240), true);
+            dressPanel = p.gameObject;
+            dressTitle = UiKit.Label(p.transform, "", 36, UiKit.Brown, new Vector2(0.5f, 1f), new Vector2(-120, -36), new Vector2(1100, 50));
+            dressTitle.name = "Title";
+            dressList = UiKit.Rect(p.transform, "List", new Vector2(0f, 0f), new Vector2(1f, 1f), new Vector2(20, 14), new Vector2(-300, -70));
+            UiKit.MakeButton(p.transform, "닫기", UiKit.Peach, new Vector2(1f, 0.5f), new Vector2(-150, -10), new Vector2(240, 100), CloseDress, 36);
         }
 
         public void CloseDress() { if (dressPanel != null) dressPanel.SetActive(false); Dressing = null; }
@@ -154,13 +157,24 @@ namespace Mongle.Village
         void RefreshDress()
         {
             var worn = WornBy(Dressing); if (worn == null) { CloseDress(); return; }
-            for (int i = dressList.childCount - 1; i >= 0; i--) Destroy(dressList.GetChild(i).gameObject);
             dressTitle.text = DisplayNameOf(Dressing) + " 꾸며주기 · 누르면 입히고, 다시 누르면 벗어요";
             var items = Catalog.AllAccessories.Where(acc => World.Owned(acc.id) > 0 || worn.ContainsValue(acc.id)).ToList();
+            LayDress(items, acc => worn.TryGetValue(acc.slot, out var cur) && cur == acc.id, acc => World.Owned(acc.id));
+        }
+
+        /// <summary>The dress list: one button per accessory (filled while the friend wears it), then the prefab laid over it (D-035).</summary>
+        void LayDress(List<AccessoryDefinition> items, System.Func<AccessoryDefinition, bool> wearing, System.Func<AccessoryDefinition, int> owned)
+        {
+            for (int i = dressList.childCount - 1; i >= 0; i--)
+            {
+                var c = dressList.GetChild(i).gameObject; c.transform.SetParent(null);
+                if (Application.isPlaying) Destroy(c); else DestroyImmediate(c);
+            }
             if (items.Count == 0)
             {
                 SizeDress(1);
                 UiKit.Label(dressList, "가진 악세서리가 없어요. 컵케이크 악세서리점에서 사 와요!", 32, UiKit.Brown, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(1100, 120), TextAnchor.MiddleCenter, FontStyle.Normal);
+                SkinPart(dressPanel.transform);
                 return;
             }
             // one row of wide buttons for up to 4, two rows of up to 5 for more (9 accessories since D-010)
@@ -171,15 +185,16 @@ namespace Mongle.Village
             float bw = Mathf.Min(340f, step - 16f), bh = Mathf.Min(110f, rowH - 14f);
             for (int i = 0; i < n; i++)
             {
-                var acc = items[i]; bool on = worn.TryGetValue(acc.slot, out var cur) && cur == acc.id;
+                var acc = items[i]; bool on = wearing(acc);
                 int row = i / cols, col = i % cols;
                 var b = UiKit.MakeButton(dressList, "", on ? acc.uiColor : Color.Lerp(acc.uiColor, Color.white, 0.45f),
                     new Vector2(0f, 1f), new Vector2(step * (col + 0.5f), -rowH * (row + 0.5f)), new Vector2(bw, bh), () => ToggleWear(acc));
                 UiKit.SetButtonText(b, "");
                 UiKit.Label(b.transform, (on ? "♥ " : "") + acc.displayName, rows == 1 ? 30 : 28, UiKit.Brown, new Vector2(0.5f, 0.5f), new Vector2(0, 14), new Vector2(bw - 12f, 44));
-                UiKit.Label(b.transform, on ? (rows == 1 ? "입는 중 · 누르면 벗어요" : "입는 중") : "가진 수 " + World.Owned(acc.id), 22, UiKit.Brown, new Vector2(0.5f, 0.5f), new Vector2(0, -24), new Vector2(bw - 12f, 32), TextAnchor.MiddleCenter, FontStyle.Normal);
+                UiKit.Label(b.transform, on ? (rows == 1 ? "입는 중 · 누르면 벗어요" : "입는 중") : "가진 수 " + owned(acc), 22, UiKit.Brown, new Vector2(0.5f, 0.5f), new Vector2(0, -24), new Vector2(bw - 12f, 32), TextAnchor.MiddleCenter, FontStyle.Normal);
                 b.name = "Dress_" + acc.id;
             }
+            SkinPart(dressPanel.transform);
         }
 
         /// <summary>The dress panel grows a second row when there are more than four accessories to show.</summary>

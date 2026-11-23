@@ -28,6 +28,11 @@ namespace Mongle.Village
                 else Grid.BlockDisc(r.transform.position, 0.6f);
                 Grid.BlockDisc(r.BoardWorld, 0.45f); // keep the queue spot free: furniture there would cut the ride off
             }
+            BuildRideUi();
+        }
+
+        void BuildRideUi()
+        {
             // Figma D-020: the cream plate with the caption and the blue "밖에서 보기" pill
             var bar = UiKit.Fig(canvas.transform, "ride_statusbar", UiKit.Edge.Middle, UiKit.Edge.End, 0f, 0f, true, "RideBar");
             bar.rectTransform.anchoredPosition = new Vector2(0f, 120f);   // bottom centre (D-024)
@@ -40,6 +45,7 @@ namespace Mongle.Village
             see.targetGraphic = see.GetComponent<Image>(); see.onClick.AddListener(ExitRideView);
             UiKit.FigTextAt(see.transform, "ride_btn_see", "밖에서 보기", 38, UiKit.FigBrown, 1514f, 831f, 260f, 80f);
             rideBar.SetActive(false);
+            SkinPart(bar);
         }
 
         /// <summary>A ride with room that this toy can walk to (nearer ones a little more likely).</summary>

@@ -19,6 +19,9 @@ namespace Mongle.UI
 
         public static void Clear() => cache.Clear();
 
+        // the editor's screen-prefab baker draws the cards outside play mode too (D-035): nothing may stay behind in the open scene
+        static void Kill(Object o) { if (Application.isPlaying) Object.Destroy(o); else Object.DestroyImmediate(o); }
+
         static Sprite Bake(FurnitureDefinition def)
         {
             const int size = 256;
@@ -51,8 +54,8 @@ namespace Mongle.UI
             var prev = RenderTexture.active; RenderTexture.active = rt;
             var tex = new Texture2D(size, size, TextureFormat.RGBA32, false) { filterMode = FilterMode.Bilinear };
             tex.ReadPixels(new Rect(0, 0, size, size), 0, 0); tex.Apply();
-            RenderTexture.active = prev; rt.Release(); Object.Destroy(rt);
-            Object.Destroy(camGo); Object.Destroy(inst);
+            RenderTexture.active = prev; rt.Release(); Kill(rt);
+            Kill(camGo); Kill(inst);
             return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f);
         }
     }

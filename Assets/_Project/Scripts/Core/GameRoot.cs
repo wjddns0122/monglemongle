@@ -286,7 +286,20 @@ namespace Mongle.Core
             toastCoin = UiKit.SpriteImage(tp.transform, "Coin", "hud_toast_coin", new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(40f, 0f), new Vector2(58f, 58f)).gameObject;
             tp.gameObject.SetActive(false);
             toastPanel = tp.gameObject;
+            UiSkin.Apply(c.transform, OverlaySkin);   // the notices' prefab, edited in Unity (Resources/UI/Skins, D-035)
         }
+
+        /// <summary>D-035: the editable prefab of the notice pill and the fade.</summary>
+        public const string OverlaySkin = "Overlay";
+#if UNITY_EDITOR
+        /// <summary>The overlay with a sample notice showing, for its editable prefab (UiSkinBaker).</summary>
+        public GameObject BuildSkinSample()
+        {
+            BuildOverlay();
+            Say("몽글 코인 +50");
+            return toastPanel.transform.parent.gameObject;
+        }
+#endif
         GameObject toastPanel, toastCoin; RectTransform toastRect;
 
         public void Say(string msg, float seconds = 2.4f)

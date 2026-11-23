@@ -233,7 +233,12 @@ namespace Mongle.Village
             album = new PhotoPanel(canvas.transform, "닫기", "다음 사진");
             album.Primary.onClick.AddListener(() => { album.Hide(); });
             album.Secondary.onClick.AddListener(() => { albumIndex++; ShowAlbumPage(); root.Audio.Play("click", 0.5f, 1.2f); });
+            baseUi.ApplySkin(SkinName);   // the village screen's prefab, edited in Unity (Resources/UI/Skins, D-035)
         }
+
+        /// <summary>D-035: the editable prefab of the village screen; parts made later get it laid over them with <see cref="SkinPart"/>.</summary>
+        public const string SkinName = "VillageScreen";
+        void SkinPart(Component part) { if (baseUi != null && part != null) baseUi.ApplySkinTo(part.transform); }
 
         public void ShowBubble(ToyActor actor, string line, float seconds) => ShowBubble(actor.Node("Head") ?? actor.transform, line, seconds);
 
