@@ -12,6 +12,15 @@ namespace Mongle.Core
         int next;
         AudioSource rub, bgm, puff;
         public float Master = 0.8f;
+        /// <summary>Settings (D-038): music and effects levels on top of Master; 0.7 / 0.85 are the game's own mix.</summary>
+        public float Music = 0.7f, Effects = 0.85f;
+        float Fx => Master * Effects / 0.85f;
+
+        public void SetVolumes(float master, float music, float effects)
+        {
+            Master = Mathf.Clamp01(master); Music = Mathf.Clamp01(music); Effects = Mathf.Clamp01(effects);
+            if (bgm != null) bgm.volume = 0.12f * (Master / 0.8f) * (Music / 0.7f);
+        }
         System.Random rng = new System.Random(7);
 
         void Awake()
@@ -28,7 +37,7 @@ namespace Mongle.Core
         {
             if (!clips.TryGetValue(name, out var c)) return;
             var s = pool[next++ % pool.Length];
-            s.pitch = pitch; s.volume = Mathf.Clamp01(volume) * Master; s.clip = c; s.Play();
+            s.pitch = pitch; s.volume = Mathf.Clamp01(volume) * Fx; s.clip = c; s.Play();
         }
 
         /// <summary>Continuous rub texture: volume follows hand speed.</summary>
@@ -36,7 +45,7 @@ namespace Mongle.Core
         {
             if (rub.clip == null) { rub.clip = clips["rub"]; }
             if (level > 0.01f && !rub.isPlaying) rub.Play();
-            rub.volume = Mathf.Lerp(rub.volume, Mathf.Clamp01(level) * 0.6f * Master, 0.4f);
+            rub.volume = Mathf.Lerp(rub.volume, Mathf.Clamp01(level) * 0.6f * Fx, 0.4f);
             if (level <= 0.01f && rub.volume < 0.02f && rub.isPlaying) rub.Stop();
         }
 
@@ -44,7 +53,7 @@ namespace Mongle.Core
         {
             if (puff.clip == null) puff.clip = clips["puffloop"];
             if (level > 0.01f && !puff.isPlaying) puff.Play();
-            puff.volume = Mathf.Lerp(puff.volume, Mathf.Clamp01(level) * 0.5f * Master, 0.4f);
+            puff.volume = Mathf.Lerp(puff.volume, Mathf.Clamp01(level) * 0.5f * Fx, 0.4f);
             if (level <= 0.01f && puff.volume < 0.02f && puff.isPlaying) puff.Stop();
         }
 

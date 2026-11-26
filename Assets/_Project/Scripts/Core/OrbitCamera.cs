@@ -82,15 +82,18 @@ namespace Mongle.Core
                     if ((f.position - pressPos).magnitude > dragThresholdPixels)
                     {
                         WasDragging = true;
-                        targetYaw -= f.delta.x * degreesPerPixel;
-                        targetPitch = Mathf.Clamp(targetPitch - f.delta.y * degreesPerPixel, minPitch, maxPitch);
+                        float dpp = degreesPerPixel * GameSettings.MouseScale;   // settings: mouse sensitivity (D-038)
+                        targetYaw -= f.delta.x * dpp;
+                        targetPitch = Mathf.Clamp(targetPitch - f.delta.y * dpp, minPitch, maxPitch);
                     }
                 }
                 if (f.released || !f.held) pressing = false;
                 if (allowZoom && Mathf.Abs(f.scroll) > 0.001f)
                     targetDistance = Mathf.Clamp(targetDistance * (1f - Mathf.Clamp(f.scroll * zoomPerScroll, -0.15f, 0.15f)), minDistance, maxDistance);
                 if (allowPan) Pan();
+                PadOrbit();
             }
+            if (cam != null && baseFov > 0f) cam.fieldOfView = baseFov * GameSettings.FovScale;   // settings: field of view (D-038)
 
             float k = 1f - Mathf.Exp(-Time.unscaledDeltaTime / Mathf.Max(0.01f, smooth));
             yaw = Mathf.LerpAngle(yaw, targetYaw, k);
@@ -117,6 +120,23 @@ namespace Mongle.Core
         {
             target += new Vector3(delta.x, 0f, delta.z);
             if (allowPan) { target.x = Mathf.Clamp(target.x, panMin.x, panMax.x); target.z = Mathf.Clamp(target.z, panMin.y, panMax.y); }
+        }
+
+        /// <summary>Controller: right stick orbits, left stick slides (where panning is allowed), shoulders zoom; speed = controller sensitivity (D-038).</summary>
+        void PadOrbit()
+        {
+            var pad = UnityEngine.InputSystem.Gamepad.current; if (pad == null) return;
+            float s = GameSettings.PadScale * Time.unscaledDeltaTime;
+            var r = pad.rightStick.ReadValue();
+            if (allowRotate && r.sqrMagnitude > 0.02f) { targetYaw += r.x * 120f * s; targetPitch = Mathf.Clamp(targetPitch - r.y * 90f * s, minPitch, maxPitch); }
+            float z = (pad.rightShoulder.isPressed ? 1f : 0f) - (pad.leftShoulder.isPressed ? 1f : 0f);
+            if (allowZoom && z != 0f) targetDistance = Mathf.Clamp(targetDistance * (1f - z * 1.2f * s), minDistance, maxDistance);
+            var l = pad.leftStick.ReadValue();
+            if (allowPan && l.sqrMagnitude > 0.02f)
+            {
+                var right = transform.right; right.y = 0; right.Normalize(); var fwd = transform.forward; fwd.y = 0; fwd.Normalize();
+                Slide((right * l.x + fwd * l.y) * (distance * 0.9f * s));
+            }
         }
 
         void Pan()

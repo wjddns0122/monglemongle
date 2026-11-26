@@ -26,7 +26,8 @@ namespace Mongle.EditorTools
     /// </summary>
     public static class UiSkinBaker
     {
-        public const string Dir = "Assets/_Project/Resources/UI/Skins";
+        /// <summary>D-039: the prefabs live in the UI folder, one subfolder per scene (<see cref="UiEditFolder.SkinPath"/>).</summary>
+        public const string Dir = UiEditFolder.Root;
 
         class Screen
         {
@@ -82,15 +83,16 @@ namespace Mongle.EditorTools
 
         public static List<string> BakeAll(bool overwrite, ICollection<string> remake = null)
         {
-            Directory.CreateDirectory(Dir);
             var made = new List<string>();
             foreach (var s in Screens)
             {
-                var path = Dir + "/" + s.name + ".prefab";
+                var path = UiEditFolder.SkinPath(s.name);
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
                 if (!overwrite && File.Exists(path) && (remake == null || !remake.Contains(s.name))) continue;
                 Bake(s, path); made.Add(s.label);
             }
             AssetDatabase.SaveAssets(); AssetDatabase.Refresh();
+            UiEditFolder.RefreshIndex();
             return made;
         }
 
@@ -181,7 +183,7 @@ namespace Mongle.EditorTools
                 Directory.CreateDirectory(outDir);
                 foreach (var s in Screens)
                 {
-                    var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(Dir + "/" + s.name + ".prefab"); if (prefab == null) continue;
+                    var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(UiEditFolder.SkinPath(s.name)); if (prefab == null) continue;
                     var scene = EditorSceneManager.NewPreviewScene();
                     GameObject built = null;
                     try

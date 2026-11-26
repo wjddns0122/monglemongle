@@ -18,6 +18,9 @@ namespace Mongle.EditorTools
         const string SceneDir = "Assets/_Project/Scenes/";
         static Material M(string n, Color c, float s = 0.15f, Color? emit = null) => ContentBuilder.GetOrCreateMat(n, c, s, 0f, emit);
 
+        /// <summary>D-036: stepping stones use the rounded 48-sided pebble mesh instead of the 20-sided cylinder.</summary>
+        static GameObject Pebble(GameObject g) { g.GetComponent<MeshFilter>().sharedMesh = VillageDecor.PebbleMesh(); return g; }
+
         static GameObject Prim(PrimitiveType t, string name, Vector3 pos, Vector3 scale, Material mat, Transform parent = null, Vector3? euler = null, bool collider = false)
         {
             var g = GameObject.CreatePrimitive(t);
@@ -376,7 +379,7 @@ namespace Mongle.EditorTools
             {
                 float px = Mathf.Lerp(-PathHalfX + 0.6f, PathHalfX - 0.6f, R()), pz = ParkCenter.z + Mathf.Lerp(-PathHalfZ + 0.6f, PathHalfZ - 0.6f, R()); float rr = 0.5f + R() * 1.1f;
                 var patch = Prim(PrimitiveType.Cylinder, "Patch", new Vector3(px, 0.0015f + i * 0.00002f, pz), new Vector3(rr * 2f, 0.001f, rr * 1.6f), i % 2 == 0 ? grassPatchA : grassPatchB, world);
-                patch.GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.Off;
+                patch.GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.Off; patch.GetComponent<MeshFilter>().sharedMesh = VillageDecor.DiscMesh();   // D-036
             }
             // ---- where the big things stand (used to keep trees, bushes and flowers clear of them) ----
             var keepOut = new System.Collections.Generic.List<(Vector3 c, float r)>
@@ -402,9 +405,9 @@ namespace Mongle.EditorTools
             var stone2 = M("M_PathB", new Color(1f, 0.87f, 0.68f), 0.05f);
             int si = 0;
             for (float x = -3.45f; x < -0.15f; x += 0.38f, si++)
-                Prim(PrimitiveType.Cylinder, "Stone", new Vector3(x, 0.006f, 0.2f + (si % 2 == 0 ? 0.04f : -0.05f)), new Vector3(0.32f + (si % 3) * 0.03f, 0.008f, 0.3f), si % 2 == 0 ? stone : stone2, world, new Vector3(0, si * 37f, 0));
+                Pebble(Prim(PrimitiveType.Cylinder, "Stone", new Vector3(x, 0.006f, 0.2f + (si % 2 == 0 ? 0.04f : -0.05f)), new Vector3(0.32f + (si % 3) * 0.03f, 0.008f, 0.3f), si % 2 == 0 ? stone : stone2, world, new Vector3(0, si * 37f, 0)));
             for (float z = -1.0f; z < 1.45f; z += 0.38f, si++)
-                Prim(PrimitiveType.Cylinder, "Stone", new Vector3(-0.3f + (si % 2 == 0 ? 0.04f : -0.05f), 0.006f, z), new Vector3(0.3f, 0.008f, 0.32f + (si % 3) * 0.03f), si % 2 == 0 ? stone : stone2, world, new Vector3(0, si * 29f, 0));
+                Pebble(Prim(PrimitiveType.Cylinder, "Stone", new Vector3(-0.3f + (si % 2 == 0 ? 0.04f : -0.05f), 0.006f, z), new Vector3(0.3f, 0.008f, 0.32f + (si % 3) * 0.03f), si % 2 == 0 ? stone : stone2, world, new Vector3(0, si * 29f, 0)));
             void StonePath(Vector3 a, Vector3 b)
             {
                 pathSegs.Add((a, b)); stoneSegs.Add((a, b));
@@ -412,7 +415,7 @@ namespace Mongle.EditorTools
                 for (float t = 0.19f; t < len - 0.1f; t += 0.38f, si++)
                 {
                     var p = a + d * (t / len) + n * (si % 2 == 0 ? 0.045f : -0.045f); p.y = 0.006f;
-                    Prim(PrimitiveType.Cylinder, "Stone", p, new Vector3(0.31f + (si % 3) * 0.03f, 0.008f, 0.3f), si % 2 == 0 ? stone : stone2, world, new Vector3(0, si * 33f, 0));
+                    Pebble(Prim(PrimitiveType.Cylinder, "Stone", p, new Vector3(0.31f + (si % 3) * 0.03f, 0.008f, 0.3f), si % 2 == 0 ? stone : stone2, world, new Vector3(0, si * 33f, 0)));
                 }
             }
             var hubStone = new Vector3(-0.3f, 0f, 1.6f);

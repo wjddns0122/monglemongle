@@ -136,7 +136,8 @@ namespace Mongle.UI
         {
             StorageMode = true; world = w; questMode = false; quests = new List<QuestDefinition>();
             title.text = "보관함"; keeper.text = "내 물건"; SetLine("산 물건은 모두 여기 있어요. 가구는 '마을에 놓기', 악세서리는 '꾸며주기'로 친구에게 입혀요.");
-            items = catalogItems.Where(i => i != null && w.Owned(i.id) > 0).ToList(); page = 0;
+            // sorted by kind: furniture, then plants, then accessories (the 전체 / 가구 / 악세서리 tabs read the same way)
+            items = catalogItems.Where(i => i != null && w.Owned(i.id) > 0).OrderBy(i => (int)i.category).ToList(); page = 0;
             root.SetActive(true); Rebuild();
             Canvas.ForceUpdateCanvases(); storeScroll.verticalNormalizedPosition = 1f;   // opens at the top
         }

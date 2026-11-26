@@ -69,6 +69,7 @@ namespace Mongle.Core
             Saves = string.IsNullOrEmpty(path) ? SaveService.CreateDefault() : new SaveService(path);
             Pointer = gameObject.AddComponent<PointerInput>();
             Audio = gameObject.AddComponent<Sfx>();
+            GameSettings.Apply();   // language, quality, screen, brightness, audio (D-038)
             BuildOverlay();
             Boot();
         }
@@ -91,7 +92,7 @@ namespace Mongle.Core
                     if (Patient != null && Patient.PhotoConfirmed) MovePatientIn(); // quit right after the photo: finish moving in
                     if (LoadResult.data.saveVersion < 5) MigrateCupcakeHouse();
                     Settings = LoadResult.data.settings ?? new SettingsSave();
-                    Audio.Master = Settings.masterVolume;
+                    GameSettings.AdoptLegacyVolume(Settings.masterVolume); GameSettings.ApplyAudio();
                     break;
                 case SaveStatus.None:
                     World.Reset(); Residents.Clear(); SetPatient(null);
@@ -310,11 +311,70 @@ namespace Mongle.Core
             toastCoin.SetActive(coin);
             toast.rectTransform.anchoredPosition = new Vector2(coin ? 34f : 0f, 0f);
             var fit = toastRect.GetComponent<FitToText>(); fit.padX = coin ? 178f : 110f; fit.Apply();
+            // a new notice appears straight in its place (top or under the banner); only later changes glide
+            if (!toastLow)
+            {
+                SaveToastPlace();
+                toastLift = 0f; toastRect.anchoredPosition = toastPos;
+                toastLift = ToastWant(); toastRect.anchoredPosition = toastPos + new Vector2(0f, toastLift);
+            }
         }
+
+        /// <summary>
+        /// A scene says when a window covers most of the screen (the village shop, storage, quest board): notices then show at
+        /// the bottom edge, below the window's contents, instead of over its title, tabs and buttons.
+        /// </summary>
+        public static Func<bool> WindowOpen;
+
+        /// <summary>
+        /// A scene says where notices may rise to when the top of its screen is free (the village's title banner has gone): that
+        /// band in screen pixels, centred on the screen's middle and as wide as the gap between the top buttons. Width 0 (or no
+        /// scene asking) keeps notices in their own place under the banner.
+        /// </summary>
+        public static Func<Rect> TopFree;
+        bool toastLow, toastSaved; Vector2 toastMin, toastMax, toastPivot, toastPos;
+        float toastLift;   // how far the notice has risen above its own place (canvas units)
 
         void Update()
         {
-            if (toastPanel != null && toastPanel.activeSelf && Time.unscaledTime > toastUntil) toastPanel.SetActive(false);
+            if (toastPanel == null || !toastPanel.activeSelf) return;
+            if (Time.unscaledTime > toastUntil) { toastPanel.SetActive(false); return; }
+            bool low = (WindowOpen != null && WindowOpen()) || Mongle.UI2.UiFront.AnyWindowOpen;
+            if (low != toastLow)
+            {
+                SaveToastPlace();
+                toastLow = low;
+                if (low) { toastRect.anchorMin = toastRect.anchorMax = toastRect.pivot = new Vector2(0.5f, 0f); toastRect.anchoredPosition = new Vector2(0f, 20f); }
+                else { toastRect.anchorMin = toastMin; toastRect.anchorMax = toastMax; toastRect.pivot = toastPivot; toastLift = ToastWant(); toastRect.anchoredPosition = toastPos + new Vector2(0f, toastLift); }
+            }
+            if (toastLow) return;
+            // the notice glides up into the banner's place once that has gone (and back down if it comes again)
+            float want = ToastWant();
+            if (Mathf.Approximately(want, toastLift)) return;
+            toastLift = Mathf.MoveTowards(toastLift, want, Time.unscaledDeltaTime * 600f);
+            toastRect.anchoredPosition = toastPos + new Vector2(0f, toastLift);
+        }
+
+        /// <summary>The notice's own place (as built / as the Overlay prefab puts it), kept before it is moved.</summary>
+        void SaveToastPlace()
+        {
+            if (toastSaved || toastRect == null) return;
+            toastSaved = true;
+            toastMin = toastRect.anchorMin; toastMax = toastRect.anchorMax; toastPivot = toastRect.pivot; toastPos = toastRect.anchoredPosition;
+        }
+
+        /// <summary>How far up the notice should sit: to the top of <see cref="TopFree"/> when it fits there, else not at all.</summary>
+        float ToastWant()
+        {
+            if (TopFree == null || toastRect == null) return 0f;
+            var free = TopFree();
+            if (free.width <= 0f) return 0f;
+            var c = toastRect.GetComponentInParent<Canvas>();
+            float s = c != null && c.scaleFactor > 0f ? c.scaleFactor : 1f;
+            if (toastRect.rect.width * s > free.width) return 0f;   // a long line would run into the coins: it stays below
+            var w = new Vector3[4]; toastRect.GetWorldCorners(w);   // overlay canvas: world = screen pixels
+            float ownTop = w[1].y - toastLift * s;
+            return Mathf.Max(0f, (free.yMax - ownTop) / s);
         }
     }
 }

@@ -7,6 +7,11 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: MP_Cotton
+    second: {fileID: 2100000, guid: bf38a4a1369fe47689e535ddac4e866c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: M_Button
     second: {fileID: 2100000, guid: e30e2a592d6c8439999065dc9245e445, type: 2}
   - first:
@@ -27,6 +32,11 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: M_TearDeep
+    second: {fileID: 2100000, guid: b8189aae0884d49dcaf1e30090151431, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: M_TearInside
     second: {fileID: 2100000, guid: 699508a7e3de848b7bd01c389639db22, type: 2}
   - first:
@@ -34,6 +44,11 @@ ModelImporter:
       assembly: UnityEngine.CoreModule
       name: M_Thorn
     second: {fileID: 2100000, guid: e2721fd9f718548f2b0265bd7e11b620, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Thread
+    second: {fileID: 2100000, guid: ee4225d4f0e5e46daa65d939083bb65a, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -456,7 +471,7 @@ ModelImporter:
   tangentSpace:
     normalSmoothAngle: 60
     normalImportMode: 0
-    tangentImportMode: 3
+    tangentImportMode: 2
     normalCalculationMode: 4
     legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0
     blendShapeNormalImportMode: 1

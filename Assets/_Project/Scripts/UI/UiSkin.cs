@@ -9,7 +9,8 @@ using Object = UnityEngine.Object;
 namespace Mongle.UI
 {
     /// <summary>
-    /// D-035: every screen the code draws has an editable prefab, Resources/UI/Skins/&lt;screen&gt;.prefab (made by the Mongle > UI menu).
+    /// D-035: every screen the code draws has an editable prefab (made by the Mongle > UI menu); since D-039 they live in the UI folder
+    /// Assets/_UI수정 (one subfolder per scene, listed in Resources/UI/SkinIndex) and each scene holds an editable copy of its screen.
     /// Right after the code builds (a part of) the screen, <see cref="Apply(Transform, string, string)"/> lays the prefab over it,
     /// object by object (matched by name path). Only what the designer changed in the prefab since it was made is laid over
     /// (each part remembers how it was made, <see cref="UiSkinPart.baked"/>): position / size / anchors / scale / rotation,
@@ -28,7 +29,25 @@ namespace Mongle.UI
         /// <summary>Settings that hold events or links to other objects: never copied from the prefab.</summary>
         static readonly HashSet<string> Skip = new HashSet<string> { "m_OnClick", "m_OnCullStateChanged", "m_Navigation", "m_SpriteState", "text" };
 
-        public static GameObject Find(string skin) => string.IsNullOrEmpty(skin) ? null : Resources.Load<GameObject>(Folder + "/" + skin);
+        static UiSkinIndex index;
+
+        /// <summary>The screen prefab named <paramref name="skin"/>: from the UI folder's list (D-039, Resources/UI/SkinIndex),
+        /// else from the old place Resources/UI/Skins.</summary>
+        public static GameObject Find(string skin)
+        {
+            if (string.IsNullOrEmpty(skin)) return null;
+            if (index == null) index = Resources.Load<UiSkinIndex>(UiSkinIndex.ResourcePath);
+            var found = index != null ? index.Get(skin) : null;
+            return found != null ? found : Resources.Load<GameObject>(Folder + "/" + skin);
+        }
+
+        /// <summary>D-040: the Figma screen named <paramref name="name"/> (listed in Resources/UI/SkinIndex).</summary>
+        public static GameObject FindFront(string name)
+        {
+            if (string.IsNullOrEmpty(name)) return null;
+            if (index == null) index = Resources.Load<UiSkinIndex>(UiSkinIndex.ResourcePath);
+            return index != null ? index.GetFront(name) : null;
+        }
 
         /// <summary>Lays skin <paramref name="skin"/> (or its part at <paramref name="path"/>, e.g. "Shelf") over <paramref name="built"/>.</summary>
         public static bool Apply(Transform built, string skin, string path = null)
@@ -254,7 +273,15 @@ namespace Mongle.UI
                 if (now != look.json)
                 {
                     var partial = Partial(now, look.json);
-                    if (partial != null) { JsonUtility.FromJsonOverwrite(partial, dst); changed = true; }
+                    if (partial != null)
+                    {
+                        // new words replace only the words the screen had when the prefab was made: what the game wrote itself
+                        // (a name, each list item's own label, a live message) stays the game's (D-039)
+                        string keep = dst is Text dt && dt.text != BakedWords(look.json) ? dt.text : null;
+                        JsonUtility.FromJsonOverwrite(partial, dst);
+                        if (keep != null) ((Text)dst).text = keep;
+                        changed = true;
+                    }
                 }
                 if (Picture(src) != look.picture) { SetPicture(dst, Picture(src)); changed = true; }
                 if (src is Text st && st.font != look.font && dst is Text tt) { tt.font = st.font; changed = true; }
@@ -263,6 +290,15 @@ namespace Mongle.UI
             if (!changed) return;
             if (dst is Graphic g) g.SetAllDirty();
             if (dst is FitToText f && f.isActiveAndEnabled) f.Apply();
+        }
+
+        [Serializable] class Words { public string m_Text; }
+
+        /// <summary>The words a Text had when the prefab was made (from its stored settings).</summary>
+        static string BakedWords(string json)
+        {
+            try { return JsonUtility.FromJson<Words>(json)?.m_Text; }
+            catch (ArgumentException) { return null; }
         }
 
         static Object Picture(Component c) => c is Image i ? i.sprite : c is RawImage r ? (Object)r.texture : null;

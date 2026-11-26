@@ -56,6 +56,45 @@ namespace Mongle.EditorTools
         {
             var m = new Mesh { name = name }; m.SetVertices(v); m.SetTriangles(t, 0); m.RecalculateNormals(); m.RecalculateBounds(); return m;
         }
+
+        // D-036: lawn patches and stepping stones were Unity cylinders: 20-sided outlines, and the 1 mm side wall of a patch
+        // read as a dark crack in the grass up close. Both meshes keep the unit cylinder's frame (radius 0.5, y -1..1), so
+        // the scales SceneBuilder already uses (and the ones in the saved Village scene) stay right.
+        static Mesh disc, pebble;
+        /// <summary>A flat 64-sided disc at the unit cylinder's top (y = 1), facing up, no side wall.</summary>
+        public static Mesh DiscMesh()
+        {
+            if (disc != null) return disc;
+            disc = AssetDatabase.LoadAssetAtPath<Mesh>(MeshDir + "ME_Disc.asset");
+            if (disc != null) return disc;
+            const int n = 64; var v = new System.Collections.Generic.List<Vector3> { new Vector3(0, 1, 0) }; var t = new System.Collections.Generic.List<int>();
+            for (int i = 0; i < n; i++) { float a = i * Mathf.PI * 2f / n; v.Add(new Vector3(Mathf.Cos(a) * 0.5f, 1f, Mathf.Sin(a) * 0.5f)); }
+            for (int i = 0; i < n; i++) { t.Add(0); t.Add(1 + (i + 1) % n); t.Add(1 + i); }
+            var m = FromLists("ME_Disc", v, t); m.SetUVs(0, v.ConvertAll(p => new Vector2(p.x + 0.5f, p.z + 0.5f)));
+            return disc = SaveMesh("ME_Disc", m);
+        }
+        /// <summary>A 48-sided stepping stone with a softly rounded rim, in the unit cylinder's frame.</summary>
+        public static Mesh PebbleMesh()
+        {
+            if (pebble != null) return pebble;
+            pebble = AssetDatabase.LoadAssetAtPath<Mesh>(MeshDir + "ME_Pebble.asset");
+            if (pebble != null) return pebble;
+            const int n = 48; var prof = new[] { new Vector2(0.42f, 1f), new Vector2(0.47f, 0.85f), new Vector2(0.495f, 0.5f), new Vector2(0.5f, 0f), new Vector2(0.5f, -1f) };
+            var v = new System.Collections.Generic.List<Vector3> { new Vector3(0, 1, 0) }; var t = new System.Collections.Generic.List<int>();
+            foreach (var pr in prof) for (int i = 0; i < n; i++) { float a = i * Mathf.PI * 2f / n; v.Add(new Vector3(Mathf.Cos(a) * pr.x, pr.y, Mathf.Sin(a) * pr.x)); }
+            v.Add(new Vector3(0, -1, 0)); int bottom = v.Count - 1;
+            for (int i = 0; i < n; i++) { t.Add(0); t.Add(1 + (i + 1) % n); t.Add(1 + i); }
+            for (int r = 0; r < prof.Length - 1; r++)
+                for (int i = 0; i < n; i++)
+                {
+                    int a0 = 1 + r * n + i, a1 = 1 + r * n + (i + 1) % n, b0 = a0 + n, b1 = a1 + n;
+                    t.Add(a0); t.Add(a1); t.Add(b1); t.Add(a0); t.Add(b1); t.Add(b0);
+                }
+            int last = 1 + (prof.Length - 1) * n;
+            for (int i = 0; i < n; i++) { t.Add(bottom); t.Add(last + i); t.Add(last + (i + 1) % n); }
+            var m = FromLists("ME_Pebble", v, t); m.SetUVs(0, v.ConvertAll(p => new Vector2(p.x + 0.5f, p.z + 0.5f)));
+            return pebble = SaveMesh("ME_Pebble", m);
+        }
         /// <summary>Five-point star, outer radius 1, facing +Z, depth 0.25, flat faces.</summary>
         static Mesh StarMesh()
         {

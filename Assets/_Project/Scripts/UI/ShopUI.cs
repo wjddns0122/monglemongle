@@ -46,7 +46,7 @@ namespace Mongle.UI
             UiKit.TitleLabel(back.transform, "돌아가기", 40, FigmaBrown, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(250f, 80f));
             back.gameObject.SetActive(false);
             // settings (D-023): the Figma gear at the top right; the window itself is not made yet
-            settings = UiKit.FigButton(Canvas.transform, "hud_settings", () => Mongle.Core.GameRoot.Instance?.Say("설정은 곧 열려요"), UiKit.Edge.End, UiKit.Edge.Start, 0f, 0f, "Btn_설정");
+            settings = UiKit.FigButton(Canvas.transform, "hud_settings", Mongle.UI2.UiFront.OpenSettings, UiKit.Edge.End, UiKit.Edge.Start, 0f, 0f, "Btn_설정");
             UiKit.HiddenLabel(settings, "설정");
             BuildDialog();
             BuildStamp();
@@ -60,7 +60,7 @@ namespace Mongle.UI
         /// D-035: lays the screen's editable prefab (Resources/UI/Skins/&lt;name&gt;, edited in Unity) over what the code just built.
         /// Parts made later — the tool tiles, the dress-up list — get theirs when they are made.
         /// </summary>
-        public void ApplySkin(string name) { skin = name; UiSkin.Apply(Canvas.transform, name); }
+        public void ApplySkin(string name) { skin = name; UiSkin.Apply(Canvas.transform, name); Mongle.UI2.UiFront.AttachFor(Canvas.transform, name); }   // D-040: the Figma screens in front
         /// <summary>Lays the screen's prefab over a part made after <see cref="ApplySkin"/> (a panel, a list filled again).</summary>
         public void ApplySkinTo(Transform part) { if (skin != null && part != null) UiSkin.ApplyUnder(Canvas.transform, part, skin); }
         public string Skin => skin;
@@ -332,7 +332,9 @@ namespace Mongle.UI
             var p = UiKit.Panel(Canvas.transform, "Custom", UiKit.Paper, new Vector2(1f, 0.5f), new Vector2(-panelW / 2f - 40f, 0), new Vector2(panelW, panelH), false);
             custom = p.rectTransform; accButtons.Clear();
             UiKit.Label(custom, "꾸며주기", 56, UiKit.Brown, new Vector2(0.5f, 1f), new Vector2(0, -60), new Vector2(panelW - 40f, 80));
-            UiKit.Label(custom, "고르면 바로 입어봐요. 다시 누르면 벗어요", 28, UiKit.Brown, new Vector2(0.5f, 1f), new Vector2(0, -120), new Vector2(panelW - 40f, 50), TextAnchor.MiddleCenter, FontStyle.Normal);
+            var hint = UiKit.Label(custom, "고르면 바로 입어봐요. 다시 누르면 벗어요", 28, UiKit.Brown, new Vector2(0.5f, 1f), new Vector2(0, -120), new Vector2(panelW - 40f, 50), TextAnchor.MiddleCenter, FontStyle.Normal);
+            // one line under the title: a narrow panel makes the words smaller instead of breaking them over three lines
+            hint.resizeTextForBestFit = true; hint.resizeTextMinSize = 18; hint.resizeTextMaxSize = 28; hint.verticalOverflow = VerticalWrapMode.Truncate;
             // rows share the space between the header and the confirm button
             float top = 160f, bottom = 150f, rowH = Mathf.Min(150f, (panelH - top - bottom) / rows);
             float bw = cols == 2 ? 290f : 440f, bh = Mathf.Min(124f, rowH - 14f);

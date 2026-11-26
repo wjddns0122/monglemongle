@@ -246,20 +246,35 @@ namespace Mongle.UI
             bool paper = IsPaper(color);
             img.sprite = sheet; img.type = Image.Type.Sliced; img.pixelsPerUnitMultiplier = 2f;
             img.color = paper ? new Color(0.976f, 0.929f, 0.867f, color.a) : color;   // the Figma cream #F9EDDD
-            Stitch(img, paper ? "kit_sheet_stitch" : "kit_sheet_stitch_w", 2f);
+            Stitch(img, false, paper ? new Color(0.784f, 0.882f, 0.918f, 0.87f) : new Color(1f, 1f, 1f, 0.87f));
             return img;
         }
 
         /// <summary>Cream/paper-like colours get the Figma cream sheet with its blue stitch.</summary>
         static bool IsPaper(Color c) => c.r > 0.95f && c.g > 0.88f && c.b > 0.74f;
 
-        /// <summary>The stitch layer of a kit sprite, stretched over its fill (same slicing), never catching clicks.</summary>
-        static Image Stitch(Image fill, string sprite, float ppuMultiplier)
+        /// <summary>
+        /// The dashed stitch inside a kit sheet or pill, over its fill and never catching clicks. It is drawn as a shape
+        /// (<see cref="Mongle.UI2.SoftRect"/>) like the Figma screens' stitches, not as a 9-sliced picture: slicing stretched the dashes
+        /// on the long sides and broke them where a pill's round ends meet its straight edges ("닫기" and other wide buttons).
+        /// Drawn, every dash keeps one length and spacing at any size. Measures are the kit pictures' (kit_pill_stitch:
+        /// inset 24, line 7, dash 27, gap 14 px on a 233 px-high pill; kit_sheet_stitch: inset 26.5, line 2, dash 26, gap 14 px at 2x).
+        /// </summary>
+        static Mongle.UI2.SoftRect Stitch(Image fill, bool pill, Color dashes)
         {
-            var sp = UiSprite(sprite); if (sp == null) return null;
             var rt = Rect(fill.transform, "Stitch", Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             rt.SetAsFirstSibling();
-            var st = rt.gameObject.AddComponent<Image>(); st.sprite = sp; st.type = Image.Type.Sliced; st.pixelsPerUnitMultiplier = ppuMultiplier; st.raycastTarget = false;
+            var st = rt.gameObject.AddComponent<Mongle.UI2.SoftRect>();
+            st.raycastTarget = false;
+            st.color = new Color(1f, 1f, 1f, 0f);   // no fill of its own: only the dashes
+            float h = ((RectTransform)fill.transform).sizeDelta.y;
+            float k = pill ? Mathf.Max(20f, h) * 0.98f / 233f : 0.5f;   // texture px → UI units (pills scale with their height)
+            st.radius = pill ? new Vector4(999f, 999f, 999f, 999f) : new Vector4(28f, 28f, 28f, 28f);
+            st.stitch = true; st.stitchColor = dashes;
+            st.stitchInset = (pill ? 24f : 26.5f) * k;
+            st.stitchWidth = pill ? 7f * k : 2f;
+            st.dash = (pill ? 27f : 26f) * k; st.gap = 14f * k;
+            st.roundCaps = pill;
             return st;
         }
 
@@ -312,8 +327,7 @@ namespace Mongle.UI
             var pill = size.x >= 90f && size.y >= 44f ? UiSprite("kit_pill") : null;
             if (pill != null)
             {
-                img.sprite = pill; Stitch(img, "kit_pill_stitch", 2f); Slice(img, true);
-                var st = img.transform.Find("Stitch"); if (st != null) st.GetComponent<Image>().color = new Color(1f, 1f, 1f, 0.9f);
+                img.sprite = pill; Stitch(img, true, new Color(1f, 1f, 1f, 0.9f)); Slice(img, true);
             }
             else { img.sprite = Round; img.type = Image.Type.Sliced; }
             var b = img.gameObject.AddComponent<Button>();

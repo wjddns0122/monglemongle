@@ -1,7 +1,14 @@
 {
   "name": "Mongle.Runtime",
   "rootNamespace": "Mongle",
-  "references": ["Unity.InputSystem","Unity.AI.Navigation","Unity.Timeline"],
+  "references": [
+    "Unity.InputSystem",
+    "Unity.AI.Navigation",
+    "Unity.Timeline",
+    "Unity.RenderPipelines.Core.Runtime",
+    "Unity.RenderPipelines.Universal.Runtime",
+    "Unity.TextMeshPro"
+  ],
   "includePlatforms": [],
   "excludePlatforms": [],
   "allowUnsafeCode": false,

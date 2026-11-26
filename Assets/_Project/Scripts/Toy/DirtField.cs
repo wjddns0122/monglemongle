@@ -84,7 +84,7 @@ namespace Mongle.Toy
                 };
                 go.transform.localPosition = Vector3.Lerp(blob.pFull, blob.pFlat, deflate0);
                 go.transform.localRotation = Quaternion.Slerp(blob.qFull, blob.qFlat, deflate0);
-                go.transform.localScale = new Vector3(r * 2f, r * 2f, 0.012f);
+                go.transform.localScale = new Vector3(r * 2f, r * 2f, Thick);
                 var rend = go.GetComponent<Renderer>();
                 if (mat != null) rend.sharedMaterial = mat;
                 rend.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
@@ -104,6 +104,10 @@ namespace Mongle.Toy
             if (retry <= 0f || (hit && (pt - target).magnitude < spread + retry)) return hit;
             return p.Raycast(new Ray(target + outward * 0.04f, -outward), out pt, out n, out bone, 0.2f);
         }
+
+        /// <summary>D-036: blob thickness along the surface normal. 12 mm made every stain a cluster of beads (the bee's
+        /// honey looked like an orange bead pile); 4 mm reads as a flat splotch.</summary>
+        const float Thick = 0.004f;
 
         void Update() { SyncPositions(); }
 
@@ -130,7 +134,7 @@ namespace Mongle.Toy
                 bool on = h > 0.001f && visible;
                 if (b.t.gameObject.activeSelf != on) b.t.gameObject.SetActive(on);
                 float s = Mathf.Lerp(0.15f, 1f, h) * b.baseRadius * 2f;
-                b.t.localScale = new Vector3(s / b.t.parent.lossyScale.x, s / b.t.parent.lossyScale.y, 0.012f / b.t.parent.lossyScale.z);
+                b.t.localScale = new Vector3(s / b.t.parent.lossyScale.x, s / b.t.parent.lossyScale.y, Thick / b.t.parent.lossyScale.z);
                 var c = Color.Lerp(cleanColor, dirtColor, Mathf.Clamp01(h * 1.2f));
                 mpb.SetColor("_BaseColor", c);
                 b.r.SetPropertyBlock(mpb);

@@ -146,11 +146,19 @@ namespace Mongle.Village
         {
             var p = UiKit.Panel(canvas.transform, "DressPanel", UiKit.Paper, new Vector2(0.5f, 0f), new Vector2(0, 150), new Vector2(1500, 240), true);
             dressPanel = p.gameObject;
-            dressTitle = UiKit.Label(p.transform, "", 36, UiKit.Brown, new Vector2(0.5f, 1f), new Vector2(-120, -36), new Vector2(1100, 50));
+            // one row: the words and the accessories share one column left of the close button (so they line up with each other),
+            // the button sits in the middle of the right end
+            float right = -(DressPad + DressCloseW + DressGap);
+            dressTitle = UiKit.Label(p.transform, "", 36, UiKit.Brown, new Vector2(0.5f, 1f), Vector2.zero, new Vector2(100, 50));
+            var trt = dressTitle.rectTransform;
+            trt.anchorMin = new Vector2(0f, 1f); trt.anchorMax = new Vector2(1f, 1f); trt.pivot = new Vector2(0.5f, 1f);
+            trt.offsetMin = new Vector2(DressPad, -78f); trt.offsetMax = new Vector2(right, -28f);
             dressTitle.name = "Title";
-            dressList = UiKit.Rect(p.transform, "List", new Vector2(0f, 0f), new Vector2(1f, 1f), new Vector2(20, 14), new Vector2(-300, -70));
-            UiKit.MakeButton(p.transform, "닫기", UiKit.Peach, new Vector2(1f, 0.5f), new Vector2(-150, -10), new Vector2(240, 100), CloseDress, 36);
+            dressList = UiKit.Rect(p.transform, "List", new Vector2(0f, 0f), new Vector2(1f, 1f), new Vector2(DressPad, 20), new Vector2(right, -84));
+            UiKit.MakeButton(p.transform, "닫기", UiKit.Peach, new Vector2(1f, 0.5f), new Vector2(-(DressPad + DressCloseW / 2f), 0f), new Vector2(DressCloseW, 100), CloseDress, 36);
         }
+
+        const float DressPad = 40f, DressCloseW = 240f, DressGap = 40f;
 
         public void CloseDress() { if (dressPanel != null) dressPanel.SetActive(false); Dressing = null; }
 
@@ -180,15 +188,16 @@ namespace Mongle.Village
             // one row of wide buttons for up to 4, two rows of up to 5 for more (9 accessories since D-010)
             int n = items.Count, rows = n <= 4 ? 1 : 2, cols = Mathf.CeilToInt(n / (float)rows);
             SizeDress(rows);
-            float listW = 1180f, listH = rows == 1 ? 156f : 266f;
+            float listW = dressList.rect.width > 1f ? dressList.rect.width : 1140f, listH = rows == 1 ? 156f : 266f;
             float step = n <= 3 ? 360f : listW / cols, rowH = listH / rows;
             float bw = Mathf.Min(340f, step - 16f), bh = Mathf.Min(110f, rowH - 14f);
             for (int i = 0; i < n; i++)
             {
                 var acc = items[i]; bool on = wearing(acc);
-                int row = i / cols, col = i % cols;
+                int row = i / cols, col = i % cols, inRow = Mathf.Min(cols, n - row * cols);
+                // each row is centred under the words (a short last row too)
                 var b = UiKit.MakeButton(dressList, "", on ? acc.uiColor : Color.Lerp(acc.uiColor, Color.white, 0.45f),
-                    new Vector2(0f, 1f), new Vector2(step * (col + 0.5f), -rowH * (row + 0.5f)), new Vector2(bw, bh), () => ToggleWear(acc));
+                    new Vector2(0.5f, 1f), new Vector2((col - (inRow - 1) / 2f) * step, -rowH * (row + 0.5f)), new Vector2(bw, bh), () => ToggleWear(acc));
                 UiKit.SetButtonText(b, "");
                 UiKit.Label(b.transform, (on ? "♥ " : "") + acc.displayName, rows == 1 ? 30 : 28, UiKit.Brown, new Vector2(0.5f, 0.5f), new Vector2(0, 14), new Vector2(bw - 12f, 44));
                 UiKit.Label(b.transform, on ? (rows == 1 ? "입는 중 · 누르면 벗어요" : "입는 중") : "가진 수 " + owned(acc), 22, UiKit.Brown, new Vector2(0.5f, 0.5f), new Vector2(0, -24), new Vector2(bw - 12f, 32), TextAnchor.MiddleCenter, FontStyle.Normal);

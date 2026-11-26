@@ -12,7 +12,7 @@ namespace Mongle.Toy
         public const int Count = 6;
         public readonly List<Transform> Anchors = new List<Transform>();
         ToyActor toy; SkinnedMeshRenderer tear; SurfaceProbe probe; UnityEngine.Mesh baked; System.Collections.Generic.List<Vector3> verts = new System.Collections.Generic.List<Vector3>();
-        public float Lateral = 0.02f, Lift = 0.004f; // stitches cross the gap and reach onto the fabric on both sides
+        public float Lateral = 0.0135f, Lift = 0.0015f; // stitches cross the gap and reach onto the fabric on both sides (D-037 tear: half-width 10 mm)
 
         public static SeamTracker Create(ToyActor toy, SkinnedMeshRenderer tear)
         {
@@ -50,7 +50,7 @@ namespace Mongle.Toy
                 float y = Mathf.Lerp(yTop, yBot, i / (float)(Count - 1));
                 float x = b.center.x + ((i & 1) == 0 ? -Lateral : Lateral);
                 if (probe.Raycast(new Ray(new Vector3(x, y, z0), Vector3.forward), out var p, out var n, 2f))
-                    Anchors[i].position = p + n * Lift;
+                { Anchors[i].position = p + n * Lift; Anchors[i].rotation = Quaternion.LookRotation(n, Vector3.up); } // forward = skin normal (threads, needle)
             }
         }
     }

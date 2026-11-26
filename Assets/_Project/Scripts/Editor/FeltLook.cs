@@ -28,6 +28,8 @@ namespace Mongle.EditorTools
 
         static readonly Dictionary<string, Preset> Presets = new Dictionary<string, Preset>
         {
+            // D-036: the bee's wings read as grey stones with fabric fuzz: a smooth pale satin with a soft glowy rim
+            { "MF150_Bee_Wing", new Preset { scale = 150, normal = 0.04f, tone = 0.02f, speck = 0f, rim = 0.45f, sub = 0.45f, smooth = 0.35f, rimColor = Color.white, subColor = new Color(1f, 0.95f, 0.85f) } },
             // Mongi + accessories (object space so the fuzz travels with the toy)
             { "M_Mongi_Brown", Toy() }, { "M_Mongi_Cream", Toy(0.3f, 0.2f) }, { "M_Mongi_Dark", Toy(0.14f, 0.15f) },
             { "M_TearInside", Toy(0.2f, 0.2f) },

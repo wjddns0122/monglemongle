@@ -51,11 +51,24 @@ namespace Mongle.Village
         static readonly string[] TalkLines = { "안녕! 와줬구나.", "여기 정말 포근해요.", "고쳐줘서 고마워요!", "오늘은 꽃 향기가 좋아요." };
         int talkIndex;
 
-        void OnDestroy() { if (Current == this) Current = null; if (root != null) { root.World.Changed -= RefreshCoins; root.World.QuestChanged -= OnQuestChanged; } UnhookFriendQuests(); }
+        System.Func<bool> windowOpen;
+        System.Func<Rect> topFree;
+
+        /// <summary>The "몽이의 마을 · … 입주" banner greets the player on arriving and then goes away (the top is left to notices).</summary>
+        const float StatusSeconds = 4f;
+        float statusUntil = float.MaxValue;   // admission: "마을 입구" stays until Mongi moves in
+
+        void OnDestroy() { if (GameRoot.WindowOpen == windowOpen) GameRoot.WindowOpen = null; if (GameRoot.TopFree == topFree) GameRoot.TopFree = null; if (Current == this) Current = null; if (root != null) { root.World.Changed -= RefreshCoins; root.World.QuestChanged -= OnQuestChanged; } UnhookFriendQuests(); }
 
         IEnumerator Start()
         {
             Current = this;
+            // notices go below a big window (shop, storage, quest board) instead of over its title (the bottom bars keep them on top)
+            // (a destroyed director compares equal to null in Unity: "this != null" keeps a stale one from being asked)
+            windowOpen = () => this != null && Current == this && ((Shop != null && Shop.Visible) || (Storage != null && Storage.Visible) || QuestBoardOpen);
+            GameRoot.WindowOpen = windowOpen;
+            topFree = () => this != null && Current == this ? TopFree() : Rect.zero;
+            GameRoot.TopFree = topFree;
             while ((root = GameRoot.Instance) == null) yield return null;
             Catalog = root.Catalog; state = root.Toy;
             var phase = FlowResolver.Resolve(state);
@@ -169,7 +182,49 @@ namespace Mongle.Village
             root.Say("오른쪽 버튼으로 끌거나 W·A·S·D로 공원을 둘러봐요. 휠로 멀리 볼 수 있어요", 5f);
             mainBar.SetActive(true);
             status.text = "몽이의 마을 · " + state.AdmissionDate + " 입주";
+            statusUntil = Time.time + StatusSeconds;
             Agent.Enable();
+        }
+
+        /// <summary>
+        /// Where notices may rise to while the top banner is away (GameRoot): the banner's band, as wide as the gap between the
+        /// top-left buttons and the coins allows around the middle; nothing while the banner (or a message in its place) shows.
+        /// </summary>
+        Rect TopFree()
+        {
+            if (!Ready || statusPlate == null || statusPlate.activeSelf || baseUi == null || baseUi.BannerShown || canvas == null) return Rect.zero;
+            if (topBand == null)
+            {
+                var front = canvas.transform.Find("UI2_VillageHud");
+                topBand = Deep(front, "Banner");
+                if (topBand == null) return Rect.zero;
+                for (int i = 0; i < TopSideNames.Length; i++) topSides[i] = Deep(front, TopSideNames[i]);
+            }
+            var w = corners; topBand.GetWorldCorners(w);   // overlay canvas: world = screen pixels
+            float mid = Screen.width * 0.5f, room = mid, top = w[1].y, bottom = w[0].y;
+            foreach (var t in topSides)
+            {
+                if (t == null || !t.gameObject.activeInHierarchy) continue;
+                t.GetWorldCorners(w);
+                if (w[1].y < bottom || w[0].y > top) continue;   // not on the banner's line
+                if (w[2].x <= mid) room = Mathf.Min(room, mid - w[2].x);
+                else if (w[0].x >= mid) room = Mathf.Min(room, w[0].x - mid);
+            }
+            float gap = 16f * canvas.scaleFactor;
+            room -= gap;
+            return room > 0f ? new Rect(mid - room, bottom, room * 2f, top - bottom) : Rect.zero;
+        }
+
+        RectTransform topBand;
+        static readonly string[] TopSideNames = { "TopLeftRow", "Btn_Home", "Btn_Quest", "TopRight", "Coins", "Btn_Settings" };
+        readonly RectTransform[] topSides = new RectTransform[TopSideNames.Length];
+        readonly Vector3[] corners = new Vector3[4];
+
+        static RectTransform Deep(Transform t, string name)
+        {
+            if (t == null) return null;
+            foreach (var c in t.GetComponentsInChildren<RectTransform>(true)) if (c.name == name) return c;
+            return null;
         }
 
         // ---------------- UI ----------------
@@ -224,10 +279,13 @@ namespace Mongle.Village
             // plain pills on the stitched bar (D-026: one dashed line is enough)
             foreach (var b in placeBar.GetComponentsInChildren<Button>(true)) UiKit.NoStitch(b.GetComponent<Image>());
             placeBar.SetActive(false);
-            // speech bubble: the Figma speech plate (cream, tail at the bottom-left, D-022); the tail tip hangs just above the head
-            var bp = UiKit.SpriteImage(canvas.transform, "Bubble", "shop_plate_left", Vector2.zero, new Vector2(0.03f, 0f), Vector2.zero, new Vector2(420, 108));
+            // speech bubble (Figma 58:1332 "말풍선"): a white pill 406x98 with a little tail in the middle of its bottom; the plate
+            // grows with long lines while the tail stays centred, its tip just above the head
+            var bp = UiKit.SpriteImage(canvas.transform, "Bubble", "speech_body", Vector2.zero, new Vector2(0.5f, 0f), Vector2.zero, new Vector2(BubbleW, BubbleH));
             UiKit.Slice(bp);
-            bubble = bp.gameObject; bubbleText = UiKit.Label(bp.transform, "", 32, UiKit.FigBrown, new Vector2(0.5f, 0.5f), new Vector2(0, 4), new Vector2(390, 90));
+            // the tail picture starts 4.9 inside the pill (white on white), as in the Figma frame
+            UiKit.SpriteImage(bp.transform, "Tail", "speech_tail", new Vector2(0.5f, 0f), new Vector2(0.5f, 1f), new Vector2(0f, 4.9f), new Vector2(34f, 27f));
+            bubble = bp.gameObject; bubbleText = UiKit.Label(bp.transform, "", 32, UiKit.FigBrown, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(BubbleW - 60f, BubbleH - 16f));
             bubble.SetActive(false);
             // album (the 수선 기록 window is gone: not needed in the game, D-022)
             album = new PhotoPanel(canvas.transform, "닫기", "다음 사진");
@@ -245,15 +303,26 @@ namespace Mongle.Village
         public void ShowBubble(Transform anchor, string line, float seconds)
         {
             bubbleText.text = line; bubble.SetActive(true); bubbleAnchor = anchor; bubbleUntil = Time.time + seconds;
-            // longer lines (the friends' requests and memories, D-011) get a wider, taller bubble
-            float w = line != null && line.Length > 20 ? 560f : 420f;
-            bubbleText.rectTransform.sizeDelta = new Vector2(w - 50f, 90f);
-            float h = Mathf.Max(92f, bubbleText.preferredHeight + 30f);
-            // the plate has 8 units of clear room on top and its tail below the body
-            ((RectTransform)bubble.transform).sizeDelta = new Vector2(w, h + 16f); bubbleText.rectTransform.sizeDelta = new Vector2(w - 50f, h - 10f);
-            bubbleLift = 24f;
+            // the Figma size; a longer line widens it (up to 560) before it wraps, and a still longer one makes it taller
+            float w = Mathf.Clamp(bubbleText.preferredWidth + 60f, BubbleW, 560f);
+            bubbleText.rectTransform.sizeDelta = new Vector2(w - 60f, BubbleH - 16f);
+            float h = Mathf.Max(BubbleH, bubbleText.preferredHeight + 28f);
+            ((RectTransform)bubble.transform).sizeDelta = new Vector2(w, h); bubbleText.rectTransform.sizeDelta = new Vector2(w - 60f, h - 16f);
+            PlaceBubble();   // right away: not one frame in the corner before Update moves it over the head
         }
-        float bubbleLift = 80f;
+
+        /// <summary>Figma 58:1332: the pill, and how far its tail reaches below it (27 tall, 4.9 of it inside the pill).</summary>
+        const float BubbleW = 406.28f, BubbleH = 97.9f, BubbleTail = 27f - 4.9f;
+        /// <summary>The pill's bottom sits this far above the head: the tail plus a little air.</summary>
+        const float BubbleLift = BubbleTail + 4f;
+
+        void PlaceBubble()
+        {
+            if (bubbleAnchor == null || cam == null) return;
+            var sp = cam.WorldToScreenPoint(bubbleAnchor.position + Vector3.up * 0.12f);
+            var scale = canvas.GetComponent<Canvas>().scaleFactor;
+            ((RectTransform)bubble.transform).anchoredPosition = new Vector2(sp.x, sp.y) / scale + new Vector2(0, BubbleLift);
+        }
 
         // ---------------- album: Mongi's first photo, then every friend's (D-005) ----------------
         int albumIndex; Texture2D albumTex;
@@ -290,16 +359,12 @@ namespace Mongle.Village
         void Update()
         {
             if (!Ready) return;
-            if (statusPlate != null) statusPlate.SetActive(!baseUi.BannerShown);   // one banner place: messages take over from the status line
+            // one banner place: messages take over from the status line, which only greets on arrival (StatusSeconds)
+            if (statusPlate != null) statusPlate.SetActive(!baseUi.BannerShown && Time.time < statusUntil);
             if (bubble.activeSelf)
             {
                 if (Time.time > bubbleUntil || bubbleAnchor == null) bubble.SetActive(false);
-                else
-                {
-                    var sp = cam.WorldToScreenPoint(bubbleAnchor.position + Vector3.up * 0.12f);
-                    var scale = canvas.GetComponent<Canvas>().scaleFactor;
-                    ((RectTransform)bubble.transform).anchoredPosition = new Vector2(sp.x, sp.y) / scale + new Vector2(0, bubbleLift);
-                }
+                else PlaceBubble();
             }
             var f = root.Pointer.World;
             UpdateFriendQuests(); // bubbles, the star hunt and riding together also run while watching a ride

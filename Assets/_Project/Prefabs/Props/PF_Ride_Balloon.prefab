@@ -548,9 +548,9 @@ LineRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Positions:
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 1}
-  - {x: 0, y: 0, z: 0}
+  - {x: 1.05, y: 0.06, z: 0.7}
+  - {x: 0.695, y: 0.009999998, z: 0.5}
+  - {x: 0.34, y: 0.12, z: 0.3}
   m_Parameters:
     serializedVersion: 3
     widthMultiplier: 0.018
@@ -606,7 +606,7 @@ LineRenderer:
     textureScale: {x: 1, y: 1}
     shadowBias: 0.5
     generateLightingData: 0
-  m_UseWorldSpace: 1
+  m_UseWorldSpace: 0
   m_Loop: 0
   m_ApplyActiveColorSpace: 1
 --- !u!1 &6463522910328495363
@@ -744,9 +744,9 @@ LineRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Positions:
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 1}
-  - {x: 0, y: 0, z: 0}
+  - {x: -1.05, y: 0.06, z: 0.7}
+  - {x: -0.695, y: 0.009999998, z: 0.5}
+  - {x: -0.34, y: 0.12, z: 0.3}
   m_Parameters:
     serializedVersion: 3
     widthMultiplier: 0.018
@@ -802,7 +802,7 @@ LineRenderer:
     textureScale: {x: 1, y: 1}
     shadowBias: 0.5
     generateLightingData: 0
-  m_UseWorldSpace: 1
+  m_UseWorldSpace: 0
   m_Loop: 0
   m_ApplyActiveColorSpace: 1
 --- !u!1 &6775450312445331140

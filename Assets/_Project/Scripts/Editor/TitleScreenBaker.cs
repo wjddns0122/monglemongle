@@ -12,7 +12,7 @@ namespace Mongle.EditorTools
     /// </summary>
     public static class TitleScreenBaker
     {
-        public const string PrefabPath = "Assets/_Project/Prefabs/UI/TitleScreen.prefab";
+        public const string PrefabPath = UiEditFolder.TitleDir + "/" + UiEditFolder.OldSub + "/TitleScreen.prefab";
         const string ScenePath = "Assets/_Project/Scenes/Bootstrap.unity";
 
         [MenuItem("Mongle/UI/시작 화면을 씬에 꺼내기 (Bootstrap)")]

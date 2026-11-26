@@ -90,6 +90,23 @@ namespace Mongle.Repair
         Renderer[] renders;
         SkinnedMeshRenderer pinch;
         public Vector3 handleDirWorldBias = Vector3.zero;
+        /// <summary>A minigame is animating the tool itself (needle scoop, injector pushed in): pointer following pauses.</summary>
+        public bool Hold;
+
+        /// <summary>A named part of the tool model (EYE, PLUNGER, COTTON ...), or null.</summary>
+        public Transform Part(string name)
+        {
+            foreach (var t in GetComponentsInChildren<Transform>(true)) if (t.name == name) return t;
+            return null;
+        }
+
+        /// <summary>Put the tool so its TIP is at <paramref name="tipWorld"/> with the given rotation.</summary>
+        public void PlaceTip(Vector3 tipWorld, Quaternion rot)
+        {
+            transform.rotation = rot;
+            transform.position += tipWorld - Tip.position;
+            vel = Vector3.zero;
+        }
 
         public static ToolView Spawn(ToolDefinition def)
         {
@@ -116,6 +133,7 @@ namespace Mongle.Repair
         /// <summary>Place the tool so its TIP touches <paramref name="point"/>; the handle leans toward the camera.</summary>
         public void Follow(Vector3 point, Camera cam, bool snap = false)
         {
+            if (Hold && !snap) return;
             var handle = (cam.transform.up * 0.55f + cam.transform.right * 0.45f - cam.transform.forward * 0.75f + handleDirWorldBias).normalized;
             targetRot = Quaternion.FromToRotation(Vector3.up, handle);
             // tip offset in root space

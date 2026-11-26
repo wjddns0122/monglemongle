@@ -111,10 +111,10 @@ Material:
     - _DstBlend: 0
     - _DstBlendAlpha: 0
     - _EnvironmentReflections: 1
-    - _FuzzNormal: 0.26
-    - _FuzzScale: 150
-    - _FuzzSpeck: 0.04
-    - _FuzzTone: 0.06
+    - _FuzzNormal: 0.16
+    - _FuzzScale: 450
+    - _FuzzSpeck: 0.01
+    - _FuzzTone: 0.024
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0

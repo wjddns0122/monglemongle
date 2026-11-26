@@ -72,7 +72,7 @@ namespace Mongle.Photo
         void BuildUi()
         {
             canvas = UiKit.CreateCanvas("PhotoUI", 10, transform);
-            UiKit.HiddenLabel(UiKit.FigButton(canvas.transform, "hud_settings", () => root.Say("설정은 곧 열려요"), UiKit.Edge.End, UiKit.Edge.Start, 0f, 0f, "Btn_설정"), "설정");   // D-023
+            UiKit.HiddenLabel(UiKit.FigButton(canvas.transform, "hud_settings", Mongle.UI2.UiFront.OpenSettings, UiKit.Edge.End, UiKit.Edge.Start, 0f, 0f, "Btn_설정"), "설정");   // D-023
             // viewfinder: a polaroid frame drawn with the chosen pattern (D-025: plain cream / dots / gingham / stars)
             frameGroup = UiKit.Rect(canvas.transform, "ViewFinder", Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero).gameObject;
             const float h = 760f;
@@ -106,7 +106,8 @@ namespace Mongle.Photo
             panel.Secondary.onClick.AddListener(() => { panel.Hide(); controls.SetActive(true); frameGroup.SetActive(true); });
             var fr = UiKit.Rect(canvas.transform, "Flash", Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             flash = fr.gameObject.AddComponent<Image>(); flash.color = new Color(1, 1, 1, 0); flash.raycastTarget = false;
-            UiSkin.Apply(canvas.transform, SkinName);   // the photo screen's prefab, edited in Unity (Resources/UI/Skins, D-035)
+            UiSkin.Apply(canvas.transform, SkinName);   // the photo screen's prefab, edited in Unity (Assets/_UI수정, D-035)
+            Mongle.UI2.UiFront.AttachFor(canvas.transform, SkinName);   // D-040: the Figma photo screen in front
         }
 
         /// <summary>D-035: the editable prefab of the photo screen.</summary>

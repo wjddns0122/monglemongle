@@ -1,0 +1,81 @@
+# D-038 strings: key	Korean	English   (tab separated; \n = line break; {0~이가} etc. = Korean particle after argument 0)
+common.back	뒤로	Back
+common.close	닫기	Close
+common.settings	설정	Settings
+common.home	처음으로	Home
+common.zoom_in	크게 보기	Zoom in
+common.zoom_out	작게 보기	Zoom out
+name.mongi	몽이	Mongi
+name.tosun	토순	Tosun
+name.dan	단단	Dandan
+title.new	처음부터	New Game
+title.continue	가게 문 열기	Open the Shop
+intake.arrived	{0~이가} 왔어요	{0} is here!
+intake.body.mongi	몽이는 오랫동안 사랑받아 조금 지친 곰인형이에요.\n다시 포근해질 수 있도록 도와주세요.	Mongi is a teddy bear, worn out from years of love.\nPlease help Mongi feel cozy again.
+intake.sorry	죄송합니다	Sorry
+intake.look	살펴볼게요	Let me look
+repair.done	해냈어요!	You did it!
+repair.coins	몽글 코인 + {0}	Mongle Coins + {0}
+repair.notebook	진료 수첩	Care Notes
+damage.thorn_ear	귀의 가시	Thorn in the Ear
+tool.tweezers	핀셋	Tweezers
+tool.sponge	스펀지	Sponge
+tool.needle	바늘	Needle
+tool.injector	솜 주입기	Stuffing Gun
+photo.pose.basic	기본	Normal
+photo.pose.smile	활짝 웃기	Big Smile
+photo.shoot	사진 찍기	Take a Photo
+village.quest	퀘스트	Quests
+village.bar.furniture	가구 옮기기	Move Furniture
+village.bar.album	앨범	Album
+village.bar.storage	보관함	Storage
+village.banner	{0~의} 마을 . {1} 입주	{0}'s Village · Moved in {1}
+village.toast.train	{0~이가} 케이크 기차 타러 오고 있어요	{0} is coming to ride the cake train
+village.toast.watch	밖에서 보기	Watch Outside
+village.hint	오른쪽 버튼으로 끌거나 W.A.S.D로 공원을 둘러봐요.\n휠로 멀리 볼 수 있어요.	Right-drag or W·A·S·D to look around.\nScroll to see farther.
+village.house.title	{0~의} 새집	{0}'s New Home
+village.house.invite	마을로 초대하기	Invite to the Village
+ride.ask.seesaw	시소 혼자 타기는 좀 무서워 ...\n같이 타줄래?	Riding the seesaw alone is a little scary...\nWill you ride with me?
+ride.yes	좋아!	Sure!
+ride.later	다음에 할게	Maybe later
+ride.sub	• 같이 타기      • 보상 : 몽글 코인 +{0}	• Ride together      • Reward: Mongle Coins +{0}
+quest.title	퀘스트	Quests
+quest.tab.active	진행중 {0}	Active {0}
+quest.tab.done	완료 {0}	Done {0}
+quest.tab.story	내 이야기	My Story
+quest.sample.title	첫 화분 놓기	Place the First Flowerpot
+quest.sample.desc	{0} : 화분을 하나 사서 마을에 놓아 줄래요?	{0}: Can you put a flowerpot in the village?
+quest.accept	수락할게요	Accept
+quest.go	찾으러 가기	Go Find It
+quest.done	완료	Done
+storage.title	보관함	Storage
+storage.tab.all	전체	All
+storage.tab.furniture	가구	Furniture
+storage.tab.accessory	악세서리	Accessories
+storage.sort	기본 정렬	Default Order
+storage.search	찾기	Search
+storage.use	사용하기	Use
+item.cozy_chair	포근 의자	Cozy Chair
+item.toy_box	장난감 상자	Toy Box
+settings.title	설정	Settings
+settings.nav.general	일반	General
+settings.nav.graphics	그래픽	Graphics
+settings.nav.audio	오디오	Audio
+settings.language	언어	Language
+settings.fov	시야 범위	Field of View
+settings.mouse	마우스 감도	Mouse Sensitivity
+settings.pad	컨트롤러 감도	Controller Sensitivity
+settings.quality	화질	Quality
+settings.resolution	해상도	Resolution
+settings.fullscreen	전체 화면	Fullscreen
+settings.brightness	밝기	Brightness
+settings.master	전체 음량	Master Volume
+settings.music	배경음악	Music
+settings.effects	효과음	Sound Effects
+settings.mute	음소거	Mute
+settings.lang.ko	한국어	한국어
+settings.lang.en	English	English
+settings.quality.low	낮음	Low
+settings.quality.mid	보통	Medium
+settings.quality.high	높음	High
+preview.hint	Tab: 화면 바꾸기 · R: 피그마 겹쳐 보기 · B: 배경	Tab: next screen · R: overlay Figma · B: backdrop

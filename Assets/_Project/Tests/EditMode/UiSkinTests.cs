@@ -103,6 +103,24 @@ namespace Mongle.Tests
         }
 
         [Test]
+        public void NewWordsReplaceOnlyTheWordsTheScreenWasMadeWith()
+        {
+            // D-039: the sample card's words changed: every card keeps its own name (the code wrote them), the style still spreads
+            var sample = S("List/Card_0/Title").GetComponent<Text>(); sample.text = "새 이름"; sample.fontSize = 33;
+            // a label the game has since rewritten keeps the game's words; the panel label the game left alone takes the new ones
+            S("Panel/Label").GetComponent<Text>().text = "안녕";
+            UiSkin.Apply(built.transform, skin.transform);
+            Assert.AreEqual("새 이름", B("List/Card_0/Title").GetComponent<Text>().text, "the sample card itself had the made-with words");
+            Assert.AreEqual("card 1", B("List/Card_1/Title").GetComponent<Text>().text, "another card keeps its own name");
+            Assert.AreEqual(33, B("List/Card_1/Title").GetComponent<Text>().fontSize);
+            Assert.AreEqual("안녕", B("Panel/Label").GetComponent<Text>().text);
+
+            B("Panel/Label").GetComponent<Text>().text = "몽이";   // live words from the game
+            UiSkin.Apply(built.transform, skin.transform);
+            Assert.AreEqual("몽이", B("Panel/Label").GetComponent<Text>().text);
+        }
+
+        [Test]
         public void TheSampleCardIsTheModelForEveryCardButTheCodePlacesThem()
         {
             var sc = (RectTransform)S("List/Card_0"); sc.anchoredPosition = new Vector2(999, 999);

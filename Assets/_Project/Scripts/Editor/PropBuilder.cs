@@ -61,7 +61,9 @@ namespace Mongle.EditorTools
             P(r, PrimitiveType.Cube, "Box", new Vector3(0, 0.1f, 0), new Vector3(0.34f, 0.2f, 0.27f), box);
             P(r, PrimitiveType.Cube, "Band", new Vector3(0, 0.1f, 0.0f), new Vector3(0.355f, 0.045f, 0.285f), band);
             var lid = Node(r, "LidHinge", new Vector3(0, 0.2f, -0.135f));
-            P(lid, PrimitiveType.Cube, "Lid", new Vector3(0, 0.02f, 0.14f), new Vector3(0.36f, 0.04f, 0.29f), box, new Vector3(-24, 0, 0));
+            // D-036: the lid used to be only 24° open, so its slab cut through the toys; now it stands open behind the box
+            lid.localEulerAngles = new Vector3(-100f, 0, 0);
+            P(lid, PrimitiveType.Cube, "Lid", new Vector3(0, -0.02f, 0.145f), new Vector3(0.36f, 0.04f, 0.29f), box);
             P(r, PrimitiveType.Sphere, "Ball", new Vector3(-0.06f, 0.23f, 0.02f), Vector3.one * 0.11f, yellow);
             P(r, PrimitiveType.Cube, "Block", new Vector3(0.07f, 0.23f, 0.0f), new Vector3(0.09f, 0.09f, 0.09f), pink, new Vector3(0, 25, 0));
             P(r, PrimitiveType.Sphere, "Bear", new Vector3(0.0f, 0.27f, -0.04f), new Vector3(0.09f, 0.1f, 0.08f), mint);
@@ -76,8 +78,10 @@ namespace Mongle.EditorTools
             var bulb = M("MP_LampBulb", new Color(1f, 0.94f, 0.72f), 0.3f, new Color(1.5f, 1.2f, 0.65f));
             P(r, PrimitiveType.Cylinder, "Foot", new Vector3(0, 0.012f, 0), new Vector3(0.15f, 0.012f, 0.15f), wood);
             P(r, PrimitiveType.Cylinder, "Post", new Vector3(0, 0.23f, 0), new Vector3(0.028f, 0.21f, 0.028f), wood);
-            var b = P(r, PrimitiveType.Sphere, "Bulb", new Vector3(0, 0.49f, 0), new Vector3(0.15f, 0.17f, 0.15f), bulb);
-            P(r, PrimitiveType.Sphere, "Cap", new Vector3(0, 0.59f, 0), new Vector3(0.19f, 0.07f, 0.19f), cap);
+            // D-036: the cap's underside and the bulb's top were almost the same curve (speckled z-fighting): the cap now
+            // sits higher and only its centre dips into the bulb
+            var b = P(r, PrimitiveType.Sphere, "Bulb", new Vector3(0, 0.485f, 0), new Vector3(0.15f, 0.16f, 0.15f), bulb);
+            P(r, PrimitiveType.Sphere, "Cap", new Vector3(0, 0.582f, 0), new Vector3(0.19f, 0.072f, 0.19f), cap);
             var lightGo = new GameObject("Glow"); lightGo.transform.SetParent(r, false); lightGo.transform.localPosition = new Vector3(0, 0.49f, 0);
             var l = lightGo.AddComponent<Light>(); l.type = LightType.Point; l.color = new Color(1f, 0.85f, 0.6f); l.range = 1.3f; l.intensity = 0.55f; l.shadows = LightShadows.None;
             var ll = r.gameObject.AddComponent<LampLight>(); ll.Glow = l; ll.Bulb = b.GetComponent<Renderer>();
@@ -121,8 +125,13 @@ namespace Mongle.EditorTools
             P(d, PrimitiveType.Sphere, "DropTip", new Vector3(0, 0.04f, 0), new Vector3(0.028f, 0.05f, 0.028f), m);
         }
 
-        static void Leaf(Transform parent, Vector3 pos, float size, float yaw, float tilt, Material mat)
-            => P(parent, PrimitiveType.Sphere, "Leaf", pos, new Vector3(size * 0.45f, size * 0.12f, size), mat, new Vector3(tilt, yaw, 0));
+        /// <summary>A leaf growing out of the stem at height y on one side (+1 right, -1 left), pointing outward and up by
+        /// tilt degrees. D-036: leaves used to sit beside the stem pointing forward, with a visible gap to it.</summary>
+        static void Leaf(Transform parent, float y, float size, float side, float tilt, Material mat)
+        {
+            var dir = new Vector3(side * Mathf.Cos(tilt * Mathf.Deg2Rad), Mathf.Sin(tilt * Mathf.Deg2Rad), 0f);
+            P(parent, PrimitiveType.Sphere, "Leaf", new Vector3(0, y, 0) + dir * (size * 0.44f), new Vector3(size * 0.45f, size * 0.12f, size), mat, new Vector3(-tilt, side * 90f, 0));
+        }
 
         static GameObject Plant(string id, System.Action<Transform, Material, Material> stage0, System.Action<Transform, Material, Material> stage1, System.Action<Transform, Material, Material> stage2, Color potBand, float dropY)
         {
@@ -143,11 +152,11 @@ namespace Mongle.EditorTools
         {
             var petal = M("MP_TulipPetal", new Color(1f, 0.55f, 0.65f), 0.1f); var petalB = M("MP_TulipPetalB", new Color(1f, 0.72f, 0.78f), 0.1f);
             return Plant("Plant_Tulip",
-                (p, g, d) => { Stem(p, 0.05f, g); Leaf(p, new Vector3(0.025f, 0.16f, 0), 0.07f, 0, 30, g); Leaf(p, new Vector3(-0.025f, 0.15f, 0), 0.06f, 180, 30, d); },
-                (p, g, d) => { Stem(p, 0.14f, g); Leaf(p, new Vector3(0.045f, 0.18f, 0), 0.11f, 0, 40, g); Leaf(p, new Vector3(-0.045f, 0.17f, 0), 0.1f, 180, 40, d); P(p, PrimitiveType.Sphere, "Bud", new Vector3(0, 0.27f, 0), new Vector3(0.05f, 0.07f, 0.05f), petalB); },
+                (p, g, d) => { Stem(p, 0.05f, g); Leaf(p, 0.14f, 0.07f, 1, 30, g); Leaf(p, 0.13f, 0.06f, -1, 30, d); },
+                (p, g, d) => { Stem(p, 0.14f, g); Leaf(p, 0.16f, 0.11f, 1, 40, g); Leaf(p, 0.15f, 0.1f, -1, 40, d); P(p, PrimitiveType.Sphere, "Bud", new Vector3(0, 0.27f, 0), new Vector3(0.05f, 0.07f, 0.05f), petalB); },
                 (p, g, d) =>
                 {
-                    Stem(p, 0.2f, g); Leaf(p, new Vector3(0.05f, 0.2f, 0), 0.13f, 0, 40, g); Leaf(p, new Vector3(-0.05f, 0.19f, 0), 0.12f, 180, 40, d);
+                    Stem(p, 0.2f, g); Leaf(p, 0.17f, 0.13f, 1, 40, g); Leaf(p, 0.16f, 0.12f, -1, 40, d);
                     for (int i = 0; i < 3; i++) { float a = i * 120f * Mathf.Deg2Rad; P(p, PrimitiveType.Sphere, "Petal", new Vector3(Mathf.Cos(a) * 0.022f, 0.34f, Mathf.Sin(a) * 0.022f), new Vector3(0.05f, 0.085f, 0.05f), i == 1 ? petalB : petal); }
                 }, new Color(1f, 0.78f, 0.8f), 0.46f);
         }
@@ -156,11 +165,11 @@ namespace Mongle.EditorTools
         {
             var petal = M("MP_SunPetal", new Color(1f, 0.85f, 0.3f), 0.1f); var core = M("MP_SunCore", new Color(0.55f, 0.36f, 0.2f), 0.05f);
             return Plant("Plant_Sunflower",
-                (p, g, d) => { Stem(p, 0.05f, g); Leaf(p, new Vector3(0.025f, 0.16f, 0), 0.07f, 0, 30, g); Leaf(p, new Vector3(-0.025f, 0.15f, 0), 0.06f, 180, 30, d); },
-                (p, g, d) => { Stem(p, 0.2f, g); Leaf(p, new Vector3(0.05f, 0.2f, 0), 0.12f, 0, 40, g); Leaf(p, new Vector3(-0.05f, 0.24f, 0), 0.12f, 180, 40, d); P(p, PrimitiveType.Sphere, "Bud", new Vector3(0, 0.33f, 0.01f), new Vector3(0.07f, 0.07f, 0.06f), d); },
+                (p, g, d) => { Stem(p, 0.05f, g); Leaf(p, 0.14f, 0.07f, 1, 30, g); Leaf(p, 0.13f, 0.06f, -1, 30, d); },
+                (p, g, d) => { Stem(p, 0.2f, g); Leaf(p, 0.17f, 0.12f, 1, 40, g); Leaf(p, 0.21f, 0.12f, -1, 40, d); P(p, PrimitiveType.Sphere, "Bud", new Vector3(0, 0.33f, 0.01f), new Vector3(0.07f, 0.07f, 0.06f), d); },
                 (p, g, d) =>
                 {
-                    Stem(p, 0.3f, g); Leaf(p, new Vector3(0.055f, 0.22f, 0), 0.14f, 0, 40, g); Leaf(p, new Vector3(-0.055f, 0.28f, 0), 0.14f, 180, 40, d);
+                    Stem(p, 0.3f, g); Leaf(p, 0.19f, 0.14f, 1, 40, g); Leaf(p, 0.25f, 0.14f, -1, 40, d);
                     var head = Node(p, "Head", new Vector3(0, 0.43f, 0.02f)); head.localRotation = Quaternion.Euler(-12, 0, 0);
                     for (int i = 0; i < 10; i++) { float a = i * 36f * Mathf.Deg2Rad; P(head, PrimitiveType.Sphere, "Petal", new Vector3(Mathf.Cos(a) * 0.065f, Mathf.Sin(a) * 0.065f, 0), new Vector3(0.045f, 0.07f, 0.02f), petal, new Vector3(0, 0, i * 36f - 90f)); }
                     P(head, PrimitiveType.Sphere, "Core", new Vector3(0, 0, 0.012f), new Vector3(0.08f, 0.08f, 0.04f), core);
@@ -177,7 +186,13 @@ namespace Mongle.EditorTools
                 {
                     P(p, PrimitiveType.Sphere, "Body", new Vector3(0, 0.22f, 0), new Vector3(0.12f, 0.22f, 0.12f), cac);
                     P(p, PrimitiveType.Sphere, "ArmR", new Vector3(0.085f, 0.23f, 0), new Vector3(0.055f, 0.1f, 0.055f), cacDark); P(p, PrimitiveType.Sphere, "ArmL", new Vector3(-0.08f, 0.19f, 0), new Vector3(0.05f, 0.08f, 0.05f), cacDark);
-                    for (int i = 0; i < 5; i++) P(p, PrimitiveType.Sphere, "Dot", new Vector3(0.02f * (i - 2), 0.17f + 0.04f * i, 0.055f), Vector3.one * 0.012f, spine);
+                    // D-036: spine dots on the body's ellipsoid (centre y 0.22, radii 0.06 / 0.11) instead of a flat plane in front of it
+                    for (int i = 0; i < 9; i++)
+                    {
+                        float yy = 0.16f + 0.05f * (i / 3) + (i % 2) * 0.012f, ang = (-50f + 50f * (i % 3) + (i / 3) * 12f) * Mathf.Deg2Rad;
+                        float rr = 0.06f * Mathf.Sqrt(Mathf.Max(0f, 1f - Mathf.Pow((yy - 0.22f) / 0.11f, 2f)));
+                        P(p, PrimitiveType.Sphere, "Dot", new Vector3(Mathf.Sin(ang) * rr, yy, Mathf.Cos(ang) * rr), Vector3.one * 0.012f, spine);
+                    }
                     for (int i = 0; i < 5; i++) { float a = i * 72f * Mathf.Deg2Rad; P(p, PrimitiveType.Sphere, "Petal", new Vector3(Mathf.Cos(a) * 0.022f, 0.345f, Mathf.Sin(a) * 0.022f), new Vector3(0.035f, 0.04f, 0.035f), flower); }
                 }, new Color(0.7f, 0.88f, 0.8f), 0.5f);
         }
@@ -186,7 +201,7 @@ namespace Mongle.EditorTools
         {
             var trunk = M("MP_SaplingTrunk", new Color(0.62f, 0.45f, 0.32f), 0.1f); var blossom = M("MP_Blossom", new Color(1f, 0.76f, 0.82f), 0.1f); var blossomB = M("MP_BlossomB", new Color(1f, 0.85f, 0.88f), 0.1f);
             return Plant("Plant_Sapling",
-                (p, g, d) => { P(p, PrimitiveType.Cylinder, "Twig", new Vector3(0, 0.15f, 0), new Vector3(0.014f, 0.05f, 0.014f), trunk); Leaf(p, new Vector3(0.03f, 0.21f, 0), 0.07f, 0, 30, g); Leaf(p, new Vector3(-0.03f, 0.2f, 0), 0.07f, 180, 30, d); },
+                (p, g, d) => { P(p, PrimitiveType.Cylinder, "Twig", new Vector3(0, 0.15f, 0), new Vector3(0.014f, 0.05f, 0.014f), trunk); Leaf(p, 0.185f, 0.07f, 1, 30, g); Leaf(p, 0.175f, 0.07f, -1, 30, d); },
                 (p, g, d) => { P(p, PrimitiveType.Cylinder, "Trunk", new Vector3(0, 0.2f, 0), new Vector3(0.022f, 0.1f, 0.022f), trunk); P(p, PrimitiveType.Sphere, "Crown", new Vector3(0, 0.36f, 0), new Vector3(0.18f, 0.15f, 0.18f), g); },
                 (p, g, d) =>
                 {
@@ -206,7 +221,10 @@ namespace Mongle.EditorTools
             var sp = P(r, PrimitiveType.Cylinder, "SpoutPipe", new Vector3(0.1f, 0.02f, 0), new Vector3(0.025f, 0.06f, 0.025f), body, new Vector3(0, 0, -62));
             P(r, PrimitiveType.Sphere, "Rose", new Vector3(0.158f, 0.062f, 0), new Vector3(0.05f, 0.05f, 0.05f), dark);
             Node(r, "Spout", new Vector3(0.17f, 0.06f, 0));
-            var h = P(r, PrimitiveType.Sphere, "Handle", new Vector3(-0.1f, 0.03f, 0), new Vector3(0.015f, 0.09f, 0.04f), dark, new Vector3(0, 0, 0));
+            // D-036: the handle was a flat oval 3 cm off the body; now a D-shaped loop of three capsules joined to it
+            P(r, PrimitiveType.Capsule, "HandleTop", new Vector3(-0.08f, 0.045f, 0), new Vector3(0.022f, 0.026f, 0.022f), dark, new Vector3(0, 0, 90));
+            P(r, PrimitiveType.Capsule, "HandleBack", new Vector3(-0.104f, 0.01f, 0), new Vector3(0.022f, 0.046f, 0.022f), dark);
+            P(r, PrimitiveType.Capsule, "HandleLow", new Vector3(-0.08f, -0.025f, 0), new Vector3(0.022f, 0.026f, 0.022f), dark, new Vector3(0, 0, 90));
             return Save(r.gameObject, "PF_WateringCan");
         }
 

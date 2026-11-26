@@ -17,13 +17,14 @@ namespace Mongle.Core
             if (title == null) title = TitleScreen.Build(transform);
             title.gameObject.SetActive(true); title.ShowMenu(false);
             UiKit.EnsureEventSystem();
-            if (title.settingsButton != null) title.settingsButton.onClick.AddListener(() => root.Say("설정은 곧 열려요"));   // the window comes later (D-023)
+            if (title.settingsButton != null) title.settingsButton.onClick.AddListener(Mongle.UI2.UiFront.OpenSettings);
+            if (Application.isPlaying) Mongle.UI2.UiFront.Attach(title.Canvas.transform, "Title");   // D-040: the Figma start screen in front
             yield return new WaitForSeconds(1.2f);
 
             if (root.NeedsSaveDecision)
             {
                 bool decided = false;
-                var ui = new GameObject("BootDialogUI").AddComponent<ShopUI>(); ui.Build(); ui.ShowSettingsButton(false);
+                var ui = new GameObject("BootDialogUI").AddComponent<ShopUI>(); ui.Build(); ui.ShowSettingsButton(false); Mongle.UI2.UiFront.Attach(ui.Canvas.transform, "Intake");
                 string why = root.LoadResult.status == SaveStatus.UnsupportedVersion
                     ? "더 새로운 버전에서 만든 저장이에요. 이 버전에서는 열 수 없어요."
                     : "저장 파일이 손상되어 읽을 수 없어요.";
@@ -68,7 +69,7 @@ namespace Mongle.Core
                 if (!hasSave) { root.StartNewGame(false); yield break; }
                 // a save exists: ask first
                 bool answered = false, yes = false;
-                var ui = new GameObject("BootDialogUI").AddComponent<ShopUI>(); ui.Build(); ui.ShowSettingsButton(false);
+                var ui = new GameObject("BootDialogUI").AddComponent<ShopUI>(); ui.Build(); ui.ShowSettingsButton(false); Mongle.UI2.UiFront.Attach(ui.Canvas.transform, "Intake");
                 ui.ShowDialog("새로 시작할까요?", "지금 저장된 게임이 있어요.\n새로 시작해도 기존 저장은 지우지 않고 따로 보관해요.", "새로 시작", () => { yes = true; answered = true; }, "취소", () => { answered = true; });
                 while (!answered) yield return null;
                 Destroy(ui.gameObject);

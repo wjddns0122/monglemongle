@@ -124,6 +124,15 @@ namespace Mongle.Core
             return false;
         }
 
+        /// <summary>The UI pieces a click at <paramref name="p"/> would land on (the game ignores ground clicks under any of them).</summary>
+        static string UiAt(Vector2 p)
+        {
+            var es = UnityEngine.EventSystems.EventSystem.current; if (es == null) return "";
+            var hits = new List<UnityEngine.EventSystems.RaycastResult>();
+            es.RaycastAll(new UnityEngine.EventSystems.PointerEventData(es) { position = p }, hits);
+            return string.Join(", ", hits.Select(h => { var t = h.gameObject.transform; var s = t.name; for (var q = t.parent; q != null; q = q.parent) s = q.name + "/" + s; return s; }));
+        }
+
         IEnumerator ClickWhenReady(string label, float timeout = 10f)
         {
             float t = 0;
@@ -169,6 +178,7 @@ namespace Mongle.Core
             switch (scenario)
             {
                 case "full": run = Full(); break;
+                case "ui": run = UiTour(); break;
                 case "midrepair": run = MidRepair(); break;
                 case "verifyfinal": run = VerifyFinal(); break;
                 case "verifymid": run = VerifyMid(); break;
@@ -687,6 +697,8 @@ namespace Mongle.Core
             var v = VillageDirector.Current;
             v.Agent.AbortToIdle("qa player control"); yield return new WaitForSeconds(0.6f);
             var target = v.Grid.CenterOf(Vector2Int.one, 8, 8, 0);
+            var over = UiAt(Scr(target));
+            Check("no UI covers the ground the player clicks", over.Length == 0, over);
             yield return Click(Scr(target));
             Check("clicking the ground starts a walk", v.Agent.State == AgentState.Move && v.Agent.CurrentIntent == Intent.Wander);
             yield return Until(() => (Flat(v.Toy.transform.position) - Flat(target)).magnitude < 0.3f, 40, "walk to the clicked spot");
@@ -890,6 +902,49 @@ namespace Mongle.Core
             yield return Step(Rides());
             Check("history entries are unique", State.History.Select(h => h.key).Distinct().Count() == State.History.Count);
             WriteExpected("village");
+        }
+
+        /// <summary>
+        /// A walk past every screen for a UI review (screenshots): the whole game like <see cref="Full"/> plus the friends' visits,
+        /// without the long toy-autonomy checks of the village (wandering, the bench), which test the toy and not the screens
+        /// and can stop the run before the shop, quest and ride screens. Also shows the dress bar and the settings window.
+        /// </summary>
+        IEnumerator UiTour()
+        {
+            Check("new game starts without a save", State != null && FlowResolver.Resolve(State) == FlowPhase.CustomerArrival);
+            yield return Step(ToIntroAndDiagnosis());
+            yield return Step(Diagnose());
+            yield return Step(RepairOne("Thorn", "Tool_Sponge"));
+            yield return Step(RepairOne("Dirt", "Tool_Needle"));
+            yield return Step(RepairOne("Tear", "Tool_CottonInjector"));
+            yield return Step(RepairOne("LowCotton", "Tool_Tweezer"));
+            yield return Step(StampAndCustomize());
+            yield return Step(Photo());
+            yield return Step(VillageLife(false));
+            // every village screen gets its turn even when a step before it failed (its failures are still reported)
+            yield return Tour(Economy());
+            yield return Tour(DressAndSettings());
+            yield return Tour(PlayerControl());
+            yield return Tour(Quests());
+            yield return Tour(Rides());
+            yield return Tour(FriendsVisit());
+        }
+
+        IEnumerator Tour(IEnumerator e) { Aborted = false; yield return Safe(e); }
+
+        IEnumerator DressAndSettings()
+        {
+            yield return ToVillageReady();
+            var v = VillageDirector.Current;
+            v.OpenDress(v.Agent); yield return new WaitForSeconds(0.6f);
+            Check("dress bar opens", v.DressOpen);
+            yield return Shot("45b_dress");
+            v.CloseDress(); yield return new WaitForSeconds(0.3f);
+            Mongle.UI2.UiFront.OpenSettings(); yield return new WaitForSeconds(0.6f);
+            Check("settings window opens", Mongle.UI2.UiFront.SettingsOpen);
+            yield return Shot("90_settings");
+            var w = GameObject.Find("UI2_SettingsWindow"); if (w != null) w.SetActive(false);
+            yield return new WaitForSeconds(0.3f);
         }
 
         // ---------------- park rides (D-006) ----------------

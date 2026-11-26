@@ -39,7 +39,9 @@ namespace Mongle.EditorTools
         static Material Mat(string name, MatRow row, Color color)
         {
             Color? glow = row.emission != null && row.emission.Length == 3 ? Rgb(row.emission) : (Color?)null;
-            return ContentBuilder.GetOrCreateMat(name, color, row.smoothness, row.metallic, glow);
+            // D-036: no reflection probes in the scenes, so Blender's full metals (gold trims, mirrors) rendered as dark
+            // brown / black lines: pastel toy metal instead
+            return ContentBuilder.GetOrCreateMat(name, color, Mathf.Min(row.smoothness, 0.82f), Mathf.Min(row.metallic, 0.35f), glow);
         }
 
         /// <summary>Instantiates the FBX under a new root, 1 unit tall, standing on the root's origin.</summary>
@@ -748,8 +750,12 @@ namespace Mongle.EditorTools
                 stake.transform.SetParent(root.transform, false); stake.transform.localPosition = new Vector3(1.05f * sx, 0.06f, 0.7f); stake.transform.localScale = new Vector3(0.07f, 0.06f, 0.07f);
                 stake.GetComponent<Renderer>().sharedMaterial = wood; stakes[i] = stake.transform;
                 var lrGo = new GameObject("Tether" + i); lrGo.transform.SetParent(root.transform, false);
-                var lr = lrGo.AddComponent<LineRenderer>(); lr.positionCount = 3; lr.widthMultiplier = 0.018f; lr.sharedMaterial = rope; lr.useWorldSpace = true;
+                // D-036: local space, already drawn stake -> basket (in world space the saved default points drew a stray
+                // rope at the scene origin until the ride's first Update, and in the editor's scene view for good)
+                var lr = lrGo.AddComponent<LineRenderer>(); lr.positionCount = 3; lr.widthMultiplier = 0.018f; lr.sharedMaterial = rope; lr.useWorldSpace = false;
                 lr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; lr.numCapVertices = 2; lines[i] = lr;
+                var sp = stake.transform.localPosition; var tp = lift.localPosition + top.localPosition;
+                lr.SetPosition(0, sp); lr.SetPosition(1, Vector3.Lerp(sp, tp, 0.5f) + Vector3.down * 0.08f); lr.SetPosition(2, tp);
             }
             var ride = root.AddComponent<BalloonRide>();
             ride.lift = lift; ride.seats = seatT; ride.tetherTops = tops; ride.tetherStakes = stakes; ride.tethers = lines;

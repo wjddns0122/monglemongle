@@ -33,6 +33,8 @@ namespace Mongle.EditorTools
             var name = System.IO.Path.GetFileNameWithoutExtension(assetPath);
             // the speech plate: its tail sits in the bottom-left corner, so that corner keeps more room
             if (name == "shop_plate_left") ti.spriteBorder = new Vector4(84f, 64f, 56f, 48f);
+            // the friends' speech bubble (Figma 58:1332): a white pill, its ends full half-circles; the tail is its own picture
+            else if (name == "speech_body") ti.spriteBorder = new Vector4(97f, 97f, 97f, 97f);
             else if (name == "dlg_bubble") ti.spriteBorder = new Vector4(170f, 170f, 170f, 170f);
             else if (name == "dlg_tag") ti.spriteBorder = new Vector4(166f, 0f, 166f, 0f);
             else if (name == "dlg_choice") ti.spriteBorder = new Vector4(240f, 240f, 240f, 240f);

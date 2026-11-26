@@ -47,8 +47,10 @@ namespace Mongle.Village
             if (tethers != null)
                 for (int i = 0; i < tethers.Length && i < tetherTops.Length; i++)
                 {
-                    var a = tetherStakes[i].position; var b = tetherTops[i].position;
-                    tethers[i].SetPosition(0, a); tethers[i].SetPosition(1, Vector3.Lerp(a, b, 0.5f) + Vector3.down * 0.08f * Mathf.Clamp01(1f - cycle.Altitude / cycle.Height)); tethers[i].SetPosition(2, b);
+                    var lr = tethers[i]; var a = tetherStakes[i].position; var b = tetherTops[i].position;
+                    var mid = Vector3.Lerp(a, b, 0.5f) + Vector3.down * 0.08f * Mathf.Clamp01(1f - cycle.Altitude / cycle.Height);
+                    if (!lr.useWorldSpace) { var t = lr.transform; a = t.InverseTransformPoint(a); b = t.InverseTransformPoint(b); mid = t.InverseTransformPoint(mid); }
+                    lr.SetPosition(0, a); lr.SetPosition(1, mid); lr.SetPosition(2, b);
                 }
         }
 
