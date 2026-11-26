@@ -12,14 +12,14 @@ namespace Mongle.EditorTools
     /// (<see cref="Margin"/>), so they line up on every screen shape and close up when the game hides one of them. Stitched
     /// shapes also get the design's dash spacing (<see cref="SoftRect.stitchPeriod"/>), so a plate that grows keeps it.
     /// Safe to run again: groups that exist are only tuned, and nothing else about the look is touched.
-    /// "게임 화면과 다시 연결하기" (<see cref="UiV2Wire"/>) runs this first.
+    /// (the D-040 rewiring tool is gone with the last 11-26 village screen)
     /// </summary>
     public static class UiV2Layout
     {
         /// <summary>Distance from the screen's edges to the corner groups.</summary>
         public const float Margin = 40f;
 
-        static readonly string[] Screens = { "Title", "Intake", "RepairHud", "VillageHud", "Quest", "Storage", "RideInvite", "Photo", "Settings", "HouseInvite" };
+        static readonly string[] Screens = { "Settings", "HouseInvite" };
 
         [MenuItem("Mongle/UI v2/줄·열로 정리하기")]
         public static void ApplyAll()
@@ -42,35 +42,6 @@ namespace Mongle.EditorTools
             KeepStitchSpacing(root);
             switch (name)
             {
-                case "VillageHud": Village(root); break;
-                case "RepairHud": Repair(root); break;
-                case "RideInvite": Ride(root); break;
-                case "Quest": Window(root, "Tab_Active", "Tab_Done", "Tab_Story"); break;
-                case "Storage": Window(root, "Tab_All", "Tab_Furniture", "Tab_Accessory"); StorageCards(root); break;
-            }
-        }
-
-        /// <summary>
-        /// A storage card is a column — name, picture, button — and its count sits on the picture's corner: at the card's corner it
-        /// ran into longer names ("1개해바라기 화분"). The name gets the card's whole width.
-        /// </summary>
-        static void StorageCards(Transform r)
-        {
-            var content = r.Find("Window/Panel/Grid/Content"); if (content == null) return;
-            foreach (Transform item in content)
-            {
-                var pic = item.Find("PicBack") as RectTransform; if (pic == null) continue;
-                if (item.Find("Count") is RectTransform count)
-                {
-                    count.SetParent(pic, false);
-                    count.anchorMin = count.anchorMax = count.pivot = new Vector2(0f, 1f); count.anchoredPosition = new Vector2(8f, -8f);
-                }
-                if (item.Find("Name") is RectTransform name && !Mathf.Approximately(name.anchorMax.x, 1f))
-                {
-                    float y = name.anchoredPosition.y, h = name.sizeDelta.y;
-                    name.anchorMin = new Vector2(0f, name.anchorMin.y); name.anchorMax = new Vector2(1f, name.anchorMax.y);
-                    name.anchoredPosition = new Vector2(0f, y); name.sizeDelta = new Vector2(-24f, h);   // 12 each side
-                }
             }
         }
 
@@ -167,63 +138,6 @@ namespace Mongle.EditorTools
             }
         }
 
-        /// <summary>
-        /// A friend's dialog: the answers (the game's choices — two, or twelve months, or 31 days — and its bottom buttons such as
-        /// "좋아, 할게!" / "나중에") are one column right of the speech bubble, growing upwards from where "나중에" was drawn, so
-        /// nothing is pushed below the screen. Choices sit in a grid (<see cref="UiLinkList.gridWidth"/> keeps it clear of the bubble).
-        /// </summary>
-        static void Ride(Transform r)
-        {
-            var answers = r.Find("Answers") as RectTransform;
-            if (answers == null)
-            {
-                var yes = r.Find("Btn_Yes") as RectTransform; var footer = r.Find("Footer") as RectTransform;
-                if (footer == null && r.Find("Btn_Later") is RectTransform loose)
-                {
-                    // a freshly built screen: the bottom buttons get their own holder (a second list needs its own object)
-                    footer = new GameObject("Footer", typeof(RectTransform)).GetComponent<RectTransform>();
-                    footer.SetParent(r, false); footer.SetSiblingIndex(loose.GetSiblingIndex());
-                    footer.anchorMin = Vector2.zero; footer.anchorMax = Vector2.one; footer.offsetMin = footer.offsetMax = Vector2.zero;
-                    loose.SetParent(footer, true);
-                }
-                var later = footer != null ? footer.Find("Btn_Later") as RectTransform : null;
-                if (yes == null || footer == null || later == null) return;
-                float x = yes.anchoredPosition.x, bottom = later.anchoredPosition.y - later.pivot.y * later.rect.height;
-                answers = new GameObject("Answers", typeof(RectTransform)).GetComponent<RectTransform>();
-                answers.SetParent(r, false); answers.SetSiblingIndex(yes.GetSiblingIndex());
-                Pin(answers, new Vector2(0.5f, 0f), new Vector2(x, bottom));
-                var choices = new GameObject("Choices", typeof(RectTransform)).GetComponent<RectTransform>();
-                choices.SetParent(answers, false);
-                yes.SetParent(choices, false);
-                footer.SetParent(answers, false);
-                footer.anchorMin = footer.anchorMax = new Vector2(0.5f, 1f); footer.pivot = new Vector2(0.5f, 1f);
-            }
-            else Pin(answers, new Vector2(0.5f, 0f), answers.anchoredPosition);
-
-            var col = Get<VerticalLayoutGroup>(answers);
-            Tune(col, 31.5f, TextAnchor.LowerCenter, new RectOffset(), true);
-            col.childControlHeight = true;
-            var fit = Get<ContentSizeFitter>(answers); fit.horizontalFit = fit.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-
-            if (answers.Find("Choices") is RectTransform ch)
-            {
-                var grid = Get<GridLayoutGroup>(ch);
-                var yes = ch.Find("Btn_Yes") as RectTransform;
-                if (yes != null && grid.cellSize == new Vector2(100f, 100f)) grid.cellSize = yes.rect.size;   // a new grid: the design's button
-                grid.spacing = new Vector2(12f, 18f); grid.childAlignment = TextAnchor.UpperCenter;
-                grid.startCorner = GridLayoutGroup.Corner.UpperLeft; grid.startAxis = GridLayoutGroup.Axis.Horizontal;
-                grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount; if (grid.constraintCount < 1) grid.constraintCount = 1;
-                if (yes != null) Shrinkable(yes.Find("Label") as RectTransform, 0.16f);
-            }
-            if (answers.Find("Footer") is RectTransform ft)
-            {
-                var lg = Get<VerticalLayoutGroup>(ft);
-                Tune(lg, 18f, TextAnchor.UpperCenter, new RectOffset(), false);
-                if (ft.Find("Btn_Later") is RectTransform later) Shrinkable(later.Find("Label") as RectTransform, 0.08f);
-            }
-            LayoutRebuilder.ForceRebuildLayoutImmediate(answers);
-        }
-
         /// <summary>A button's words keep a share of its width on each side and get smaller in a narrow button.</summary>
         static void Shrinkable(RectTransform label, float side)
         {
@@ -240,87 +154,6 @@ namespace Mongle.EditorTools
         }
 
         // ---------------- the screens ----------------
-
-        static void Village(Transform r)
-        {
-            var left = Group(r, "LeftColumn", new Vector2(0f, 1f), new Vector2(Margin, -Margin), true, 24f, TextAnchor.UpperLeft, "Btn_Home", "Btn_Quest");
-            // the top line is one row: home and quests side by side, as high as the coins / settings row on the right
-            if (left != null)
-            {
-                var top0 = left.Find("TopLeftRow") as RectTransform;
-                if (top0 == null)
-                {
-                    top0 = new GameObject("TopLeftRow", typeof(RectTransform)).GetComponent<RectTransform>();
-                    top0.SetParent(left, false); top0.SetSiblingIndex(0);
-                    foreach (var n in new[] { "Btn_Home", "Btn_Quest" }) if (left.Find(n) is Transform t) t.SetParent(top0, false);
-                }
-                Tune(Get<HorizontalLayoutGroup>(top0), 16f, TextAnchor.MiddleLeft, new RectOffset(), false);
-                // a row inside the column gets a fixed box (a size fitter there would run after the column placed it)
-                FixedRow(top0, new Vector2(0f, 1f), 16f);
-            }
-            // the game's quest tracker (no Figma design) takes the next place down the column (UiLink placeOld moves it there)
-            if (left != null && left.Find("QuestTrackerSlot") == null)
-            {
-                var slot = new GameObject("QuestTrackerSlot", typeof(RectTransform)).GetComponent<RectTransform>();
-                slot.SetParent(left, false); slot.sizeDelta = new Vector2(380f, 90f);
-                LayoutRebuilder.ForceRebuildLayoutImmediate(left);
-            }
-            Group(r, "ZoomColumn", new Vector2(0f, 0.5f), new Vector2(Margin, 0f), true, 16f, TextAnchor.MiddleLeft, "Btn_ZoomIn", "Btn_ZoomOut");
-            var top = Group(r, "TopRight", new Vector2(1f, 1f), new Vector2(-Margin, -Margin), false, 24f, TextAnchor.MiddleRight, "Coins", "Btn_Settings");
-            if (top != null) FixedRow(top, new Vector2(1f, 1f), 24f);
-
-            // the furniture / album / storage column: its own pill is the group
-            if (r.Find("Toolbar") is RectTransform bar)
-            {
-                Pin(bar, new Vector2(1f, 0.5f), new Vector2(-Margin, 0f));
-                var lg = Get<VerticalLayoutGroup>(bar);
-                Tune(lg, 0f, TextAnchor.UpperCenter, new RectOffset(0, 0, 46, 46), false);
-                var fit = Get<ContentSizeFitter>(bar);
-                fit.horizontalFit = ContentSizeFitter.FitMode.Unconstrained; fit.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-                // each tool is a column of its own: picture over words, both in the middle, every tool the same size
-                foreach (Transform item in bar)
-                {
-                    if (!(item is RectTransform it) || it.GetComponent<Button>() == null) continue;
-                    it.sizeDelta = new Vector2(it.sizeDelta.x, 154f);
-                    Tune(Get<VerticalLayoutGroup>(it), 2f, TextAnchor.UpperCenter, new RectOffset(0, 0, 6, 0), false);
-                    if (it.Find("Icon") is RectTransform icon) icon.sizeDelta = new Vector2(118f, 118f);
-                    if (it.Find("Label") is RectTransform label) label.sizeDelta = new Vector2(180f, label.sizeDelta.y);
-                    LayoutRebuilder.ForceRebuildLayoutImmediate(it);
-                }
-                LayoutRebuilder.ForceRebuildLayoutImmediate(bar);
-            }
-
-            Banner(r, "Banner", "Banner/Text", top != null ? top.rect.height : 103f);
-
-            // the ride message at the bottom: a row that grows with its words
-            if (r.Find("Toast") is RectTransform toast)
-            {
-                Pin(toast, new Vector2(0.5f, 0f), new Vector2(0f, toast.anchoredPosition.y));
-                if (toast.Find("Btn_Watch") is RectTransform watch)
-                {
-                    var le = Get<LayoutElement>(watch);
-                    le.minWidth = le.preferredWidth = watch.sizeDelta.x; le.minHeight = le.preferredHeight = watch.sizeDelta.y;
-                }
-                var lg = Get<HorizontalLayoutGroup>(toast);
-                Tune(lg, 40f, TextAnchor.MiddleCenter, new RectOffset(64, 40, 0, 0), true);
-                var fit = Get<ContentSizeFitter>(toast);
-                fit.horizontalFit = ContentSizeFitter.FitMode.PreferredSize; fit.verticalFit = ContentSizeFitter.FitMode.Unconstrained;
-                LayoutRebuilder.ForceRebuildLayoutImmediate(toast);
-            }
-        }
-
-        static void Repair(Transform r)
-        {
-            if (r.Find("Btn_Back") is RectTransform back) Pin(back, new Vector2(0f, 1f), new Vector2(Margin, -Margin));
-            float topRow = 103f;
-            if (r.Find("Btn_Settings") is RectTransform gear) { Pin(gear, new Vector2(1f, 1f), new Vector2(-Margin, -Margin)); topRow = gear.rect.height; }
-            Group(r, "ZoomColumn", new Vector2(1f, 0.5f), new Vector2(-Margin, 0f), true, 16f, TextAnchor.MiddleRight, "Btn_ZoomIn", "Btn_ZoomOut");
-            Group(r, "ToolRow", new Vector2(0.5f, 0f), new Vector2(0f, 20f), false, 20f, TextAnchor.MiddleCenter, "Btn_ToolsLeft", "ToolBar", "Btn_ToolsRight");
-            if (r.Find("Notes") is RectTransform notes) notes.anchoredPosition = new Vector2(Margin, notes.anchoredPosition.y);
-            Banner(r, "Done", "Done/Text", topRow);
-        }
-
-        // ---------------- helpers ----------------
 
         /// <summary>
         /// A top banner: in the middle, level with the corner buttons, its words' box pinned to the plate's sides so the box's

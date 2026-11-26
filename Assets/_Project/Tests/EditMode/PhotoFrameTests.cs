@@ -14,12 +14,26 @@ namespace Mongle.Tests
             for (int i = 0; i < PhotoFrames.Ids.Length; i++)
             {
                 var t = PhotoFrames.Pattern(i);
-                Assert.AreEqual(PhotoFrames.Tile, t.width); Assert.AreEqual(TextureWrapMode.Repeat, t.wrapMode);
+                Assert.AreEqual(PhotoFrames.Size(i).x, t.width); Assert.AreEqual(PhotoFrames.Size(i).y, t.height);
+                Assert.AreEqual(TextureWrapMode.Repeat, t.wrapMode);
             }
             // the patterned frames really have two colours in them (dots/checks/stars), the plain one does not
             Assert.AreNotEqual(PhotoFrames.Pattern(1).GetPixel(24, 24), PhotoFrames.Pattern(1).GetPixel(48, 0));
             Assert.AreNotEqual(PhotoFrames.Pattern(2).GetPixel(5, 5), PhotoFrames.Pattern(2).GetPixel(30, 5));
-            Assert.AreNotEqual(PhotoFrames.Pattern(3).GetPixel(26, 26), PhotoFrames.Pattern(3).GetPixel(50, 50));
+            Assert.AreNotEqual(PhotoFrames.Pattern(3).GetPixel(34, 28), PhotoFrames.Pattern(3).GetPixel(0, 28));
+        }
+
+        [Test]
+        public void StarsStandUprightInStaggeredRows()
+        {
+            var s = PhotoFrames.Pattern(3);
+            Assert.AreEqual(new Vector2Int(68, 112), PhotoFrames.Size(3));
+            // the lower row's star (centre 34, 28): its top point is brown, straight below the centre falls between its legs
+            Assert.Less(s.GetPixel(34, 43).r, 0.8f, "top point");
+            Assert.Greater(s.GetPixel(34, 13).r, 0.95f, "between the legs");
+            // the row above is shifted half a step: its star sits on the tile's edge (x 0, y 84), not above the lower one
+            Assert.Less(s.GetPixel(0, 84).r, 0.8f);
+            Assert.Greater(s.GetPixel(34, 84).r, 0.95f);
         }
 
         [Test]

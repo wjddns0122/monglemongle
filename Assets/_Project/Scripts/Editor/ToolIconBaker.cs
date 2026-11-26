@@ -55,7 +55,7 @@ namespace Mongle.EditorTools
             return n;
         }
 
-        static void AddLight(Scene scene, Vector3 euler, float intensity, Color color)
+        internal static void AddLight(Scene scene, Vector3 euler, float intensity, Color color)
         {
             var go = new GameObject("Light"); SceneManager.MoveGameObjectToScene(go, scene);
             var l = go.AddComponent<Light>(); l.type = LightType.Directional; l.intensity = intensity; l.color = color; l.shadows = LightShadows.None;
@@ -63,7 +63,7 @@ namespace Mongle.EditorTools
         }
 
         /// <summary>The model turned a little towards the camera; long thin ones are rolled 38° so they lie across the picture.</summary>
-        static Texture2D Shoot(GameObject prefab, Scene scene)
+        internal static Texture2D Shoot(GameObject prefab, Scene scene)
         {
             var inst = Object.Instantiate(prefab); SceneManager.MoveGameObjectToScene(inst, scene);
             inst.transform.SetPositionAndRotation(Vector3.zero, Quaternion.Euler(0f, 28f, 0f));
@@ -93,7 +93,7 @@ namespace Mongle.EditorTools
         }
 
         /// <summary>Crops to the tool, fits it to 80 % of the square, and adds the white sticker edge and a soft shadow under it.</summary>
-        static Texture2D Style(Texture2D src)
+        internal static Texture2D Style(Texture2D src)
         {
             var px = src.GetPixels32(); int x0 = Raw, y0 = Raw, x1 = -1, y1 = -1;
             for (int y = 0; y < Raw; y++)

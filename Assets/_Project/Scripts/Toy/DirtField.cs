@@ -69,13 +69,26 @@ namespace Mongle.Toy
                 float rad = Mathf.Sqrt((float)rng.NextDouble()) * spread;
                 var target = centre + axisA * Mathf.Cos(ang) * rad + axisB * Mathf.Sin(ang) * rad * 0.85f;
                 if (!Hit(probe, target, outward, spread, retry, out var pt, out var n, out var bone)) continue;
-                if (!Hit(flat, target, outward, spread, retry, out var ptF, out var nF, out _)) { ptF = pt; nF = n; }
+                bool onFlat = Hit(flat, target, outward, spread, retry, out var ptF, out var nF, out var boneF);
                 float r = Mathf.Lerp(0.011f, 0.021f, (float)rng.NextDouble()) * size;
+                // QA 2026-11-27: where the deflated body has no surface under the spot (the belly's lower rim pulls in) a blob kept its
+                // full-body place and hung in the air below the belly; such a spot gets no blob. (The deflated belly lies up to ~4 cm
+                // behind the full one, so only a miss or a hit on some other part far behind counts.)
+                if (!onFlat || (ptF - pt).magnitude > 0.06f) continue;
+                // the whole splotch has to lie on the body, full and deflated: a flat disc on the belly's lower rim stuck out into
+                // the air below it. Try it smaller once, else leave the spot.
+                if (!Covers(probe, pt, n, r) || !Covers(flat, ptF, nF, r))
+                {
+                    r *= 0.6f;
+                    if (!Covers(probe, pt, n, r) || !Covers(flat, ptF, nF, r)) continue;
+                }
                 var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                 go.name = "Dirt_" + i;
                 Destroy(go.GetComponent<Collider>());
-                // ride on the bone that moves that bit of surface (a toy car's bumper is on Hips, its cabin on Spine)
-                var host = bone != null ? bone : field.transform;
+                // ride on the bone that moves that bit of surface (a toy car's bumper is on Hips, its cabin on Spine) — in the shape the
+                // toy has now: Mongi's dirt is cleaned while it is still deflated, where the lower belly follows another bone
+                var under = deflate0 >= 0.5f && boneF != null ? boneF : bone;
+                var host = under != null ? under : field.transform;
                 go.transform.SetParent(host, true);
                 var blob = new Blob
                 {
@@ -96,6 +109,21 @@ namespace Mongle.Toy
             field.built = true;
             field.Refresh();
             return field;
+        }
+
+        /// <summary>True when four points on the rim of a disc of radius <paramref name="r"/> at <paramref name="c"/> (facing
+        /// <paramref name="n"/>) all have the surface right under them.</summary>
+        static bool Covers(SurfaceProbe p, Vector3 c, Vector3 n, float r)
+        {
+            var a = Vector3.Cross(n, Mathf.Abs(n.y) < 0.9f ? Vector3.up : Vector3.right).normalized; var b = Vector3.Cross(n, a);
+            for (int k = 0; k < 4; k++)
+            {
+                float ang = (k + 0.5f) * Mathf.PI * 0.5f;
+                var q = c + (a * Mathf.Cos(ang) + b * Mathf.Sin(ang)) * r * 0.85f;
+                if (!p.Raycast(new Ray(q + n * 0.03f, -n), out var hit, out _, 0.06f)) return false;
+                if (Mathf.Abs(Vector3.Dot(hit - q, n)) > r * 0.5f) return false;
+            }
+            return true;
         }
 
         static bool Hit(SurfaceProbe p, Vector3 target, Vector3 outward, float spread, float retry, out Vector3 pt, out Vector3 n, out Transform bone)

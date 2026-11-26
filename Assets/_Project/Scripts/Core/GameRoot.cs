@@ -40,7 +40,7 @@ namespace Mongle.Core
         /// <summary>True when the save file could not be read and the player must choose what happens.</summary>
         public bool NeedsSaveDecision => Toy == null;
 
-        Image fade; Text toast; float toastUntil;
+        Image fade; float toastUntil;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void AutoCreate()
@@ -278,39 +278,23 @@ namespace Mongle.Core
             var c = UiKit.CreateCanvas("GlobalOverlay", 1000, transform);
             var rt = UiKit.Rect(c.transform, "Fade", Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             fade = rt.gameObject.AddComponent<Image>(); fade.color = new Color(0.16f, 0.1f, 0.07f, 0f); fade.raycastTarget = false;
-            // Figma D-020: the pill under the top banner (no coin: it carries every kind of notice, D-022); it grows with the line
-            var tp = UiKit.Fig(c.transform, "hud_toast", UiKit.Edge.Middle, UiKit.Edge.Start, 0f, 0f, false, "Toast");
-            UiKit.Slice(tp, true); toastRect = tp.rectTransform;
-            toast = UiKit.TitleLabel(tp.transform, "", 38, UiKit.FigBrown, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(1000f, 70f));
-            UiKit.AutoFit(tp, toast, 300f, 110f, 1700f);
-            // coin notices ("몽글 코인 +50") get the Figma coin in front of the text (D-023)
-            toastCoin = UiKit.SpriteImage(tp.transform, "Coin", "hud_toast_coin", new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(40f, 0f), new Vector2(58f, 58f)).gameObject;
-            tp.gameObject.SetActive(false);
-            toastPanel = tp.gameObject;
-            UiSkin.Apply(c.transform, OverlaySkin);   // the notices' prefab, edited in Unity (Resources/UI/Skins, D-035)
+            // the notice pill (11-26 Figma 88:1848, Mongle.Views.NoticeView): kept under this object, so it lives across scenes
+            var prefab = Mongle.Views.ViewIndex.Prefab("Notice");
+            if (prefab != null)
+            {
+                notice = Instantiate(prefab, transform).GetComponent<Mongle.Views.NoticeView>(); notice.name = "Notice";
+                toastRect = notice.pill; toastPanel = notice.pill.gameObject; toastPanel.SetActive(false);
+            }
         }
 
-        /// <summary>D-035: the editable prefab of the notice pill and the fade.</summary>
-        public const string OverlaySkin = "Overlay";
-#if UNITY_EDITOR
-        /// <summary>The overlay with a sample notice showing, for its editable prefab (UiSkinBaker).</summary>
-        public GameObject BuildSkinSample()
-        {
-            BuildOverlay();
-            Say("몽글 코인 +50");
-            return toastPanel.transform.parent.gameObject;
-        }
-#endif
-        GameObject toastPanel, toastCoin; RectTransform toastRect;
+        Mongle.Views.NoticeView notice; GameObject toastPanel; RectTransform toastRect;
+        /// <summary>The notice now showing ("" when none).</summary>
+        public string NoticeShown => notice != null ? notice.TextShown : "";
 
         public void Say(string msg, float seconds = 2.4f)
         {
-            if (toast == null) return;
-            toast.text = msg; toastPanel.SetActive(true); toastUntil = Time.unscaledTime + seconds;
-            bool coin = msg != null && msg.Contains("몽글 코인");
-            toastCoin.SetActive(coin);
-            toast.rectTransform.anchoredPosition = new Vector2(coin ? 34f : 0f, 0f);
-            var fit = toastRect.GetComponent<FitToText>(); fit.padX = coin ? 178f : 110f; fit.Apply();
+            if (notice == null) return;
+            notice.Show(msg); toastUntil = Time.unscaledTime + seconds;
             // a new notice appears straight in its place (top or under the banner); only later changes glide
             if (!toastLow)
             {

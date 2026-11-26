@@ -54,13 +54,13 @@ namespace Mongle.Repair
             }
             if (sp.Count == 0) { Debug.LogError("[Sew] no stitch points"); return; }
             var pts = new List<Vector3>(); foreach (var s in sp) pts.Add(s.position);
-            model = new StitchModel(pts) { Radius = 0.022f };
+            model = new StitchModel(pts) { Radius = StitchModel.FitRadius(pts) };
             seamAxis = sp.Count > 1 ? sp[sp.Count - 1].position - sp[0].position : Vector3.down;
             seamAxis = seamAxis.sqrMagnitude > 1e-8f ? seamAxis.normalized : Vector3.down;
             for (int i = 0; i < sp.Count; i++) AddEntryExit(i);
             live = ThreadTube.Create(transform, "LiveThread", Ctx.catalog.Mat("M_Thread"), 0.0009f);
             eye = Ctx.tool != null ? (Ctx.tool.Part("EYE") ?? Ctx.tool.transform) : null;
-            ring = Fx.Ring(Ctx.catalog, sp[0].position, 0.022f, new Color(1f, 0.9f, 0.45f, 1f));
+            ring = Fx.Ring(Ctx.catalog, sp[0].position, Mathf.Clamp(model.Radius * 1.3f, 0.014f, 0.022f), new Color(1f, 0.9f, 0.45f, 1f));   // as big as where a stitch counts
             ring.transform.SetParent(sp[0], true);
             ApplyMend(0f);
             toy.SetFace(0, 0.7f);

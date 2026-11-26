@@ -6,6 +6,7 @@ using Mongle.Diagnosis;
 using Mongle.Repair;
 using Mongle.Toy;
 using Mongle.UI;
+using Mongle.Views;
 using UnityEngine;
 
 namespace Mongle.Core
@@ -18,7 +19,9 @@ namespace Mongle.Core
     {
         public static ShopDirector Current { get; private set; }
         public ToyActor Toy { get; private set; }
-        public ShopUI UI { get; private set; }
+        public ShopUI UI { get; private set; }   // still the dress-up window (11-26: to be replaced)
+        /// <summary>The 11-26 repair screen: banner, 진료 수첩, tool bar, zoom, back (a RepairShop scene object).</summary>
+        public RepairHudView Hud { get; private set; }
         public OrbitCamera Orbit { get; private set; }
         public DiagnosisController Diagnosis { get; private set; }
         public RepairSession Repair { get; private set; }
@@ -39,22 +42,31 @@ namespace Mongle.Core
             catalog = root.Catalog; state = root.ActiveToy;
             Cam = Camera.main; Orbit = Cam.gameObject.GetOrAdd<OrbitCamera>();
             Orbit.target = new Vector3(0, 0.22f, 0);
-            UI = new GameObject("ShopUI").AddComponent<ShopUI>(); UI.Build(); UI.ApplySkin("RepairScreen");   // edit it in Resources/UI/Skins (D-035)
-            UI.OnZoom = f => Orbit.ZoomStep(f);
+            UI = new GameObject("ShopUI").AddComponent<ShopUI>(); UI.Build(); UI.ApplySkin("RepairScreen");   // dress-up (old skin)
+            Hud = FindAnyObjectByType<RepairHudView>(FindObjectsInactive.Include);
+            if (Hud == null)
+            {
+                var prefab = ViewIndex.Prefab("RepairHud");
+                if (prefab != null) Hud = Instantiate(prefab).GetComponent<RepairHudView>();
+            }
+            ViewUtil.EnsureEventSystem();
+            Hud.gameObject.SetActive(true); Hud.HideAll();
+            Hud.OnZoom = f => Orbit.ZoomStep(f);
             root.Audio.StartBgm();
             if (state == null) { GoBootstrap(); yield break; }
 
             def = catalog.ToyDef(state.KindId) ?? catalog.toy;
             var start = TreatingFriend ? FlowResolver.ResolvePatient(state) : FlowResolver.Resolve(state);
-            Toy = ToyActor.Spawn(catalog, def, ToySpot, Quaternion.identity);
+            Toy = ToyActor.Spawn(catalog, def, ToySpot, Quaternion.identity, false);
             Toy.ApplyRepairState(state);
+            Toy.LayDirtFields(state);   // the stains go on once the toy stands in its pose (deflated, nervous)
 
             Diagnosis = gameObject.AddComponent<DiagnosisController>();
             Diagnosis.Toy = Toy; Diagnosis.State = state; Diagnosis.ToyName = def.displayName; Diagnosis.Orbit = Orbit; Diagnosis.Catalog = catalog; Diagnosis.Cam = Cam;
-            Diagnosis.OnMessage = m => UI.Banner(m);
-            Diagnosis.OnChanged = () => { UI.RefreshNotebook(state, catalog); if (state.AllDiscovered) StartCoroutine(DiagnosisDone()); };
+            Diagnosis.OnMessage = m => Hud.Banner(m);
+            Diagnosis.OnChanged = () => { Hud.RefreshNotebook(state, catalog); if (state.AllDiscovered) StartCoroutine(DiagnosisDone()); };
             Repair = gameObject.AddComponent<RepairSession>();
-            Repair.Toy = Toy; Repair.State = state; Repair.Catalog = catalog; Repair.Cam = Cam; Repair.Orbit = Orbit; Repair.UI = UI;
+            Repair.Toy = Toy; Repair.State = state; Repair.Catalog = catalog; Repair.Cam = Cam; Repair.Orbit = Orbit; Repair.UI = Hud;
             Repair.AllDone += () => StartCoroutine(ToStamp());
 
             switch (start)
@@ -97,11 +109,11 @@ namespace Mongle.Core
             yield return new WaitForSeconds(0.7f);
             Phase = FlowPhase.CustomerIntro;
             Orbit.target = new Vector3(0, 0.1f, 0); // lift the toy above the dialog
-            // friends (not Mongi, whose visit is the tutorial) can also be turned away (D-024, Figma 몽이가 왔어요 box)
+            // friends (not Mongi, whose visit is the tutorial) can also be turned away (D-024; 11-26 "몽이가 왔어요" box)
             if (TreatingFriend)
-                UI.ShowDialog(Josa.IGa(def.displayName) + " 왔어요", def.shortBackstory, "살펴볼게요", () => { Orbit.target = new Vector3(0, 0.22f, 0); BeginDiagnosis(); }, "죄송합니다", () => StartCoroutine(SendAway()), true);
+                DialogView.Open(Josa.IGa(def.displayName) + " 왔어요", def.shortBackstory, "살펴볼게요", () => { Orbit.target = new Vector3(0, 0.22f, 0); BeginDiagnosis(); }, "죄송합니다", () => StartCoroutine(SendAway()));
             else
-                UI.ShowDialog(Josa.IGa(def.displayName) + " 왔어요", def.shortBackstory, "살펴볼게요", () => { Orbit.target = new Vector3(0, 0.22f, 0); BeginDiagnosis(); }, null, null, true);
+                DialogView.Open(Josa.IGa(def.displayName) + " 왔어요", def.shortBackstory, "살펴볼게요", () => { Orbit.target = new Vector3(0, 0.22f, 0); BeginDiagnosis(); });
         }
 
         /// <summary>"죄송합니다": the friend waves, walks back out of the door and the game returns to the village; it can come another day.</summary>
@@ -125,8 +137,8 @@ namespace Mongle.Core
         void BeginDiagnosis()
         {
             Phase = FlowPhase.Diagnosis;
-            UI.ShowNotebook(true); UI.RefreshNotebook(state, catalog);
-            UI.SetInspectControls(true);
+            Hud.ShowNotebook(true); Hud.RefreshNotebook(state, catalog);
+            Hud.SetInspectControls(true);
             Diagnosis.Begin();
         }
 
@@ -137,8 +149,8 @@ namespace Mongle.Core
             yield return new WaitForSeconds(1.4f);
             root.Audio.Play("success", 0.8f);
             Toy.PlayThen("Relief", "Idle");
-            UI.Banner("문제를 모두 찾았어요! 이제 고쳐줄 차례예요");
-            UI.RefreshNotebook(state, catalog);
+            Hud.Banner("문제를 모두 찾았어요! 이제 고쳐줄 차례예요");
+            Hud.RefreshNotebook(state, catalog);
             yield return new WaitForSeconds(1.8f);
             BeginRepair();
         }
@@ -146,9 +158,9 @@ namespace Mongle.Core
         void BeginRepair()
         {
             Phase = FlowPhase.Repair;
-            UI.SetInspectControls(true);
-            UI.ShowNotebook(true);
-            UI.RefreshNotebook(state, catalog);
+            Hud.SetInspectControls(true);
+            Hud.ShowNotebook(true);
+            Hud.RefreshNotebook(state, catalog);
             Orbit.SetOrbit(0, 12, 1.3f);
             Repair.Begin();
         }
@@ -157,16 +169,17 @@ namespace Mongle.Core
         IEnumerator ToStamp()
         {
             Phase = FlowPhase.CompletionStamp;
-            UI.HideAll();
+            Hud.HideAll(); UI.HideAll();
             root.Pointer.Mode = PointerMode.None;
             // the orbit may still face the last repaired spot (e.g. the back): show the whole toy from the front
             Orbit.ReleaseFocus(); Orbit.target = new Vector3(0, 0.27f, 0); Orbit.SetOrbit(15, 8, 1.05f);
             Toy.ApplyRepairState(state);
             yield return new WaitForSeconds(0.6f);
-            UI.ShowStamp(true, () =>
+            StampView stamp = null;
+            stamp = StampView.Open(root.Residents.Count, () =>
             {
                 root.Audio.Play("thump", 1f);
-                UI.PlayStampAnim(() =>
+                stamp.PlayStamp(() =>
                 {
                     if (!state.CompleteStamp()) return;
                     Orbit.Punch(0.03f);
@@ -175,13 +188,13 @@ namespace Mongle.Core
                     Toy.PlayThen("Happy", "Idle");
                     StartCoroutine(StampToCustomize());
                 });
-            }, root.Residents.Count);
+            });
         }
 
         IEnumerator StampToCustomize()
         {
             yield return new WaitForSeconds(2.0f);
-            UI.ShowStamp(false);
+            StampView.Close();
             BeginCustomization();
         }
 
@@ -189,14 +202,14 @@ namespace Mongle.Core
         void BeginCustomization()
         {
             Phase = FlowPhase.Customization;
-            UI.HideAll();
+            Hud.HideAll(); UI.HideAll();
             Toy.ApplyRepairState(state);
             Toy.SetAccessories(state.Visible, catalog);
             Orbit.ReleaseFocus(); // a focus close-up would override the orbit and hide the toy's front
             Orbit.target = new Vector3(0, 0.27f, 0); Orbit.SetOrbit(15, 8, 0.95f);
             root.Pointer.Mode = PointerMode.Orbit;
             Orbit.minDistance = 0.55f; Orbit.maxDistance = 1.6f;
-            UI.SetInspectControls(true);
+            Hud.SetInspectControls(true);
             if (TreatingFriend)
             {
                 // friends wear what the player bought at the accessory shop (one item is used up per friend)
@@ -204,14 +217,14 @@ namespace Mongle.Core
                 UI.BuildCustomization(customList, ToggleAccessory, ConfirmCustomization,
                     a => (a.slot == AccessorySlot.Head ? "머리" : a.slot == AccessorySlot.Face ? "얼굴" : "목") + (customList.Length > 4 ? " · " : " 자리 · 가진 수 ") + root.World.Owned(a.id) + (customList.Length > 4 ? "개" : ""),
                     "아직 가진 악세서리가 없어요.\n마을의 컵케이크 악세서리점에서 사 오면 입혀 줄 수 있어요.\n\n이대로도 괜찮아요!");
-                UI.Banner(customList.Length > 0 ? "악세서리점에서 산 것으로 꾸며줘요" : "이번엔 그대로 가도 괜찮아요");
+                Hud.Banner(customList.Length > 0 ? "악세서리점에서 산 것으로 꾸며줘요" : "이번엔 그대로 가도 괜찮아요");
             }
             else
             {
                 // Mongi's first dress-up: the free gifts only (the rest is sold at the accessory shop later)
                 customList = (def.giftAccessories != null && def.giftAccessories.Length > 0 ? def.giftAccessories : def.accessories ?? new AccessoryDefinition[0]).Where(a => a != null).ToArray();
                 UI.BuildCustomization(customList, ToggleAccessory, ConfirmCustomization);
-                UI.Banner("마음에 드는 것을 골라 꾸며줘요");
+                Hud.Banner("마음에 드는 것을 골라 꾸며줘요");
             }
             RefreshCustomButtons();
         }
@@ -248,9 +261,9 @@ namespace Mongle.Core
                 foreach (var id in state.Equipped.Values) root.World.TakeFromInventory(id);
                 if (state.Equipped.Count > 0) root.World.Report("AccessoryWorn", def.kindId);
                 root.Persist("friend dressed");
-                UI.Banner("멋져요! " + Josa.IGa(def.displayName) + " 사진을 찍으러 가요");
+                Hud.Banner("멋져요! " + Josa.IGa(def.displayName) + " 사진을 찍으러 가요");
             }
-            else UI.Banner("멋져요! 사진을 남기러 가요");
+            else Hud.Banner("멋져요! 사진을 남기러 가요");
             StartCoroutine(Next());
         }
 

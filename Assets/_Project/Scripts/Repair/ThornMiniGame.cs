@@ -19,6 +19,8 @@ namespace Mongle.Repair
         public override float Progress => model != null ? model.Progress : 0f;
         public override string Instruction => model != null && model.Grabbed ? "천천히 바깥쪽으로 당겨요" : "핀셋으로 가시를 꾹 잡아요";
         public override Vector3 HintPoint => model != null ? model.GrabPoint : Ctx.toy.Point(GrabName);
+        /// <summary>Which way the thorn has to be pulled (on the camera-facing plane), for the scripted QA.</summary>
+        public Vector3 PullDirection => model != null ? model.RemovalDir : Vector3.zero;
         bool Site => Ctx.def != null && Ctx.def.HasSite;
         string GrabName => Site && !string.IsNullOrEmpty(Ctx.def.grabPointName) ? Ctx.def.grabPointName : "GP_THORN";
 

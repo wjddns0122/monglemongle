@@ -43,9 +43,10 @@ namespace Mongle.Village
         public bool Ready { get; private set; }
         GameRoot root; ToyRuntime state; Camera cam;
         ShopUI baseUi; Canvas canvas;
-        Text status, banner, bubbleText; GameObject bubble; Transform bubbleAnchor; float bubbleUntil;
-        GameObject placeBar, mainBar, statusPlate; Button placeToggle, storageButton; GameObject storageBadge; Text storageBadgeText;
-        PhotoPanel album;
+        Text bubbleText; GameObject bubble; Transform bubbleAnchor; float bubbleUntil;
+        GameObject placeBar;
+        /// <summary>The 11-26 HUD (VillageHudView, Figma 88:231 / 88:510 / 88:2367): a Village scene object.</summary>
+        public Mongle.Views.VillageHudView Hud { get; private set; }
         FurniturePlacement pendingOriginal; int pendingRot, pendingX, pendingY;
         bool dragging;
         static readonly string[] TalkLines = { "안녕! 와줬구나.", "여기 정말 포근해요.", "고쳐줘서 고마워요!", "오늘은 꽃 향기가 좋아요." };
@@ -54,9 +55,6 @@ namespace Mongle.Village
         System.Func<bool> windowOpen;
         System.Func<Rect> topFree;
 
-        /// <summary>The "몽이의 마을 · … 입주" banner greets the player on arriving and then goes away (the top is left to notices).</summary>
-        const float StatusSeconds = 4f;
-        float statusUntil = float.MaxValue;   // admission: "마을 입구" stays until Mongi moves in
 
         void OnDestroy() { if (GameRoot.WindowOpen == windowOpen) GameRoot.WindowOpen = null; if (GameRoot.TopFree == topFree) GameRoot.TopFree = null; if (Current == this) Current = null; if (root != null) { root.World.Changed -= RefreshCoins; root.World.QuestChanged -= OnQuestChanged; } UnhookFriendQuests(); }
 
@@ -65,7 +63,7 @@ namespace Mongle.Village
             Current = this;
             // notices go below a big window (shop, storage, quest board) instead of over its title (the bottom bars keep them on top)
             // (a destroyed director compares equal to null in Unity: "this != null" keeps a stale one from being asked)
-            windowOpen = () => this != null && Current == this && ((Shop != null && Shop.Visible) || (Storage != null && Storage.Visible) || QuestBoardOpen);
+            windowOpen = () => this != null && Current == this && ((Shop != null && Shop.Visible) || (Storage != null && Storage.Visible) || QuestBoardOpen || Mongle.Views.AlbumView.IsOpen);
             GameRoot.WindowOpen = windowOpen;
             topFree = () => this != null && Current == this ? TopFree() : Rect.zero;
             GameRoot.TopFree = topFree;
@@ -94,7 +92,7 @@ namespace Mongle.Village
             root.World.QuestChanged += OnQuestChanged; RefreshQuestTracker();
             SetupFriendQuests(); // D-011: friends' "!" requests and "?" questions
             Ready = true;
-            if (!state.Admitted) BeginAdmission(); else { EnterLife(); WelcomeNewResident(); }
+            if (!state.Admitted) BeginAdmission(); else { EnterLife(false); WelcomeNewResident(); }
         }
 
         // ---------------- setup ----------------
@@ -155,10 +153,9 @@ namespace Mongle.Village
         void BeginAdmission()
         {
             Agent.Disable();
-            status.text = "마을 입구";
-            baseUi.Banner("몽이가 새 집을 기다리고 있어요");
-            mainBar.SetActive(false);
-            baseUi.ShowDialog("몽이의 새 집", "고쳐진 몽이를 마을로 초대해요. 벤치와 꽃이 기다리고 있어요.", "마을로 초대하기", () => StartCoroutine(Admit()));
+            Hud.Hint("몽이가 새 집을 기다리고 있어요");
+            Hud.ShowToolbar(false);
+            Mongle.Views.DialogView.Open("몽이의 새 집", "고쳐진 몽이를 마을로 초대해요. 벤치와 꽃이 기다리고 있어요.", "마을로 초대하기", () => StartCoroutine(Admit()));
             Toy.Play("Happy", 0.1f);
         }
 
@@ -171,104 +168,36 @@ namespace Mongle.Village
             }
             root.Audio.Play("success", 0.9f);
             Fx.Burst(Catalog, Toy.transform.position + Vector3.up * 0.3f, new Color(1f, 0.85f, 0.5f), 36, 0.02f, 0.45f, 1.1f, 0.05f);
-            baseUi.Banner("몽이는 이제 마을 주민이에요!");
+            Hud.Hint("몽이는 이제 마을 주민이에요!");
             yield return new WaitForSeconds(1.8f);
-            baseUi.Banner(null);
-            EnterLife();
-        }
-
-        void EnterLife()
-        {
-            root.Say("오른쪽 버튼으로 끌거나 W·A·S·D로 공원을 둘러봐요. 휠로 멀리 볼 수 있어요", 5f);
-            mainBar.SetActive(true);
-            status.text = "몽이의 마을 · " + state.AdmissionDate + " 입주";
-            statusUntil = Time.time + StatusSeconds;
-            Agent.Enable();
+            Hud.Hint(null);
+            EnterLife(true);
         }
 
         /// <summary>
-        /// Where notices may rise to while the top banner is away (GameRoot): the banner's band, as wide as the gap between the
-        /// top-left buttons and the coins allows around the middle; nothing while the banner (or a message in its place) shows.
+        /// Life in the village begins: the tiles come on. Just moved in (Figma 88:510): how to look around in the hint pill and
+        /// the three tiles' tips for a while; on later visits the pill greets with the village's name and the day Mongi moved in.
         /// </summary>
-        Rect TopFree()
+        void EnterLife(bool justMovedIn)
         {
-            if (!Ready || statusPlate == null || statusPlate.activeSelf || baseUi == null || baseUi.BannerShown || canvas == null) return Rect.zero;
-            if (topBand == null)
-            {
-                var front = canvas.transform.Find("UI2_VillageHud");
-                topBand = Deep(front, "Banner");
-                if (topBand == null) return Rect.zero;
-                for (int i = 0; i < TopSideNames.Length; i++) topSides[i] = Deep(front, TopSideNames[i]);
-            }
-            var w = corners; topBand.GetWorldCorners(w);   // overlay canvas: world = screen pixels
-            float mid = Screen.width * 0.5f, room = mid, top = w[1].y, bottom = w[0].y;
-            foreach (var t in topSides)
-            {
-                if (t == null || !t.gameObject.activeInHierarchy) continue;
-                t.GetWorldCorners(w);
-                if (w[1].y < bottom || w[0].y > top) continue;   // not on the banner's line
-                if (w[2].x <= mid) room = Mathf.Min(room, mid - w[2].x);
-                else if (w[0].x >= mid) room = Mathf.Min(room, w[0].x - mid);
-            }
-            float gap = 16f * canvas.scaleFactor;
-            room -= gap;
-            return room > 0f ? new Rect(mid - room, bottom, room * 2f, top - bottom) : Rect.zero;
+            Hud.ShowToolbar(true);
+            if (justMovedIn) { Hud.Hint("오른쪽 버튼으로 끌거나 W.A.S.D로 공원을 둘러봐요.\n휠로 멀리 볼 수 있어요.", 7f); Hud.ShowTips(7f); }
+            else Hud.Hint("몽이의 마을 · " + state.AdmissionDate + " 입주", 4f);
+            Agent.Enable();
         }
 
-        RectTransform topBand;
-        static readonly string[] TopSideNames = { "TopLeftRow", "Btn_Home", "Btn_Quest", "TopRight", "Coins", "Btn_Settings" };
-        readonly RectTransform[] topSides = new RectTransform[TopSideNames.Length];
-        readonly Vector3[] corners = new Vector3[4];
-
-        static RectTransform Deep(Transform t, string name)
-        {
-            if (t == null) return null;
-            foreach (var c in t.GetComponentsInChildren<RectTransform>(true)) if (c.name == name) return c;
-            return null;
-        }
+        /// <summary>Where notices may rise to while the hint pill is away (GameRoot): the HUD knows its own top row.</summary>
+        Rect TopFree() => Ready && Hud != null ? Hud.FreeTopBand() : Rect.zero;
 
         // ---------------- UI ----------------
 
-        /// <summary>One of the right-hand tiles of the Figma HUD: the icon sprite with its small label under it.</summary>
-        // D-029 (아트보드 6 새 파일): the tiles sit 48.6 px further in and 1.9 px higher, on a half-clear cream board
-        const float TileDx = -48.58f, TileDy = -1.94f;
-        Button HudTile(string sprite, string label, float dx, float dy, UnityEngine.Events.UnityAction onClick, string name)
-        {
-            var b = UiKit.FigButton(hud.transform, sprite, () => onClick(), UiKit.Edge.End, UiKit.Edge.Middle, TileDx, TileDy, name);
-            UiKit.FigText(b.transform, label, 20, UiKit.FigBrown2, dx, dy, 150f, 30f);
-            return b;
-        }
-
         void BuildUi()
         {
+            // the village's own panels (shop, storage, quest board, dress-up …) still live on the old canvas; the HUD is the 11-26 view
             baseUi = new GameObject("VillageUI").AddComponent<ShopUI>(); baseUi.Build();
-            baseUi.OnZoom = f => Orbit.ZoomStep(f); baseUi.SetInspectControls(true);
             canvas = baseUi.Canvas;
-            // Figma D-020 (village HUD): zoom on the left, status in the banner, coins in the pill at the top right,
-            // and the three round-cornered tiles (가구 옮기기 / 앨범 / 보관함) down the right edge
-            baseUi.VillageLayout();
-            var sp = UiKit.Fig(canvas.transform, "hud_banner", UiKit.Edge.Middle, UiKit.Edge.Start, 0f, 0f, false, "Status");
-            statusPlate = sp.gameObject;
-            status = UiKit.FigText(sp.transform, "", 49, UiKit.FigBrown, 0f, 0f, 960f, 80f);   // the top bars share the notebook title size (D-025)
-            UiKit.Slice(sp); UiKit.AutoFit(sp, status, 420f, 140f, 1040f);   // hugs its text; never reaches the coin pill (D-023)
-            mainBar = UiKit.Rect(canvas.transform, "MainBar", Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero).gameObject;
-            mainBar.GetComponent<RectTransform>().gameObject.AddComponent<CanvasGroup>().blocksRaycasts = false;
-            var mb = mainBar.transform;
-            hud = new GameObject("Hud", typeof(RectTransform)); hud.transform.SetParent(canvas.transform, false);
-            var hudRt = (RectTransform)hud.transform; hudRt.anchorMin = Vector2.zero; hudRt.anchorMax = Vector2.one; hudRt.offsetMin = Vector2.zero; hudRt.offsetMax = Vector2.zero;
-            UiKit.Fig(hud.transform, "hud2_tiles_bg", UiKit.Edge.End, UiKit.Edge.Middle, 0f, 0f, false, "TileBoard");
-            placeToggle = HudTile("hud_icon_furniture", "가구 옮기기", 0f, 71f, TogglePlacing, "Btn_가구 옮기기");
-            storageButton = HudTile("hud_icon_storage", "보관함", 3.5f, 75f, ShowStorage, "Btn_보관함");
-            // "new" badge: how many things were bought since the box was last opened (the label itself stays "보관함")
-            var badge = UiKit.Panel(storageButton.transform, "NewBadge", UiKit.Pink, new Vector2(0f, 1f), new Vector2(8, -6), new Vector2(84, 40), false);
-            storageBadge = badge.gameObject; storageBadgeText = UiKit.Label(badge.transform, "", 22, Color.white, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(80, 38));
-            storageBadge.SetActive(false);
-            HudTile("hud_icon_album", "앨범", 1f, 69f, ShowAlbum, "Btn_앨범");
-            BuildQuestButton();
-            var cb = UiKit.Fig(hud.transform, "hud_coin_pill", UiKit.Edge.End, UiKit.Edge.Start, 0f, 0f, false, "Coins");
-            coinText = UiKit.FigText(cb.transform, "0", 40, UiKit.FigBrown, 40f, 2f, 190f, 80f);
+            BindHud();
             BuildShopUi();
-            mainBar.SetActive(false);
             // placement bar (fits a 4:3 screen: 1420 wide); "나가기" always ends placing, ESC too
             placeBar = UiKit.Panel(canvas.transform, "PlaceBar", UiKit.Paper, new Vector2(0.5f, 0f), new Vector2(0, 110), new Vector2(1420, 150), false).gameObject;
             UiKit.MakeButton(placeBar.transform, "돌리기", UiKit.Sky, new Vector2(0.5f, 0.5f), new Vector2(-560, 0), new Vector2(240, 100), RotateSelected, 38);
@@ -287,16 +216,31 @@ namespace Mongle.Village
             UiKit.SpriteImage(bp.transform, "Tail", "speech_tail", new Vector2(0.5f, 0f), new Vector2(0.5f, 1f), new Vector2(0f, 4.9f), new Vector2(34f, 27f));
             bubble = bp.gameObject; bubbleText = UiKit.Label(bp.transform, "", 32, UiKit.FigBrown, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(BubbleW - 60f, BubbleH - 16f));
             bubble.SetActive(false);
-            // album (the 수선 기록 window is gone: not needed in the game, D-022)
-            album = new PhotoPanel(canvas.transform, "닫기", "다음 사진");
-            album.Primary.onClick.AddListener(() => { album.Hide(); });
-            album.Secondary.onClick.AddListener(() => { albumIndex++; ShowAlbumPage(); root.Audio.Play("click", 0.5f, 1.2f); });
             baseUi.ApplySkin(SkinName);   // the village screen's prefab, edited in Unity (Resources/UI/Skins, D-035)
         }
 
         /// <summary>D-035: the editable prefab of the village screen; parts made later get it laid over them with <see cref="SkinPart"/>.</summary>
         public const string SkinName = "VillageScreen";
         void SkinPart(Component part) { if (baseUi != null && part != null) baseUi.ApplySkinTo(part.transform); }
+
+        /// <summary>The HUD is the Village scene's own object (Assets/_UI수정/3_마을/VillageHud.prefab); the game only listens to it.</summary>
+        void BindHud()
+        {
+            Hud = FindAnyObjectByType<Mongle.Views.VillageHudView>(FindObjectsInactive.Include);
+            if (Hud == null) { var prefab = Mongle.Views.ViewIndex.Prefab("VillageHud"); if (prefab != null) Hud = Instantiate(prefab).GetComponent<Mongle.Views.VillageHudView>(); }
+            Hud.gameObject.SetActive(true);
+            Hud.OnHome = GoHomeView; Hud.OnQuest = ToggleQuestBoard; Hud.OnFurniture = TogglePlacing; Hud.OnAlbum = ShowAlbum; Hud.OnStorage = ShowStorage;
+            Hud.OnRide = ExitRideView; Hud.OnZoom = f => Orbit.ZoomStep(f);
+            Hud.ShowToolbar(false);
+        }
+
+        /// <summary>The home button: the camera goes back to the village's first view (the shops, the hospital and the old garden).</summary>
+        void GoHomeView()
+        {
+            if (ViewingRide != null) ExitRideView();
+            Orbit.target = DefaultOrbitTarget; Orbit.SetOrbit(DefaultOrbitYaw, DefaultOrbitPitch, DefaultOrbitDistance);
+            root.Audio.Play("click", 0.5f);
+        }
 
         public void ShowBubble(ToyActor actor, string line, float seconds) => ShowBubble(actor.Node("Head") ?? actor.transform, line, seconds);
 
@@ -324,8 +268,7 @@ namespace Mongle.Village
             ((RectTransform)bubble.transform).anchoredPosition = new Vector2(sp.x, sp.y) / scale + new Vector2(0, BubbleLift);
         }
 
-        // ---------------- album: Mongi's first photo, then every friend's (D-005) ----------------
-        int albumIndex; Texture2D albumTex;
+        // ---------------- album: Mongi's first photo, then every friend's (D-005); the 11-26 binder (AlbumView, Figma 88:1393) ----------------
 
         public List<(PhotoRecord photo, string name)> AlbumEntries()
         {
@@ -339,19 +282,24 @@ namespace Mongle.Village
             return list;
         }
 
-        void ShowAlbum() { CloseQuestUi(); albumIndex = 0; ShowAlbumPage(); }
-
-        void ShowAlbumPage()
+        void ShowAlbum()
         {
-            var entries = AlbumEntries();
-            if (albumTex != null) { Destroy(albumTex); albumTex = null; }
-            album.Secondary.gameObject.SetActive(entries.Count > 1);
-            if (entries.Count == 0) { album.Show(null, "", "아직 사진이 없어요"); return; }
-            albumIndex = ((albumIndex % entries.Count) + entries.Count) % entries.Count;
-            var (ph, name) = entries[albumIndex];
-            albumTex = PhotoStore.Load(root.Saves, ph);
-            string page = entries.Count > 1 ? "   " + (albumIndex + 1) + "/" + entries.Count : "";
-            album.Show(albumTex, ph.takenAt + " · " + name + " · " + PhotoDirector.PoseKorean(ph.pose) + page);
+            CloseQuestUi();
+            var list = new List<Mongle.Views.AlbumView.Entry>();
+            foreach (var (ph, name) in AlbumEntries())
+            {
+                var rec = ph;
+                list.Add(new Mongle.Views.AlbumView.Entry(AlbumLine(rec, name), () => PhotoStore.Load(root.Saves, rec)));
+            }
+            Mongle.Views.AlbumView.Open(list);
+            root.Audio.Play("click", 0.5f, 1.1f);
+        }
+
+        /// <summary>The line under a photo in the album (Figma: "2026.11.26 · 몽이").</summary>
+        public static string AlbumLine(PhotoRecord ph, string name)
+        {
+            string day = ph != null && !string.IsNullOrEmpty(ph.takenAt) ? ph.takenAt.Split(' ')[0].Replace('-', '.') : "";
+            return string.IsNullOrEmpty(day) ? name : day + " · " + name;
         }
         public int AlbumCount => AlbumEntries().Count;
 
@@ -359,8 +307,6 @@ namespace Mongle.Village
         void Update()
         {
             if (!Ready) return;
-            // one banner place: messages take over from the status line, which only greets on arrival (StatusSeconds)
-            if (statusPlate != null) statusPlate.SetActive(!baseUi.BannerShown && Time.time < statusUntil);
             if (bubble.activeSelf)
             {
                 if (Time.time > bubbleUntil || bubbleAnchor == null) bubble.SetActive(false);
@@ -371,7 +317,7 @@ namespace Mongle.Village
             UpdateClaw();
             if (ViewingRide != null) { UpdateRideView(); return; } // watching a ride up close: only the "back" button acts
             HandleEscape();
-            UpdatePlaceRing(); PulseStorageBadge();
+            UpdatePlaceRing();
             UpdateHousePlacing();
             if ((PlacingMode || HousePlacing || !AnyPanelOpen) && state.Admitted) PollKeyboardPan(); // W/A/S/D also while placing (user)
             if (PlacingMode) UpdatePlacing(f);
@@ -430,12 +376,12 @@ namespace Mongle.Village
             if (on)
             {
                 // panels opened earlier (a friend's dress-up, the album) used to sit on top of the bar and swallow its buttons
-                CloseDress(); album.Hide(); CloseQuestUi();
+                CloseDress(); Mongle.Views.AlbumView.Close(); CloseQuestUi();
                 placeBar.transform.SetAsLastSibling();
             }
             placeBar.SetActive(on);
-            UiKit.SetButtonText(placeToggle, on ? "옮기기 끝내기" : "가구 옮기기");
-            baseUi.Banner(on ? "옮길 가구를 눌러서 끌어요 · 다 옮겼으면 '나가기'" : null);
+            Hud.SetPlacing(on);
+            Hud.Hint(on ? "옮길 가구를 눌러서 끌어요 · 다 옮겼으면 '나가기'" : null);
             dragging = false; Orbit.allowRotate = true;
             if (!on && placeRing != null) placeRing.SetActive(false);
             root.Audio.Play("click", 0.5f);
@@ -491,7 +437,7 @@ namespace Mongle.Village
             if (Shop != null && Shop.Visible) { CloseShop(); return true; }
             if (Storage != null && Storage.Visible) { CloseStorage(); return true; }
             if (DressOpen) { CloseDress(); return true; }
-            if (album.Root.activeSelf) { album.Hide(); return true; }
+            if (Mongle.Views.AlbumView.IsOpen) { Mongle.Views.AlbumView.Close(); return true; }
             return false;
         }
 

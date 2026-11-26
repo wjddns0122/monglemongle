@@ -45,13 +45,9 @@ namespace Mongle.EditorTools
                 name = VillageDirector.SkinName, label = "마을 화면", build = BuildVillage,
                 lists =
                 {
-                    ["ShopPanel/Cards"] = "Card_,Quest_", ["StoragePanel/Storage/Viewport/Cards"] = "Card_",
-                    ["QuestBoard/Viewport/Rows"] = "QuestRow_", ["FriendDialog/Choices"] = "Choice_", ["FriendDialog/Footer"] = "DialogBtn_",
                     ["DressPanel/List"] = "Dress_",
                 },
             },
-            new Screen { name = PhotoDirector.SkinName, label = "사진 화면", build = BuildPhoto },
-            new Screen { name = GameRoot.OverlaySkin, label = "알림", build = BuildOverlay },
         };
 
         [MenuItem("Mongle/UI/화면 프리팹 만들기 (없는 것만)")]
@@ -243,16 +239,6 @@ namespace Mongle.EditorTools
         {
             var catalog = ContentCatalog.Load();
             var ui = Host<ShopUI>(scene, "RepairScreen"); ui.Build();
-            ui.Banner("배의 얼룩 · 알맞은 도구를 골라요");
-            var def = catalog.ToyDef("TeddyBear_001") ?? catalog.toy;
-            var ids = def.damageSequence.Where(d => d != null).Select(d => d.id).Take(4).ToList();
-            var toy = new ToyRuntime(def.kindId, ids);
-            if (toy.Damages.Count > 0) toy.Damages[0].status = DamageStatus.Completed;
-            if (toy.Damages.Count > 1) toy.Damages[1].status = DamageStatus.Active;
-            if (toy.Damages.Count > 2) toy.Damages[2].status = DamageStatus.Discovered;
-            ui.ShowNotebook(true); ui.RefreshNotebook(toy, catalog, ids.Count > 1 ? ids[1] : null);
-            ui.BuildToolShelf(catalog.tools.Where(t => t != null).ToArray(), _ => { }); ui.ShowShelf(true);
-            ui.SetInspectControls(true); ui.ShowBack(true);
             ui.BuildCustomization(catalog.AllAccessories.Take(6).ToArray(), _ => { }, () => { }); ui.ShowCustomization(false);
             return ui.Canvas.gameObject;
         }
@@ -267,9 +253,6 @@ namespace Mongle.EditorTools
         }
 
         /// <summary>사진 화면: the frame, the caption and the three round buttons; the photo sheet switched off.</summary>
-        static GameObject BuildPhoto(Scene scene) => Host<PhotoDirector>(scene, "PhotoScreen").BuildSkinSample();
 
-        /// <summary>알림: the notice pill (with the coin) at the top, and the fade over the whole screen.</summary>
-        static GameObject BuildOverlay(Scene scene) => Host<GameRoot>(scene, "Overlay").BuildSkinSample();
     }
 }

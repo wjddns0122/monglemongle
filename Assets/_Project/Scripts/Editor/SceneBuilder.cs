@@ -201,7 +201,7 @@ namespace Mongle.EditorTools
             var s = New();
             MakeCamera(new Vector3(0, 0, -5), Vector3.zero, 30, new Color(1f, 0.957f, 0.878f));
             new GameObject("Bootstrap").AddComponent<BootstrapController>();
-            TitleScreenBaker.AddTo(s);   // the start screen to edit in Unity (D-030), kept in its prefab across rebuilds
+            TitleBuild.AddTo(s);   // the start screen (11-26 design), edited in its prefab Assets/_UI수정/1_타이틀/Title.prefab
             Save(s, "Bootstrap");
         }
 
@@ -252,6 +252,7 @@ namespace Mongle.EditorTools
             Prim(PrimitiveType.Cube, "CounterTop", new Vector3(0, 0.46f, -d + 0.78f), new Vector3(7.1f, 0.06f, 0.8f), wood, room);
             ShopDecor(room, wood, woodDark, wall, d);
             new GameObject("ShopDirector").AddComponent<ShopDirector>();
+            RepairHudBuild.AddTo(s);   // the 11-26 repair screen (Assets/_UI수정/2_수선점/RepairHud.prefab)
             Save(s, "RepairShop");
         }
 
@@ -264,27 +265,51 @@ namespace Mongle.EditorTools
             LookPostFx.AddTo(studioCam, "VP_Studio", LookPostFx.Studio);
             Light("Key", LightType.Directional, new Vector3(35, -30, 0), Vector3.zero, new Color(1f, 0.94f, 0.85f), 1.2f);
             Light("Fill", LightType.Point, Vector3.zero, new Vector3(-0.8f, 0.6f, 1.0f), new Color(1f, 0.85f, 0.85f), 1.2f, 5f, LightShadows.None);
-            var set = new GameObject("Set").transform;
-            Prim(PrimitiveType.Cylinder, "Floor", new Vector3(0, -0.01f, 0), new Vector3(1.8f, 0.01f, 1.8f), M("M_StudioFloor", new Color(0.99f, 0.93f, 0.84f), 0.05f), set);
-            Prim(PrimitiveType.Cube, "Backdrop", new Vector3(0, 0.5f, -0.9f), new Vector3(3.4f, 2f, 0.04f), M("M_BackdropPeach", new Color(1f, 0.82f, 0.74f), 0.02f), set);
-            Prim(PrimitiveType.Cube, "BackdropLow", new Vector3(0, 0.12f, -0.87f), new Vector3(3.4f, 0.5f, 0.04f), M("M_BackdropMint", new Color(0.76f, 0.91f, 0.82f), 0.02f), set);
+            StudioSet(new GameObject("Set").transform);
+            new GameObject("PhotoDirector").AddComponent<PhotoDirector>();
+            PhotoBuild.AddTo(s);   // the 11-26 photo screen (Assets/_UI수정/4_사진관/Photo.prefab)
+            Save(s, "PhotoStudio");
+        }
+
+        /// <summary>
+        /// The studio's little garden set. The viewfinder is a window in the middle of the screen (11-26 design), so the camera
+        /// sees about four times as wide as the photo keeps: the floor, the wall, the hedge and the light garlands run well
+        /// past the screen's edges at every zoom and screen shape. Pieces are found by name, so this also updates a built scene.
+        /// </summary>
+        public static void StudioSet(Transform set)
+        {
+            Piece(set, PrimitiveType.Cylinder, "Floor", new Vector3(0, -0.01f, 0), new Vector3(16f, 0.01f, 16f), M("M_StudioFloor", new Color(0.99f, 0.93f, 0.84f), 0.05f));
+            Piece(set, PrimitiveType.Cube, "Backdrop", new Vector3(0, 1.5f, -0.9f), new Vector3(14f, 4.4f, 0.04f), M("M_BackdropPeach", new Color(1f, 0.82f, 0.74f), 0.02f));
+            Piece(set, PrimitiveType.Cube, "BackdropLow", new Vector3(0, 0.12f, -0.87f), new Vector3(14f, 0.5f, 0.04f), M("M_BackdropMint", new Color(0.76f, 0.91f, 0.82f), 0.02f));
             var leaf = M("M_Leaf", new Color(0.55f, 0.78f, 0.5f), 0.1f);
-            for (int i = 0; i < 9; i++) Prim(PrimitiveType.Sphere, "Hedge" + i, new Vector3(-0.8f + i * 0.2f, 0.13f, -0.8f), Vector3.one * 0.34f, leaf, set);
+            // the hedge along the wall: the nine in the middle keep their names (Hedge0..8), more run out to both sides
+            for (int i = -26; i <= 34; i++) Piece(set, PrimitiveType.Sphere, i >= 0 && i < 9 ? "Hedge" + i : "HedgeMore" + i, new Vector3(-0.8f + i * 0.2f, 0.13f, -0.8f), Vector3.one * 0.34f, leaf);
             var petals = new[] { new Color(1f, 0.6f, 0.7f), new Color(1f, 0.85f, 0.45f), new Color(0.75f, 0.7f, 1f), new Color(1f, 0.75f, 0.55f) };
             for (int i = 0; i < 8; i++)
             {
                 float x = i < 4 ? -0.55f - i * 0.12f : 0.5f + (i - 4) * 0.12f; float z = -0.15f + (i % 3) * 0.08f;
-                Prim(PrimitiveType.Cylinder, "Stem" + i, new Vector3(x, 0.05f, z), new Vector3(0.012f, 0.05f, 0.012f), leaf, set);
-                Prim(PrimitiveType.Sphere, "Bloom" + i, new Vector3(x, 0.11f, z), Vector3.one * 0.07f, M("M_Bloom" + (i % 4), petals[i % 4], 0.2f), set);
+                Piece(set, PrimitiveType.Cylinder, "Stem" + i, new Vector3(x, 0.05f, z), new Vector3(0.012f, 0.05f, 0.012f), leaf);
+                Piece(set, PrimitiveType.Sphere, "Bloom" + i, new Vector3(x, 0.11f, z), Vector3.one * 0.07f, M("M_Bloom" + (i % 4), petals[i % 4], 0.2f));
             }
+            // the light garland: one swag behind the toy (Bulb0..10), and the same swag repeated to both sides
             var bulb = M("M_Bulb", new Color(1f, 0.95f, 0.7f), 0.5f, new Color(1.6f, 1.4f, 0.8f));
-            for (int i = 0; i < 11; i++)
-            {
-                float t = i / 10f; float x = Mathf.Lerp(-0.85f, 0.85f, t);
-                Prim(PrimitiveType.Sphere, "Bulb" + i, new Vector3(x, 0.62f - Mathf.Sin(t * Mathf.PI) * 0.12f, -0.82f), Vector3.one * 0.035f, bulb, set);
-            }
-            new GameObject("PhotoDirector").AddComponent<PhotoDirector>();
-            Save(s, "PhotoStudio");
+            for (int k = -3; k <= 3; k++)
+                for (int i = 0; i < 11; i++)
+                {
+                    if (k > 0 && i == 0 || k < 0 && i == 10) continue;   // neighbours share the bulb where they meet
+                    float t = i / 10f; float x = Mathf.Lerp(-0.85f, 0.85f, t) + k * 1.7f;
+                    Piece(set, PrimitiveType.Sphere, k == 0 ? "Bulb" + i : "Bulb" + i + (k < 0 ? "L" + -k : "R" + k), new Vector3(x, 0.62f - Mathf.Sin(t * Mathf.PI) * 0.12f, -0.82f), Vector3.one * 0.035f, bulb);
+                }
+        }
+
+        /// <summary>A primitive of the set by name: made if it is not there yet, then put in its place.</summary>
+        static GameObject Piece(Transform set, PrimitiveType t, string name, Vector3 pos, Vector3 scale, Material mat)
+        {
+            var found = set.Find(name);
+            if (found == null) return Prim(t, name, pos, scale, mat, set);
+            found.localPosition = pos; found.localScale = scale;
+            var r = found.GetComponent<Renderer>(); if (r != null) r.sharedMaterial = mat;
+            return found.gameObject;
         }
 
         // ---------------- Village ----------------
@@ -624,6 +649,7 @@ namespace Mongle.EditorTools
             }
             Debug.Log("[Village] park " + (WalkHalfX * 2f) + " x " + (WalkHalfZ * 2f) + " m: " + placed + " trees, " + bushes + " bushes, " + flowers + " flowers, " + lamps.Length + " lamps");
             new GameObject("VillageDirector").AddComponent<VillageDirector>();
+            VillageHudBuild.AddTo(s);   // the 11-26 village HUD (Assets/_UI수정/3_마을/VillageHud.prefab)
             Save(s, "Village");
         }
     }

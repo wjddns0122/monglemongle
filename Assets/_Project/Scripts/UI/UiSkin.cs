@@ -82,7 +82,7 @@ namespace Mongle.UI
 
         // ---------------- paths ----------------
 
-        /// <summary>The object at a key path under <paramref name="t"/> ("ShopPanel/Cards"), or null.</summary>
+        /// <summary>The object at a key path under <paramref name="t"/> ("PlaceBar/Btn_돌리기"), or null.</summary>
         public static Transform At(Transform t, string path) => Walk(t, path);
 
         static Transform Walk(Transform t, string path)

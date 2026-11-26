@@ -125,7 +125,7 @@ namespace Mongle.Village
             if (!go.TryGetComponent<HouseView>(out ghost)) ghost = go.AddComponent<HouseView>();
             houseTarget = r; ghostYaw = 0f;
             var t = Orbit.target; ghostPos = SnapHouse(new Vector3(t.x, 0f, t.z));
-            HousePlacing = true; SetHud(false); baseUi.Banner(null);
+            HousePlacing = true; SetHud(false); Hud.Hint(null);
             var def = Catalog.ToyDef(r.kindId); string name = def != null ? def.displayName : "친구";
             houseText.text = Josa.IGa(name) + " 이사 왔어요! 집을 놓을 곳을 골라 주세요";
             houseBar.SetActive(true);

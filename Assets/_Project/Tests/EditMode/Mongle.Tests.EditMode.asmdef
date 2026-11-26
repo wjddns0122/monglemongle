@@ -1,7 +1,7 @@
 {
   "name": "Mongle.Tests.EditMode",
   "rootNamespace": "Mongle.Tests",
-  "references": ["Mongle.Runtime","Mongle.Editor","UnityEngine.TestRunner","UnityEditor.TestRunner"],
+  "references": ["Mongle.Runtime","Mongle.Editor","Unity.TextMeshPro","UnityEngine.TestRunner","UnityEditor.TestRunner"],
   "includePlatforms": ["Editor"],
   "excludePlatforms": [],
   "overrideReferences": true,

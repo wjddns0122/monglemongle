@@ -20,6 +20,8 @@ namespace Mongle.Repair
             ? (model != null && model.Pull.Grabbed ? "천천히 바깥쪽으로 빼요" : "다 쓴 건전지를 꾹 잡아요")
             : "새 건전지를 빈 칸에 대고 꾹 눌러요";
         public override Vector3 HintPoint => model == null ? Ctx.toy.Point(Ctx.def.damagePointName) : !model.Removed ? model.Pull.GrabPoint : model.SlotPoint;
+        /// <summary>Which way the old battery has to be pulled out (on the camera-facing plane), for the scripted QA.</summary>
+        public Vector3 PullDirection => model != null ? model.Pull.RemovalDir : Vector3.zero;
 
         protected override void OnBegin()
         {

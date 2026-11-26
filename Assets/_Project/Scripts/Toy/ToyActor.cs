@@ -66,6 +66,25 @@ namespace Mongle.Toy
                 if (d != null && (d.type == DamageType.Dirt || d.type == DamageType.Paint)) EnsureDirtField(d);
         }
 
+        /// <summary>
+        /// Lays the dirt/paint fields in the pose the toy is shown in and shows them as <paramref name="t"/> says (QA 2026-11-27:
+        /// laid right after spawning, in the prefab's rest pose, the belly's lower stains hung 1–6 cm off the skin once the toy
+        /// stood nervous and deflated). Call after <see cref="ApplyRepairState"/>.
+        /// </summary>
+        public void LayDirtFields(ToyRuntime t)
+        {
+            if (Animator != null && Animator.runtimeAnimatorController != null) Animator.Update(0.1f);   // into the pose just asked for, now
+            BuildDirtFields();
+            if (t == null) return;
+            foreach (var d in t.Damages)
+            {
+                var field = DirtFieldFor(d.id); if (field == null) continue;
+                bool clean = d.status == DamageStatus.Completed;
+                if (clean) field.Model.Rub(Vector3.zero, 100f, 100f);
+                field.SetVisible(!clean); field.Refresh();
+            }
+        }
+
         public DirtField EnsureDirtField(DamageDefinition d)
         {
             if (d == null) return null;

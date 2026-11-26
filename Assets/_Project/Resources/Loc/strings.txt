@@ -10,6 +10,7 @@ name.tosun	토순	Tosun
 name.dan	단단	Dandan
 title.new	처음부터	New Game
 title.continue	가게 문 열기	Open the Shop
+title.quit	게임 종료	Quit Game
 intake.arrived	{0~이가} 왔어요	{0} is here!
 intake.body.mongi	몽이는 오랫동안 사랑받아 조금 지친 곰인형이에요.\n다시 포근해질 수 있도록 도와주세요.	Mongi is a teddy bear, worn out from years of love.\nPlease help Mongi feel cozy again.
 intake.sorry	죄송합니다	Sorry
@@ -17,6 +18,8 @@ intake.look	살펴볼게요	Let me look
 repair.done	해냈어요!	You did it!
 repair.coins	몽글 코인 + {0}	Mongle Coins + {0}
 repair.notebook	진료 수첩	Care Notes
+repair.stamp.title	수선 완료!	All Mended!
+repair.stamp.button	도장 찍기!	Stamp It!
 damage.thorn_ear	귀의 가시	Thorn in the Ear
 tool.tweezers	핀셋	Tweezers
 tool.sponge	스펀지	Sponge
@@ -79,3 +82,24 @@ settings.quality.low	낮음	Low
 settings.quality.mid	보통	Medium
 settings.quality.high	높음	High
 preview.hint	Tab: 화면 바꾸기 · R: 피그마 겹쳐 보기 · B: 배경	Tab: next screen · R: overlay Figma · B: backdrop
+album.title	앨범	Album
+album.empty	아직 사진이 없어요	No photos yet
+village.tip.furniture	가구를 옮길 수 있어요	Move your furniture
+village.tip.album	앨범에서 사진을 확인\n할 수 있어요	See your photos\nin the album
+village.tip.storage	보관함에서 소지한\n물건을 확인해요	See what you have\nin storage
+talk.month	월	Month
+talk.day	일	Day
+card.profile	프로필	Profile
+card.dress	꾸며주기	Dress Up
+card.hint	누르면 입히고, 다시 누르면 벗어요.	Tap to put on, tap again to take off.
+card.empty	가진 악세서리가 없어요. 컵케이크 악세서리점에서 사 와요!	No accessories yet. Get some at the cupcake shop!
+shop.buy	구매	Buy
+shop.asks	부탁 보기	Requests
+shop.asks.new	부탁 보기 (!)	Requests (!)
+shop.items	물건 보기	Items
+shop.no_asks	지금은 부탁이 없어요.\n다른 부탁을 끝내면 새 부탁이 생겨요.	No requests right now.\nFinish one and a new one will come.
+quest.claim	보상 받기	Get Reward
+storage.sort.name	이름 순	By Name
+storage.sort.count	많은 순	Most First
+storage.empty	보관함이 비었어요.\n가게에서 마음에 드는 물건을 사 봐요!	The box is empty.\nFind something you like at a shop!
+storage.none	찾는 물건이 없어요.	Nothing like that here.

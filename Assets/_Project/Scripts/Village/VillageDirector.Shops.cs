@@ -13,12 +13,15 @@ namespace Mongle.Village
     /// <summary>D-002: shops, storage box, placing bought pieces, watering plants, and the pieces Mongi reacts to.</summary>
     public partial class VillageDirector
     {
-        public ShopPanel Shop { get; private set; }
-        public ShopPanel Storage { get; private set; }
+        /// <summary>The shop window (11-26 "상점" 88:1143, <see cref="Mongle.Views.ShopView"/>).</summary>
+        public Mongle.Views.ShopView Shop { get; private set; }
+        /// <summary>The 보관함 (11-26 "보관함" 88:825, <see cref="Mongle.Views.StorageView"/>).</summary>
+        public Mongle.Views.StorageView Storage { get; private set; }
         public ShopBuilding OpenedShop { get; private set; }
         public readonly System.Collections.Generic.List<ShopBuilding> Shops = new System.Collections.Generic.List<ShopBuilding>();
-        public bool AnyPanelOpen => (Shop != null && Shop.Visible) || (Storage != null && Storage.Visible) || ClawOpen || HousePlacing;
-        GameObject hud; Text coinText, questText; Image questPanel;
+        public bool AnyPanelOpen => ShopOpen || StorageOpen || ClawOpen || HousePlacing;
+        bool ShopOpen => Shop != null && Shop.Visible;
+        bool StorageOpen => Storage != null && Storage.Visible;
         static readonly Color Water = new Color(0.55f, 0.8f, 1f, 1f);
 
         // ---------------- setup ----------------
@@ -34,25 +37,27 @@ namespace Mongle.Village
 
         void BuildShopUi()
         {
-            Shop = new ShopPanel(canvas.transform) { OnBuy = d => TryBuy(d), OnPlace = d => BeginPlaceFromInventory(d), OnDress = d => DressFromBox(d), OnClose = CloseShop, OnAcceptQuest = AcceptQuest, OnClaimQuest = ClaimQuest, Skin = SkinPart };
-            // D-026: under the 퀘스트 button, in the same half-clear notice pill (no stitch); it hangs from its top-left corner,
-            // grows with its lines (D-024) and opens the quest window like the button
-            var qb = UiKit.SpriteButton(hud.transform, "QuestTracker", "hud_toast", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(24f, -157f), new Vector2(560f, 120f), ToggleQuestBoard);   // under the top bar, so it may grow wide
-            questPanel = qb.GetComponent<Image>(); questPanel.type = Image.Type.Sliced; questPanel.pixelsPerUnitMultiplier = 2.6f;   // a little tighter corners than the pill
-            questText = UiKit.TitleLabel(questPanel.transform, "", 28, UiKit.FigBrown, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(530, 100), TextAnchor.MiddleLeft);
-            questText.lineSpacing = 1.1f;
-            questPanel.gameObject.SetActive(false);
-            Storage = new ShopPanel(canvas.transform, "StoragePanel") { OnPlace = d => BeginPlaceFromInventory(d), OnDress = d => DressFromBox(d), OnClose = CloseStorage, Skin = SkinPart };
+            if (Application.isPlaying) Shop = Mongle.Views.ShopView.Get();
+            if (Shop != null)
+            {
+                Shop.OnBuy = id => TryBuy(Catalog.Furniture(id));
+                Shop.OnAccept = id => AcceptQuest(QuestById(id));
+                Shop.OnClaim = id => ClaimQuest(QuestById(id));
+                Shop.OnGo = _ => CloseShop();   // 찾으러 가기: back to the village, the 퀘스트 pill shows how far it got
+                Shop.OnClose = CloseShop;
+            }
+            if (Application.isPlaying) Storage = Mongle.Views.StorageView.Get();
+            if (Storage != null) { Storage.OnUse = UseFromBox; Storage.OnClose = CloseStorage; }
         }
 
-        public string CoinsShown => coinText != null ? coinText.text : "";
+        public string CoinsShown => Hud != null ? Hud.CoinsText : "";
 
         // ---------------- quests (D-003) ----------------
-        public string TrackerShown => questPanel != null && questPanel.gameObject.activeSelf ? questText.text : "";
+        public string TrackerShown => Hud != null ? Hud.TrackerText : "";
 
         void RefreshQuestTracker()
         {
-            if (questPanel == null) return;
+            if (Hud == null) return;
             var lines = new System.Collections.Generic.List<string>();
             foreach (var q in World.AllQuests)
             {
@@ -67,12 +72,7 @@ namespace Mongle.Village
                 var giver = Catalog.ToyDef(fq.giver);
                 lines.Add((giver != null ? giver.displayName : fq.giver) + " · " + FriendQuestText.Title(fq.kind) + (fq.target > 1 ? "  " + fq.progress + "/" + fq.target : ""));
             }
-            questPanel.gameObject.SetActive(lines.Count > 0);
-            if (lines.Count == 0) return;
-            questText.text = string.Join("\n", lines);
-            float h = 34f + lines.Count * 40f, w = Mathf.Clamp(questText.preferredWidth + 72f, 220f, 760f);
-            questPanel.rectTransform.sizeDelta = new Vector2(w, h);
-            questText.rectTransform.sizeDelta = new Vector2(w - 56f, h - 12f);
+            Hud.SetTracker(lines);   // under the 퀘스트 pill
         }
 
         void OnQuestChanged(QuestDefinition q)
@@ -90,26 +90,30 @@ namespace Mongle.Village
             }
         }
 
+        QuestDefinition QuestById(string id) => World.AllQuests.FirstOrDefault(q => q != null && q.id == id);
+
         public void AcceptQuest(QuestDefinition q)
         {
-            if (!World.AcceptQuest(q)) return;
-            Shop.SetLine(q.acceptLine); root.Audio.Play("hello", 0.8f, 1.1f);
+            if (q == null || !World.AcceptQuest(q)) return;
+            if (ShopOpen) Shop.SetLine(q.acceptLine);
+            root.Audio.Play("hello", 0.8f, 1.1f);
             if (OpenedShop != null && OpenedShop.Keeper != null) OpenedShop.Keeper.Hop();
-            Shop.Refresh();
+            RefreshShop();
         }
 
         public void ClaimQuest(QuestDefinition q)
         {
-            if (!World.ClaimQuest(q)) return;
-            Shop.SetLine(q.doneLine); root.Audio.Play("success", 0.8f);
+            if (q == null || !World.ClaimQuest(q)) return;
+            if (ShopOpen) Shop.SetLine(q.doneLine);
+            root.Audio.Play("success", 0.8f);
             if (OpenedShop != null && OpenedShop.Keeper != null) OpenedShop.Keeper.Hop();
             root.Say("부탁 완료! 몽글 코인 +" + q.rewardCoins, 2.6f);
-            Shop.Refresh();
+            RefreshShop();
         }
 
-        void RefreshCoins() { if (coinText != null) coinText.text = World.Coins.ToString(); RefreshStorageBadge(); }
+        void RefreshCoins() { if (Hud != null) Hud.SetCoins(World.Coins); RefreshStorageBadge(); }
 
-        void SetHud(bool on) { if (hud != null) hud.SetActive(on); }
+        void SetHud(bool on) { if (Hud != null) Hud.ShowHud(on); }
 
         // ---------------- clicking in the world ----------------
         public bool TryClickWorld(Vector2 screen)
@@ -117,6 +121,15 @@ namespace Mongle.Village
             if (!state.Admitted || Agent == null || Agent.State == AgentState.Disabled || AnyPanelOpen || QuestUiOpen) return false;
             var ray = cam.ScreenPointToRay(screen);
             var hits = Physics.RaycastAll(ray, 40f).OrderBy(x => x.distance).ToList();
+            // the friend card closes on a click anywhere outside it (user 2026-11-26: "카드 밖에 클릭하면 나갈 수 있게");
+            // a click on another friend goes on to open that friend's card
+            if (DressOpen)
+            {
+                var was = Dressing;
+                var toy = hits.Select(x => x.collider.GetComponentInParent<ToyAgent>()).FirstOrDefault(t => t != null);
+                CloseDress();
+                if (toy == null || toy == was) return true;
+            }
             // a fallen fruit or a hunt star wins even when a tree or a toy is in front of it (D-011)
             var pickup = hits.Select(x => x.collider.GetComponentInParent<QuestPickup>()).FirstOrDefault(p => p != null && !p.Collected);
             if (pickup != null) { ClickPickup(pickup); return true; }
@@ -221,7 +234,7 @@ namespace Mongle.Village
         // ---------------- shop ----------------
         public bool OpenShop(ShopBuilding b)
         {
-            if (b == null || b.Def == null || AnyPanelOpen) return false;
+            if (b == null || b.Def == null || Shop == null || AnyPanelOpen) return false;
             if (PlacingMode) { root.Say("가구 옮기기를 먼저 끝내요"); return false; }
             CloseDress(); CloseQuestUi(); // the dress panel would cover the shop's buttons
             OpenedShop = b;
@@ -230,11 +243,12 @@ namespace Mongle.Village
             if (!World.HasSeen(key)) { World.MarkSeen(key); line = b.Def.firstVisitLine; root.Persist("shop-first-visit"); }
             else line = Pick(b.Def.greetings);
             Orbit.FocusOn(b.CameraSpot != null ? b.CameraSpot.position : b.transform.position + new Vector3(0, 1.1f, 2.4f), b.KeeperHead.position + Vector3.down * 0.02f - b.transform.right * 0.62f);
-            SetHud(false); baseUi.Banner(null);
+            // Figma 88:1143: only the coins, the gear and the zoom pair stay over the village; the sheet's ◀ leads back
+            if (Hud != null) { Hud.Hint(null); Hud.Focus(true, false); }
             var quests = World.QuestsOf(b.shopId);
             bool claim = quests.Any(q => World.StatusOf(q) == QuestStatus.ReadyToClaim);
             if (claim) line = "부탁 들어줘서 고마워요! 보상을 받아 가요.";
-            Shop.ShowShop(b.Def, World, line, quests.ToList(), claim);
+            Shop.Show(b.Def.displayName, b.Def.keeperName, line, ShopItems(b.Def), ShopAsks(b.Def), claim);
             if (b.Keeper != null) b.Keeper.Hop();
             root.Audio.Play("hello", 0.8f, 1.1f);
             return true;
@@ -243,12 +257,53 @@ namespace Mongle.Village
         public void CloseShop()
         {
             if (OpenedShop == null) return;
-            Shop.Hide(); OpenedShop = null; Orbit.ReleaseFocus(); SetHud(true);
+            Shop.Hide(); OpenedShop = null; Orbit.ReleaseFocus();
+            if (Hud != null) { Hud.Focus(false); RefreshQuestTracker(); }
             root.Audio.Play("click", 0.4f, 0.9f);
+        }
+
+        /// <summary>The cards of a shop: what it sells, at what price, and whether the coins reach.</summary>
+        System.Collections.Generic.List<Mongle.Views.ShopView.Item> ShopItems(ShopDefinition shop) =>
+            shop.items.Where(i => i != null).Select(i => new Mongle.Views.ShopView.Item
+            {
+                id = i.id, name = i.displayName, price = i.price, icon = IconBaker.Get(i), afford = World.Coins >= i.price,
+            }).ToList();
+
+        /// <summary>The keeper's requests that are open to the player (a chain's later ones show once the earlier is done).</summary>
+        System.Collections.Generic.List<Mongle.Views.Ask> ShopAsks(ShopDefinition shop) =>
+            World.QuestsOf(shop.id).Where(q => q != null && World.StatusOf(q) != QuestStatus.Locked).Select(q =>
+            {
+                var st = World.StatusOf(q);
+                return new Mongle.Views.Ask
+                {
+                    id = q.id, title = q.title, giver = shop.keeperName, reward = q.rewardCoins, picture = QuestPicture(q),
+                    line = st == QuestStatus.Done ? q.doneLine : q.request,
+                    progress = st == QuestStatus.Active ? World.ProgressOf(q) + "/" + q.targetCount : null,
+                    state = st == QuestStatus.Available ? Mongle.Views.AskState.Open : st == QuestStatus.Active ? Mongle.Views.AskState.Doing
+                        : st == QuestStatus.ReadyToClaim ? Mongle.Views.AskState.Ready : Mongle.Views.AskState.Done,
+                };
+            }).ToList();
+
+        /// <summary>The picture of a request: a hand-made or baked one (Resources/UI/QuestIcons/&lt;id&gt;, QuestIconBaker) or the icon of
+        /// the item it names (the chair, the ferris wheel, the tulip pot).</summary>
+        Sprite QuestPicture(QuestDefinition q)
+        {
+            var own = Resources.Load<Sprite>("UI/QuestIcons/" + q.id);
+            if (own != null) return own;
+            return string.IsNullOrEmpty(q.eventParam) ? null : IconBaker.Get(Catalog.Furniture(q.eventParam));
+        }
+
+        /// <summary>The open shop again after coins, the box or a request changed (the page and the tab stay).</summary>
+        void RefreshShop()
+        {
+            if (!ShopOpen || OpenedShop == null) return;
+            Shop.SetItems(ShopItems(OpenedShop.Def));
+            Shop.SetAsks(ShopAsks(OpenedShop.Def));
         }
 
         public BuyResult TryBuy(FurnitureDefinition def)
         {
+            if (def == null) return BuyResult.NotForSale;
             var res = World.Buy(def);
             var keeper = OpenedShop != null ? OpenedShop.Def : null;
             switch (res)
@@ -261,12 +316,12 @@ namespace Mongle.Village
                     string said = keeper != null ? string.Format(Pick(keeper.buyLines), def.displayName) + "\n" : "";
                     if (def.IsAccessory)
                     {
-                        Shop.SetLine(said + "보관함의 악세서리 상자에 넣었어요. 친구에게 입혀 볼까요?", "입혀 보기", () => DressFromBox(def));
+                        if (ShopOpen) Shop.SetLine(said + "보관함의 악세서리 상자에 넣었어요. 친구에게 입혀 볼까요?", "입혀 보기", () => DressFromBox(def));
                         root.Say(Josa.EulReul(def.displayName) + " 보관함에 넣었어요! 친구를 누르면 '꾸며주기'로 입혀요", 3.6f);
                     }
                     else
                     {
-                        Shop.SetLine(said + "보관함에 넣어 뒀어요. 지금 마을에 놓아 볼까요?", "지금 놓기", () => BeginPlaceFromInventory(def));
+                        if (ShopOpen) Shop.SetLine(said + "보관함에 넣어 뒀어요. 지금 마을에 놓아 볼까요?", "지금 놓기", () => BeginPlaceFromInventory(def));
                         root.Say(Josa.EulReul(def.displayName) + " 보관함에 넣었어요! 오른쪽 위 '보관함'에서도 놓을 수 있어요", 3.6f);
                     }
                     if (!newInBox.Contains(def.id)) newInBox.Add(def.id);
@@ -274,10 +329,10 @@ namespace Mongle.Village
                     break;
                 case BuyResult.NotEnoughCoins:
                     root.Audio.Play("wrong", 0.5f);
-                    if (keeper != null) Shop.SetLine(string.Format(Pick(keeper.poorLines), def.displayName));
+                    if (keeper != null && ShopOpen) Shop.SetLine(string.Format(Pick(keeper.poorLines), def.displayName));
                     break;
             }
-            Shop.Refresh();
+            RefreshShop();
             return res;
         }
 
@@ -291,9 +346,26 @@ namespace Mongle.Village
             CloseDress(); CloseQuestUi();
             SetHud(false);
             newInBox.Clear(); RefreshStorageBadge();
-            // everything bought waits here: pieces to place, and accessories to put on a friend ("꾸며주기")
-            Storage.ShowStorage(World, Catalog.furniture.Where(f => f != null && f.Placeable).Concat(Catalog.furniture.Where(f => f != null && f.IsAccessory)));
+            // everything bought waits here: pieces to place, and accessories to put on a friend
+            if (Storage != null) Storage.Show(StorageItems());
             root.Audio.Play("click", 0.5f);
+        }
+
+        /// <summary>What is in the box: furniture, then plants, then accessories (the 전체 / 가구 / 악세서리 tabs read the same way).</summary>
+        System.Collections.Generic.List<Mongle.Views.StorageView.Item> StorageItems() =>
+            Catalog.furniture.Where(f => f != null && (f.Placeable || f.IsAccessory) && World.Owned(f.id) > 0).OrderBy(f => (int)f.category)
+                .Select(f => new Mongle.Views.StorageView.Item
+                {
+                    id = f.id, name = f.displayName, description = f.description, icon = IconBaker.Get(f), count = World.Owned(f.id),
+                    kind = f.IsAccessory ? Mongle.Views.StorageView.Kind.Accessory : Mongle.Views.StorageView.Kind.Furniture,
+                }).ToList();
+
+        /// <summary>사용하기: a piece goes into the village to be placed, an accessory onto a friend.</summary>
+        void UseFromBox(string id)
+        {
+            var def = Catalog.Furniture(id);
+            if (def == null) return;
+            if (def.IsAccessory) DressFromBox(def); else BeginPlaceFromInventory(def);
         }
 
         // ---------------- "where did it go": the box badge and the one-tap next step after buying ----------------
@@ -302,24 +374,16 @@ namespace Mongle.Village
 
         void RefreshStorageBadge()
         {
-            if (storageBadge == null || root == null) return;
-            int n = newInBox.Count(id => World.Owned(id) > 0);
-            storageBadge.SetActive(n > 0);
-            storageBadgeText.text = "새 " + n;
-        }
-
-        void PulseStorageBadge()
-        {
-            if (storageBadge == null || !storageBadge.activeInHierarchy) return;
-            storageBadge.transform.localScale = Vector3.one * (1f + 0.08f * Mathf.Sin(Time.unscaledTime * 5f));
+            if (Hud == null || root == null) return;
+            Hud.SetStorageNews(newInBox.Count(id => World.Owned(id) > 0));
         }
 
         /// <summary>An accessory from the box: open Mongi's dress-up right away (other friends: click them in the park).</summary>
         public bool DressFromBox(FurnitureDefinition def)
         {
             if (Agent == null || !state.Admitted) return false;
-            if (Shop.Visible) CloseShop();
-            if (Storage.Visible) CloseStorage();
+            if (ShopOpen) CloseShop();
+            if (StorageOpen) CloseStorage();
             if (PlacingMode) ExitPlacing();
             LookAt(Agent.transform.position);
             OpenDress(Agent);
@@ -329,13 +393,13 @@ namespace Mongle.Village
             return true;
         }
 
-        public void CloseStorage() { Storage.Hide(); SetHud(true); root.Audio.Play("click", 0.4f, 0.9f); }
+        public void CloseStorage() { if (Storage != null) Storage.Hide(); SetHud(true); root.Audio.Play("click", 0.4f, 0.9f); }
 
         public bool BeginPlaceFromInventory(FurnitureDefinition def)
         {
             if (def == null || World.Owned(def.id) <= 0 || !def.Placeable) return false;
-            if (Shop.Visible) CloseShop();
-            if (Storage.Visible) CloseStorage();
+            if (ShopOpen) CloseShop();
+            if (StorageOpen) CloseStorage();
             if (!PlacingMode) SetPlacing(true);
             else if (Selected != null) CancelPlacement();
             // the new piece appears where the player is looking (the shops), and the view glides onto it
@@ -348,7 +412,7 @@ namespace Mongle.Village
             Select(f);
             LookAt(f.transform.position);
             Fx.Burst(Catalog, f.transform.position + Vector3.up * 0.3f, new Color(1f, 0.85f, 0.5f), 18, 0.02f, 0.3f, 0.9f, -0.02f);
-            baseUi.Banner("새 " + def.displayName + "! 끌어서 자리를 고르고 '여기에 두기'를 눌러요");
+            Hud.Hint("새 " + def.displayName + "! 끌어서 자리를 고르고 '여기에 두기'를 눌러요");
             root.Audio.Play("pop", 0.6f);
             return true;
         }

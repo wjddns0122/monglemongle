@@ -14,7 +14,7 @@ namespace Mongle.Repair
     /// </summary>
     public class RepairSession : MonoBehaviour
     {
-        public ToyActor Toy; [System.NonSerialized] public ToyRuntime State; public ContentCatalog Catalog; public Camera Cam; public OrbitCamera Orbit; public ShopUI UI;
+        public ToyActor Toy; [System.NonSerialized] public ToyRuntime State; public ContentCatalog Catalog; public Camera Cam; public OrbitCamera Orbit; public Mongle.Views.RepairHudView UI;   // the 11-26 repair screen
         public event Action AllDone;
         public RepairMiniGame Current { get; private set; }
         public bool Busy { get; private set; }
@@ -166,7 +166,7 @@ namespace Mongle.Repair
         {
             Busy = true;
             UI.Banner("해냈어요!"); UI.ShowBack(false);
-            UI.RefreshNotebook(State, Catalog);
+            UI.RefreshNotebook(State, Catalog, mg.Ctx.def.id);   // 11-26: the row just mended stays blue with its check
             if (tool != null) tool.SetVisible(false);
             float w = 0; while (w < 1.8f) { w += Time.unscaledDeltaTime; yield return null; }
             Cleanup(mg);

@@ -33,9 +33,7 @@ namespace Mongle.UI2
         /// <summary>Which Figma screens go over which of the code's screens (their UiSkin names).</summary>
         static readonly Dictionary<string, string[]> Fronts = new Dictionary<string, string[]>
         {
-            ["RepairScreen"] = new[] { "RepairHud", "Intake" },
-            ["VillageScreen"] = new[] { "VillageHud", "Quest", "Storage", "RideInvite", "Intake" },
-            ["PhotoScreen"] = new[] { "Photo" },
+            // (none left: the village's HUD, friend talk, shop, 보관함 and 퀘스트 window are 11-26 views)
         };
 
         /// <summary>Tests / tools: no Figma screens.</summary>

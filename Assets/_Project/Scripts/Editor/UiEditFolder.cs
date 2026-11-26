@@ -39,8 +39,6 @@ namespace Mongle.EditorTools
         {
             ["RepairScreen"] = RepairDir,
             [VillageDirector.SkinName] = VillageDir,
-            [PhotoDirector.SkinName] = PhotoDir,
-            [GameRoot.OverlaySkin] = CommonDir,
         };
 
         public static string SkinPath(string skin) => (SkinDirs.TryGetValue(skin, out var d) ? d : CommonDir) + "/" + OldSub + "/" + skin + ".prefab";
@@ -48,9 +46,7 @@ namespace Mongle.EditorTools
         /// <summary>D-040: the Figma screens → their scene folder (HouseInvite has no twin in the game yet: preview only).</summary>
         public static readonly Dictionary<string, string> FrontDirs = new Dictionary<string, string>
         {
-            ["Title"] = TitleDir, ["RepairHud"] = RepairDir, ["Intake"] = RepairDir,
-            ["VillageHud"] = VillageDir, ["Quest"] = VillageDir, ["Storage"] = VillageDir, ["RideInvite"] = VillageDir,
-            ["Photo"] = PhotoDir, ["Settings"] = CommonDir, ["HouseInvite"] = NewDesignDir,
+            ["Settings"] = CommonDir, ["HouseInvite"] = NewDesignDir,
         };
 
         public static string FrontPath(string name) => (FrontDirs.TryGetValue(name, out var d) ? d : NewDesignDir) + "/" + name + ".prefab";
@@ -63,10 +59,7 @@ namespace Mongle.EditorTools
         /// <summary>The editable copies of the Figma screens in each scene (the first one shown, the windows switched off).</summary>
         static readonly Copy[] Copies =
         {
-            new Copy { scene = Scenes + "Bootstrap.unity", label = "타이틀 화면", fronts = new[] { ("Title", true), ("Settings", false) }, order = 50 },
-            new Copy { scene = Scenes + "RepairShop.unity", label = "수선점 화면", fronts = new[] { ("RepairHud", true), ("Intake", false) }, order = 10 },
-            new Copy { scene = Scenes + "Village.unity", label = "마을 화면", fronts = new[] { ("VillageHud", true), ("Quest", false), ("Storage", false), ("RideInvite", false), ("Intake", false) }, order = 10 },
-            new Copy { scene = Scenes + "PhotoStudio.unity", label = "사진관 화면", fronts = new[] { ("Photo", true) }, order = 10 },
+            new Copy { scene = Scenes + "Bootstrap.unity", label = "설정 창", fronts = new[] { ("Settings", false) }, order = 50 },   // the title itself is a scene object now (11-26)
         };
 
         /// <summary>Folder → (link name, scene it opens).</summary>
@@ -107,6 +100,7 @@ namespace Mongle.EditorTools
                     if (!PrefabUtility.IsOutermostPrefabInstanceRoot(go)) continue;
                     var path = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(go);
                     if (!InFolder(path)) continue;
+                    if (StalePreview(scene, path)) continue;
                     if (!PrefabUtility.HasPrefabInstanceAnyOverrides(go, false) || !RealEdits(go, out var real)) continue;
                     if (PointsOutside(go)) { Debug.LogWarning("[UI수정] " + go.name + ": 씬의 다른 오브젝트를 가리키는 칸이 있어서 파일에 자동 저장하지 않았어요.", go); continue; }
                     try { ApplyOnly(go, path, real); }
@@ -115,6 +109,21 @@ namespace Mongle.EditorTools
                     n++;
                 }
             return n;
+        }
+
+        /// <summary>
+        /// A copy in the D-038 preview scene (UiPreview.unity) of a screen that is now an 11-26 view (listed in Resources/Views/
+        /// ViewIndex: VillageHud, Title, Photo, …) or of a retired Figma front (Quest, Storage, RideInvite). Those copies are from
+        /// before the 11-26 rebuild and carry its old placements; written back they wrecked the new prefab (2026-11-26: the village
+        /// HUD's top row and zoom pair ended up in the corners after Play was pressed with UiPreview open). The real copies live
+        /// in each game scene; the preview scene's are never written back.
+        /// </summary>
+        static bool StalePreview(Scene scene, string path)
+        {
+            if (!scene.path.EndsWith("/UiPreview.unity")) return false;
+            var p = path.Normalize(NormalizationForm.FormC);
+            if (!FrontDirs.Keys.Any(k => p == FrontPath(k).Normalize(NormalizationForm.FormC))) return true;   // not a Figma front any more
+            return false;
         }
 
         /// <summary>Is the asset in the UI folder? (macOS hands Korean paths back decomposed, so both sides are composed first.)</summary>
@@ -256,13 +265,11 @@ namespace Mongle.EditorTools
             RenameFolder(Root + "/5_공통알림", CommonDir, log);
             RenameFolder(Root + "/6_새디자인_미리보기", NewDesignDir, log);
             foreach (var d in new[] { TitleDir, RepairDir, VillageDir, PhotoDir, CommonDir, NewDesignDir }) MakeFolder(d);
-            foreach (var d in new[] { TitleDir, RepairDir, VillageDir, PhotoDir, CommonDir }) MakeFolder(d + "/" + OldSub);
+            foreach (var d in new[] { RepairDir, VillageDir, PhotoDir, CommonDir }) MakeFolder(d + "/" + OldSub);
 
             foreach (var kv in SkinDirs)
                 foreach (var from in new[] { "Assets/_Project/Resources/UI/Skins/" + kv.Key + ".prefab", kv.Value + "/" + kv.Key + ".prefab" })
                     Move(from, SkinPath(kv.Key), log);
-            foreach (var from in new[] { "Assets/_Project/Prefabs/UI/TitleScreen.prefab", TitleDir + "/TitleScreen.prefab" })
-                Move(from, TitleScreenBaker.PrefabPath, log);
             foreach (var kv in FrontDirs)
                 foreach (var from in new[] { "Assets/_Project/Prefabs/UI2/" + kv.Key + ".prefab", NewDesignDir + "/" + kv.Key + ".prefab" })
                     if (from != FrontPath(kv.Key)) Move(from, FrontPath(kv.Key), log);

@@ -123,6 +123,27 @@ namespace Mongle.Tests
         }
 
         [Test]
+        public void StitchRadiusFitsAZigzagSeamSoOneDragTakesOnePoint()
+        {
+            // Mongi's D-037 back tear as measured in play (QA 2026-11-27): the points zigzag 2.7 cm across, 7 mm down each
+            var pts = new System.Collections.Generic.List<Vector3>
+            {
+                new Vector3(-0.0144f, 0.1426f, -0.0804f), new Vector3(0.0126f, 0.1349f, -0.0883f), new Vector3(-0.0144f, 0.1277f, -0.0918f),
+                new Vector3(0.0130f, 0.1206f, -0.0966f), new Vector3(-0.0145f, 0.1134f, -0.0987f), new Vector3(0.0129f, 0.1065f, -0.1059f),
+            };
+            var s = new StitchModel(pts) { Radius = StitchModel.FitRadius(pts) };
+            Assert.Less(s.Radius, 0.017f);
+            for (int i = 0; i < pts.Count; i++)
+            {
+                var from = i == 0 ? pts[0] + new Vector3(0f, 0.03f, 0f) : pts[i - 1];
+                for (int k = 0; k <= 20; k++) s.Move(Vector3.Lerp(from, pts[i], k / 20f));
+                Assert.AreEqual(i + 1, s.Done, "one straight drag to point " + i + " takes that point only");
+            }
+            Assert.IsTrue(s.Complete);
+            Assert.AreEqual(0.022f, StitchModel.FitRadius(new[] { Vector3.zero }), 1e-6f, "a single stitch keeps the full radius");
+        }
+
+        [Test]
         public void StitchFastDragSkippingPointsDoesNotAdvance()
         {
             var s = Stitch();

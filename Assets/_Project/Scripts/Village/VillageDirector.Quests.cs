@@ -21,13 +21,15 @@ namespace Mongle.Village
         public const int BirthdayGift = 30, MaxFruitLying = 12;
         FriendQuestBook Book => World.FriendQuests;
         PlayerProfile Profile => World.Profile;
-        public QuestBoard QuestWindow { get; private set; }
-        public FriendDialog Dialog { get; private set; }
+        /// <summary>The 퀘스트 window (11-26 "퀘스트" 88:2130, <see cref="Mongle.Views.QuestView"/>).</summary>
+        public Mongle.Views.QuestView QuestWindow { get; private set; }
+        /// <summary>The friend talking (11-26 FriendTalkView, Figma 88:231 / 88:367).</summary>
+        public Mongle.Views.FriendTalkView Talk { get; private set; }
         public bool QuestBoardOpen => QuestWindow != null && QuestWindow.Visible;
-        public bool FriendDialogOpen => Dialog != null && Dialog.Visible;
+        public bool FriendDialogOpen => Talk != null && Talk.Visible;
         public bool QuestUiOpen => QuestBoardOpen || FriendDialogOpen;
         public readonly List<FruitTree> FruitTrees = new List<FruitTree>();
-        Button questButton; GameObject questBadge; Text questBadgeText; int questNews, boardTab;
+        int questNews, boardTab;
         RectTransform markLayer; readonly Dictionary<FriendOffer, QuestMark> marks = new Dictionary<FriendOffer, QuestMark>();
         FriendOffer talking; float offerTick, boardTick; bool fruitHintShown;
         readonly System.Random chatRng = new System.Random();
@@ -36,28 +38,15 @@ namespace Mongle.Village
         class QuestMark { public GameObject go; public RectTransform rt; public float phase; }
 
         // ---------------- setup ----------------
-        /// <summary>
-        /// The 퀘스트 button at the top left (D-026): the half-clear cream pill of the notices, no stitch, "새 N" beside it.
-        /// The tracker of what is under way hangs under it in the same pill; both open the quest window.
-        /// </summary>
-        void BuildQuestButton()
-        {
-            questButton = UiKit.SpriteButton(hud.transform, "Btn_퀘스트", "hud_toast", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(24f, -65f), new Vector2(190f, 76f), ToggleQuestBoard);   // centred on the top bar's line (54..151)
-            UiKit.Slice(questButton.GetComponent<Image>(), true);
-            UiKit.TitleLabel(questButton.transform, "퀘스트", 34, UiKit.FigBrown, new Vector2(0.5f, 0.5f), new Vector2(0f, 1f), new Vector2(170f, 60f));
-            var badge = UiKit.Panel(questButton.transform, "NewBadge", UiKit.Pink, new Vector2(1f, 0.5f), new Vector2(46, 0), new Vector2(80, 40), false);
-            questBadge = badge.gameObject; questBadgeText = UiKit.TitleLabel(badge.transform, "", 22, Color.white, new Vector2(0.5f, 0.5f), new Vector2(0f, 1f), new Vector2(76, 36));
-            questBadge.SetActive(false);
-        }
-
         /// <summary>The friends' quest marks layer, the star hunt pill, the speech bubble with choices and the quest window.</summary>
         void BuildQuestUi()
         {
             markLayer = UiKit.Rect(canvas.transform, "QuestMarks", Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             markLayer.SetAsFirstSibling(); // under every panel
             BuildHuntHud();
-            Dialog = new FriendDialog(canvas.transform) { Skin = SkinPart };
-            QuestWindow = new QuestBoard(canvas.transform) { OnClose = CloseQuestBoard, OnTab = t => { boardTab = t; RefreshQuestBoard(); root.Audio.Play("click", 0.4f, 1.2f); }, Skin = SkinPart };
+            Talk = Mongle.Views.FriendTalkView.Get();
+            if (Application.isPlaying) QuestWindow = Mongle.Views.QuestView.Get();
+            if (QuestWindow != null) { QuestWindow.OnClose = CloseQuestBoard; QuestWindow.OnTab = t => { boardTab = t; RefreshQuestBoard(); root.Audio.Play("click", 0.4f, 1.2f); }; }
             SkinPart(huntHud);
         }
 
@@ -96,7 +85,6 @@ namespace Mongle.Village
             SyncMarks();
             PollRideQuests();
             UpdateHunt();
-            if (questBadge != null && questBadge.activeInHierarchy) questBadge.transform.localScale = Vector3.one * (1f + 0.08f * Mathf.Sin(Time.unscaledTime * 5f));
             if (QuestBoardOpen && hunt != null && (boardTick -= Time.unscaledDeltaTime) <= 0f) { boardTick = 0.5f; RefreshQuestBoard(); } // live hunt timer
         }
 
@@ -177,7 +165,7 @@ namespace Mongle.Village
         {
             if (o == null || !Book.Offers.Contains(o) || PlacingMode || AnyPanelOpen || ViewingRide != null) return false;
             var a = AgentOf(o.giver); if (a == null || a.OnRide) return false;
-            CloseDress(); CloseQuestBoard(); album.Hide();
+            CloseDress(); CloseQuestBoard(); Mongle.Views.AlbumView.Close();
             talking = o;
             var p = PersonalityOf(a); var hey = FriendQuestText.Greeting(p, o.type);
             if (!a.TryTalk(hey)) ShowBubble(a.Actor, hey, 2f);
@@ -190,15 +178,15 @@ namespace Mongle.Village
 
         void ShowRequest(FriendOffer o, ToyAgent a)
         {
-            Dialog.Show(NameOf(a), TagColorOf(a), FriendQuestText.Request(o.kind, PersonalityOf(a), o.target, RideName(o.param), o.giver),
-                "· " + FriendQuestText.Title(o.kind) + "      · 보상: 몽글 코인 +" + o.reward, null, 0,
-                new[] { new FriendDialog.Choice("좋아, 할게!", UiKit.Peach, () => AcceptOffer(o)), new FriendDialog.Choice("나중에", UiKit.Mint, () => OfferLater(o)) });
+            // Figma 88:231: "· 같이 타기     · 보상 : 몽글 코인 +20" under the line, ♥ 좋아! / 다음에 할게 beside the bubble
+            Talk.Ask(NameOf(a), TagColorOf(a), FriendQuestText.Request(o.kind, PersonalityOf(a), o.target, RideName(o.param), o.giver),
+                "· " + FriendQuestText.Title(o.kind) + "      · 보상 : 몽글 코인 +" + o.reward, "좋아!", () => AcceptOffer(o), "다음에 할게", () => OfferLater(o));
         }
 
         /// <summary>Each friend's own pastel for its name tag (D-025).</summary>
         static readonly System.Collections.Generic.Dictionary<string, Color> TagColors = new System.Collections.Generic.Dictionary<string, Color>
         {
-            { "TeddyBear_001", new Color(1f, 0.85f, 0.72f) },  // 몽이: honey peach
+            { "TeddyBear_001", new Color(1f, 0.882f, 0.902f) }, // 몽이: the Figma tag's pale pink (#FFE1E6)
             { "Bunny_001", new Color(1f, 0.8f, 0.88f) },       // pink
             { "Cat_001", new Color(0.88f, 0.82f, 1f) },        // lavender
             { "Dino_001", new Color(0.76f, 0.93f, 0.8f) },     // mint
@@ -216,43 +204,26 @@ namespace Mongle.Village
             return TagColors.TryGetValue(kind, out var c) ? c : new Color(1f, 0.85f, 0.9f);
         }
 
-        /// <summary>A colour answer is drawn in that colour (분홍색 on pink, 하늘색 on sky ...).</summary>
-        static readonly System.Collections.Generic.Dictionary<string, Color> AnswerColors = new System.Collections.Generic.Dictionary<string, Color>
-        {
-            { "분홍색", new Color(1f, 0.8f, 0.86f) }, { "하늘색", new Color(0.76f, 0.89f, 1f) }, { "노란색", new Color(1f, 0.92f, 0.6f) },
-            { "민트색", new Color(0.76f, 0.94f, 0.86f) }, { "보라색", new Color(0.87f, 0.81f, 1f) }, { "빨간색", new Color(1f, 0.7f, 0.7f) },
-        };
-
-        static readonly Color[] ChoiceColors = { new Color(1f, 0.8f, 0.86f), new Color(1f, 0.9f, 0.7f), new Color(0.82f, 0.92f, 1f), new Color(0.8f, 0.94f, 0.86f), new Color(0.9f, 0.85f, 1f), new Color(1f, 0.86f, 0.78f) };
-
         void ShowQuestion(FriendOffer o, ToyAgent a)
         {
             var fq = FriendQuestions.Get(o.question);
-            if (fq == null || Profile.Has(o.question)) { Book.Withdraw(o); Dialog.Hide(); talking = null; return; }
+            if (fq == null || Profile.Has(o.question)) { Book.Withdraw(o); Talk.Hide(); talking = null; return; }
             var ask = FriendQuestText.Ask(fq, PersonalityOf(a));
             if (fq.key == PlayerProfile.Birthday) { ShowMonths(o, a, ask); return; }
-            var choices = fq.choices.Select((c, i) => new FriendDialog.Choice(c, AnswerColors.TryGetValue(c, out var ac) ? ac : ChoiceColors[i % ChoiceColors.Length], () => AnswerQuestion(o, c))).ToList();
-            Dialog.Show(NameOf(a), TagColorOf(a), ask, "· " + fq.label, choices, choices.Count <= 4 ? choices.Count : 3, new[] { new FriendDialog.Choice("나중에", UiKit.Mint, () => OfferLater(o)) });
+            // Figma 88:367: the answers in a drop-down beside the bubble; choosing one answers
+            Talk.Question(NameOf(a), TagColorOf(a), ask, "· " + fq.label, fq.choices, c => AnswerQuestion(o, c), "다음에 할게", () => OfferLater(o));
         }
 
+        /// <summary>The birthday (Figma 88:367): 월 and 일 drop-downs on a white pill; both chosen answers.</summary>
         void ShowMonths(FriendOffer o, ToyAgent a, string ask)
         {
-            var months = Enumerable.Range(1, 12).Select(m => new FriendDialog.Choice(m + "월", ChoiceColors[(m - 1) % ChoiceColors.Length], () => ShowDays(o, a, ask, m))).ToList();
-            Dialog.Show(NameOf(a), TagColorOf(a), ask, "· 생일 · 몇 월이야?", months, 6, new[] { new FriendDialog.Choice("나중에", UiKit.Mint, () => OfferLater(o)) });
-        }
-
-        void ShowDays(FriendOffer o, ToyAgent a, string ask, int month)
-        {
-            root.Audio.Play("click", 0.5f, 1.2f);
-            var days = Enumerable.Range(1, PlayerProfile.DaysIn(month)).Select(d => new FriendDialog.Choice(d + "일", ChoiceColors[(month - 1) % ChoiceColors.Length], () => AnswerQuestion(o, PlayerProfile.BirthdayValue(month, d)))).ToList();
-            Dialog.Show(NameOf(a), TagColorOf(a), ask, "· 생일 · " + month + "월 며칠이야?", days, 8,
-                new[] { new FriendDialog.Choice("← 월 다시", UiKit.Sky, () => ShowMonths(o, a, ask)), new FriendDialog.Choice("나중에", UiKit.Mint, () => OfferLater(o)) });
+            Talk.Birthday(NameOf(a), TagColorOf(a), ask, "· 생일", PlayerProfile.DaysIn, (m, d) => AnswerQuestion(o, PlayerProfile.BirthdayValue(m, d)), "다음에 할게", () => OfferLater(o));
         }
 
         /// <summary>"나중에": the bubble stays up for a while, the friend says it will wait.</summary>
         public void OfferLater(FriendOffer o)
         {
-            Dialog.Hide(); talking = null;
+            Talk.Hide(); talking = null;
             var a = o != null ? AgentOf(o.giver) : null;
             if (a != null) ShowBubble(a.Actor, FriendQuestText.LaterLine(PersonalityOf(a)), 2.4f);
             root.Audio.Play("click", 0.4f, 0.9f);
@@ -267,7 +238,7 @@ namespace Mongle.Village
 
         public FriendQuest AcceptOffer(FriendOffer o)
         {
-            Dialog.Hide(); talking = null;
+            Talk.Hide(); talking = null;
             var q = Book.Accept(o); if (q == null) return null;
             var a = AgentOf(q.giver); string ride = RideName(q.param), name = GiverName(q.giver);
             if (a != null) StartCoroutine(Celebrate(a, FriendQuestText.AcceptLine(q.kind, ride), false));
@@ -297,7 +268,7 @@ namespace Mongle.Village
 
         public bool AnswerQuestion(FriendOffer o, string value)
         {
-            Dialog.Hide(); talking = null;
+            Talk.Hide(); talking = null;
             if (o == null) return false;
             var a = AgentOf(o.giver);
             if (!Profile.Answer(o.question, value, o.giver)) { Book.Withdraw(o); return false; }
@@ -357,8 +328,7 @@ namespace Mongle.Village
         {
             if (QuestBoardOpen) return;
             questNews++;
-            if (questBadge == null) return;
-            questBadge.SetActive(questNews > 0); questBadgeText.text = "새 " + questNews;
+            if (Hud != null) Hud.SetQuestNews(questNews);
         }
 
         void PollRideQuests()
@@ -575,11 +545,11 @@ namespace Mongle.Village
         public bool OpenQuestBoard(int tab = -1)
         {
             if (PlacingMode) { root.Say("가구 옮기기 중이에요. '나가기'를 누르고 열어요"); return false; }
-            if (AnyPanelOpen || ViewingRide != null) return false;
-            CloseDress(); album.Hide();
+            if (AnyPanelOpen || ViewingRide != null || QuestWindow == null) return false;
+            CloseDress(); Mongle.Views.AlbumView.Close();
             if (FriendDialogOpen) OfferLater(talking);
             if (tab >= 0) boardTab = tab;
-            questNews = 0; if (questBadge != null) questBadge.SetActive(false);
+            questNews = 0; if (Hud != null) Hud.SetQuestNews(0);
             SetHud(false);
             QuestWindow.Show(); RefreshQuestBoard();
             root.Audio.Play("click", 0.5f);
@@ -596,7 +566,7 @@ namespace Mongle.Village
         void RefreshQuestBoard()
         {
             if (QuestWindow == null) return;
-            var rows = new List<QuestBoard.Row>(); string empty = "";
+            var rows = new List<Mongle.Views.Ask>(); string empty = "";
             var shopActive = World.AllQuests.Where(d => World.StatusOf(d) == QuestStatus.Active || World.StatusOf(d) == QuestStatus.ReadyToClaim).ToList();
             var shopDone = World.AllQuests.Where(d => World.StatusOf(d) == QuestStatus.Done).ToList();
             if (boardTab == 0)
@@ -612,48 +582,51 @@ namespace Mongle.Village
                 empty = "아직 끝낸 퀘스트가 없어요.";
             }
             else rows.AddRange(StoryRows());
-            QuestWindow.Render(boardTab, rows, empty, new[] { "진행 중 " + (Book.Active.Count() + shopActive.Count), "완료 " + (Book.Finished.Count() + shopDone.Count), "내 이야기" });
+            QuestWindow.Render(boardTab, rows, empty, new[]
+            {
+                Mongle.UI2.Loc.Format("quest.tab.active", Book.Active.Count() + shopActive.Count),
+                Mongle.UI2.Loc.Format("quest.tab.done", Book.Finished.Count() + shopDone.Count),
+                Mongle.UI2.Loc.Get("quest.tab.story"),
+            });
         }
 
+        /// <summary>The round icon's colour for a friend's kind of request (Figma's pastels: pink, yellow, sky, lilac, mint).</summary>
         static Color KindColor(FriendQuestKind k) =>
-            k == FriendQuestKind.Fruit ? new Color(1f, 0.6f, 0.68f) : k == FriendQuestKind.Stars ? new Color(1f, 0.76f, 0.35f) : k == FriendQuestKind.Ride ? new Color(0.55f, 0.72f, 1f)
-            : k == FriendQuestKind.Dress ? new Color(0.78f, 0.62f, 1f) : new Color(0.45f, 0.8f, 0.62f);
+            k == FriendQuestKind.Fruit ? new Color(1f, 0.56f, 0.67f) : k == FriendQuestKind.Stars ? new Color(1f, 0.957f, 0.573f) : k == FriendQuestKind.Ride ? new Color(0.627f, 0.863f, 0.973f)
+            : k == FriendQuestKind.Dress ? new Color(0.89f, 0.82f, 1f) : new Color(0.75f, 0.92f, 0.83f);
 
-        QuestBoard.Row FriendRow(FriendQuest q)
+        /// <summary>A friend's request: what it is, how far it got, and the button that takes you there (찾으러 가기 and friends).</summary>
+        Mongle.Views.Ask FriendRow(FriendQuest q)
         {
             string name = GiverName(q.giver), ride = RideName(q.param);
-            var row = new QuestBoard.Row
+            var row = new Mongle.Views.Ask
             {
-                key = q.id, icon = name.Length > 0 ? name.Substring(0, 1) : "!", iconColor = KindColor(q.kind),
-                title = name + " · " + FriendQuestText.Title(q.kind), detail = FriendQuestText.Detail(q.kind, q.target, ride, name), reward = "+" + q.reward, done = q.Done,
+                id = q.id, title = FriendQuestText.Title(q.kind), giver = name, line = FriendQuestText.Detail(q.kind, q.target, ride, name),
+                reward = q.reward, iconColor = KindColor(q.kind), state = q.Done ? Mongle.Views.AskState.Done : Mongle.Views.AskState.Doing, action = "",
             };
             if (q.Done)
             {
-                row.progress = "완료";
-                row.detail = FriendQuestText.Title(q.kind) + " 끝! " + System.DateTimeOffset.FromUnixTimeSeconds(q.doneUnix).ToLocalTime().ToString("M월 d일") + "에 도와줬어요";
-                row.reward = "+" + q.reward + " 받음";
+                row.line = FriendQuestText.Title(q.kind) + " 끝! " + System.DateTimeOffset.FromUnixTimeSeconds(q.doneUnix).ToLocalTime().ToString("M월 d일") + "에 도와줬어요";
                 return row;
             }
             switch (q.kind)
             {
                 case FriendQuestKind.Fruit:
-                    row.progress = "열매 " + q.progress + "/" + q.target;
-                    row.action = "나무 보기"; row.onAction = () => { CloseQuestBoard(); var t = NearestTrees(Orbit.target, 1).FirstOrDefault(); if (t != null) { LookAt(t.transform.position); t.Hint(Catalog); } };
+                    row.progress = q.progress + "/" + q.target;
+                    row.action = "나무 보기"; row.onPress = () => { CloseQuestBoard(); var t = NearestTrees(Orbit.target, 1).FirstOrDefault(); if (t != null) { LookAt(t.transform.position); t.Hint(Catalog); } };
                     break;
                 case FriendQuestKind.Stars:
                     bool running = hunt != null && hunt.quest == q;
-                    row.progress = running ? "별 " + hunt.found + "/" + hunt.stars.Count + " · " + Mathf.CeilToInt(hunt.left) + "초" : "시작 전";
-                    if (!running) { row.action = "별 찾기 시작"; row.actionColor = new Color(1f, 0.86f, 0.5f); row.onAction = () => { CloseQuestBoard(); if (StartStarHunt(q)) root.Say("반짝 별을 찾아요! 화면 가장자리의 ★가 방향을 알려 줘요", 3.5f); }; }
+                    row.progress = running ? hunt.found + "/" + hunt.stars.Count + " · " + Mathf.CeilToInt(hunt.left) + "초" : null;
+                    if (!running) { row.action = "별 찾기"; row.onPress = () => { CloseQuestBoard(); if (StartStarHunt(q)) root.Say("반짝 별을 찾아요! 화면 가장자리의 ★가 방향을 알려 줘요", 3.5f); }; }
                     break;
                 case FriendQuestKind.Ride:
-                    row.progress = "아직 안 탔어요";
-                    row.action = "같이 타기"; row.actionColor = UiKit.Sky;
-                    row.onAction = () => { CloseQuestBoard(); var r = RideById(q.param); if (r == null || !CallQuestRider(r)) { if (r != null) LookAt(r.transform.position); root.Say(Josa.IGa(name) + " 벌써 " + ride + " 타러 가고 있어요!", 2.6f); } };
+                    row.action = "같이 타기";
+                    row.onPress = () => { CloseQuestBoard(); var r = RideById(q.param); if (r == null || !CallQuestRider(r)) { if (r != null) LookAt(r.transform.position); root.Say(Josa.IGa(name) + " 벌써 " + ride + " 타러 가고 있어요!", 2.6f); } };
                     break;
                 case FriendQuestKind.Dress:
-                    row.progress = "입히기 전";
-                    row.action = "꾸며주기"; row.actionColor = UiKit.Pink;
-                    row.onAction = () =>
+                    row.action = "꾸며주기";
+                    row.onPress = () =>
                     {
                         CloseQuestBoard(); var a = AgentOf(q.giver); if (a == null) return;
                         LookAt(a.transform.position); OpenDress(a);
@@ -661,9 +634,9 @@ namespace Mongle.Village
                     };
                     break;
                 default:
-                    row.progress = "물 " + q.progress + "/" + q.target;
+                    row.progress = q.progress + "/" + q.target;
                     row.action = "화분 보기";
-                    row.onAction = () =>
+                    row.onPress = () =>
                     {
                         CloseQuestBoard();
                         var f = Furniture.Where(x => x != null && !x.Pending && x.Def.IsPlant && WatersLeft(x) > 0).OrderBy(x => World.SecondsUntilThirsty(World.Plant(x.Placement.Id), x.Def)).FirstOrDefault();
@@ -674,26 +647,27 @@ namespace Mongle.Village
             return row;
         }
 
-        QuestBoard.Row ShopRow(QuestDefinition d)
+        /// <summary>A keeper's request: the thing it is about on the icon, how far it got, 가게 가기 once the reward waits.</summary>
+        Mongle.Views.Ask ShopRow(QuestDefinition d)
         {
             var st = World.StatusOf(d); var shop = Catalog.Shop(d.giverShopId); string keeper = shop != null ? shop.keeperName : "가게";
-            var row = new QuestBoard.Row
+            var row = new Mongle.Views.Ask
             {
-                key = d.id, icon = keeper.Substring(0, 1), iconColor = new Color(1f, 0.78f, 0.45f), title = keeper + " · " + d.title,
-                detail = st == QuestStatus.Done ? d.doneLine : d.acceptLine, reward = "+" + d.rewardCoins, done = st == QuestStatus.Done,
-                progress = st == QuestStatus.Done ? "완료" : st == QuestStatus.ReadyToClaim ? "보상 받기!" : World.ProgressOf(d) + "/" + d.targetCount,
+                id = d.id, title = d.title, giver = keeper, line = st == QuestStatus.Done ? d.doneLine : d.request, reward = d.rewardCoins, picture = QuestPicture(d),
+                state = st == QuestStatus.Done ? Mongle.Views.AskState.Done : st == QuestStatus.ReadyToClaim ? Mongle.Views.AskState.Ready : Mongle.Views.AskState.Doing,
+                progress = st == QuestStatus.Active ? World.ProgressOf(d) + "/" + d.targetCount : null, action = "",
             };
-            if (st == QuestStatus.Done) row.reward = "+" + d.rewardCoins + " 받음";
             if (st == QuestStatus.ReadyToClaim)
             {
                 var b = Shops.FirstOrDefault(s => s.shopId == d.giverShopId);
-                row.action = "가게 가기"; row.actionColor = UiKit.Peach;
-                row.onAction = () => { CloseQuestBoard(); OpenShop(b); };
+                row.action = "가게 가기";
+                row.onPress = () => { CloseQuestBoard(); OpenShop(b); };
             }
             return row;
         }
 
-        IEnumerable<QuestBoard.Row> StoryRows()
+        /// <summary>내 이야기: what the friends asked about the player and remember (♥), or still wonder (?).</summary>
+        IEnumerable<Mongle.Views.Ask> StoryRows()
         {
             foreach (var fq in FriendQuestions.All)
             {
@@ -701,12 +675,13 @@ namespace Mongle.Village
                 string shown = v;
                 if (fq.key == PlayerProfile.Birthday && PlayerProfile.ParseBirthday(v, out int m, out int d)) shown = m + "월 " + d + "일";
                 var asker = Profile.AskedBy(fq.key);
-                yield return new QuestBoard.Row
+                yield return new Mongle.Views.Ask
                 {
-                    key = fq.key, icon = v != null ? "♥" : "?", iconColor = v != null ? UiKit.Pink : UiKit.Sky, title = fq.label,
-                    detail = v != null ? (string.IsNullOrEmpty(asker) ? "친구들이 기억하고 있어요" : Josa.IGa(GiverName(asker)) + " 물어봤고, 친구들이 다 기억하고 있어요")
+                    id = fq.key, title = fq.label, progress = shown, state = Mongle.Views.AskState.Note,
+                    picture = v != null && QuestWindow != null ? QuestWindow.heart : null, initial = "?",
+                    iconColor = v != null ? new Color(1f, 0.882f, 0.902f) : new Color(0.627f, 0.863f, 0.973f),
+                    line = v != null ? (string.IsNullOrEmpty(asker) ? "친구들이 기억하고 있어요" : Josa.IGa(GiverName(asker)) + " 물어봤고, 친구들이 다 기억하고 있어요")
                         : "아직 말해 주지 않았어요. 친구 머리 위에 '?'가 뜨면 알려 줘요",
-                    progress = shown ?? "", reward = "", done = v != null,
                 };
             }
         }

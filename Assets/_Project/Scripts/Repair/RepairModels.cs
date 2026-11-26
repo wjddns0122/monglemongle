@@ -117,6 +117,25 @@ namespace Mongle.Repair
 
         public StitchModel(IEnumerable<Vector3> points) { Points = new List<Vector3>(points); }
 
+        /// <summary>
+        /// A hit radius that fits the seam (QA 2026-11-27): no point may lie within it of the straight drag between the two points
+        /// before it, nor of the point before it — on Mongi's small D-037 back tear (a zigzag 2.7 cm across, 7 mm down per point)
+        /// the old fixed 2.2 cm let one drag take three or four stitches at once.
+        /// </summary>
+        public static float FitRadius(IList<Vector3> pts, float max = 0.022f, float min = 0.008f)
+        {
+            float r = max;
+            for (int i = 1; i < pts.Count; i++)
+            {
+                r = Mathf.Min(r, (pts[i] - pts[i - 1]).magnitude * 0.45f);
+                if (i < 2) continue;
+                Vector3 a = pts[i - 2], ab = pts[i - 1] - a;
+                float t = ab.sqrMagnitude > 1e-10f ? Mathf.Clamp01(Vector3.Dot(pts[i] - a, ab) / ab.sqrMagnitude) : 0f;
+                r = Mathf.Min(r, (pts[i] - (a + ab * t)).magnitude * 0.8f);
+            }
+            return Mathf.Max(min, r);
+        }
+
         public Result Move(Vector3 pointerWorld)
         {
             if (Complete) return Result.None;

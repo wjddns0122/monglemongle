@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Mongle.Core;
 using Mongle.Data;
+using Mongle.Photo;
 using Mongle.Repair;
 using Mongle.Toy;
 using Mongle.UI;
@@ -99,9 +100,10 @@ namespace Mongle.Village
         }
 
         // ---------------- dressing Mongi or a resident with accessories bought at the accessory shop ----------------
-        GameObject dressPanel; Text dressTitle; RectTransform dressList;
+        /// <summary>The friend card (11-26 FriendCardView, Figma 88:1912): 프로필 on the left, 꾸며주기 on the right.</summary>
+        Mongle.Views.FriendCardView card;
         public ToyAgent Dressing { get; private set; }
-        public bool DressOpen => dressPanel != null && dressPanel.activeSelf;
+        public bool DressOpen => card != null && card.Visible;
 
         ResidentSave ResidentOf(ToyAgent a) => a == null || a.Actor == null ? null : root.Residents.FirstOrDefault(r => r.kindId == a.Actor.name);
 
@@ -137,82 +139,64 @@ namespace Mongle.Village
         public void OpenDress(ToyAgent a)
         {
             if (WornBy(a) == null) return;
-            if (dressPanel == null) BuildDressPanel();
-            Dressing = a; dressPanel.SetActive(true);
-            RefreshDress();
+            if (card == null)
+            {
+                card = Mongle.Views.FriendCardView.Get(); if (card == null) return;
+                card.OnToggle = id => ToggleWear(Catalog.AllAccessories.FirstOrDefault(acc => acc.id == id));
+            }
+            Dressing = a;
+            card.Show(DisplayNameOf(a), PhotoOf(a), MovedInOf(a), KindOf(a), DressItems());
+            if (Hud != null) Hud.Focus(true);   // Figma 88:1912: the 퀘스트 pill and the tiles step aside for the card
         }
 
-        void BuildDressPanel()
+        public void CloseDress()
         {
-            var p = UiKit.Panel(canvas.transform, "DressPanel", UiKit.Paper, new Vector2(0.5f, 0f), new Vector2(0, 150), new Vector2(1500, 240), true);
-            dressPanel = p.gameObject;
-            // one row: the words and the accessories share one column left of the close button (so they line up with each other),
-            // the button sits in the middle of the right end
-            float right = -(DressPad + DressCloseW + DressGap);
-            dressTitle = UiKit.Label(p.transform, "", 36, UiKit.Brown, new Vector2(0.5f, 1f), Vector2.zero, new Vector2(100, 50));
-            var trt = dressTitle.rectTransform;
-            trt.anchorMin = new Vector2(0f, 1f); trt.anchorMax = new Vector2(1f, 1f); trt.pivot = new Vector2(0.5f, 1f);
-            trt.offsetMin = new Vector2(DressPad, -78f); trt.offsetMax = new Vector2(right, -28f);
-            dressTitle.name = "Title";
-            dressList = UiKit.Rect(p.transform, "List", new Vector2(0f, 0f), new Vector2(1f, 1f), new Vector2(DressPad, 20), new Vector2(right, -84));
-            UiKit.MakeButton(p.transform, "닫기", UiKit.Peach, new Vector2(1f, 0.5f), new Vector2(-(DressPad + DressCloseW / 2f), 0f), new Vector2(DressCloseW, 100), CloseDress, 36);
+            bool was = DressOpen;
+            if (card != null) card.Hide();
+            Dressing = null;
+            if (was && Hud != null) { Hud.Focus(false); RefreshQuestTracker(); }
         }
-
-        const float DressPad = 40f, DressCloseW = 240f, DressGap = 40f;
-
-        public void CloseDress() { if (dressPanel != null) dressPanel.SetActive(false); Dressing = null; }
 
         void RefreshDress()
         {
-            var worn = WornBy(Dressing); if (worn == null) { CloseDress(); return; }
-            dressTitle.text = DisplayNameOf(Dressing) + " 꾸며주기 · 누르면 입히고, 다시 누르면 벗어요";
-            var items = Catalog.AllAccessories.Where(acc => World.Owned(acc.id) > 0 || worn.ContainsValue(acc.id)).ToList();
-            LayDress(items, acc => worn.TryGetValue(acc.slot, out var cur) && cur == acc.id, acc => World.Owned(acc.id));
+            if (WornBy(Dressing) == null) { CloseDress(); return; }
+            card.SetItems(DressItems());
         }
 
-        /// <summary>The dress list: one button per accessory (filled while the friend wears it), then the prefab laid over it (D-035).</summary>
-        void LayDress(List<AccessoryDefinition> items, System.Func<AccessoryDefinition, bool> wearing, System.Func<AccessoryDefinition, int> owned)
+        /// <summary>The accessories this friend can wear: those in the box and the ones it has on (with their pictures, Resources/UI/Accessories).</summary>
+        List<Mongle.Views.FriendCardView.Item> DressItems()
         {
-            for (int i = dressList.childCount - 1; i >= 0; i--)
+            var worn = WornBy(Dressing);
+            return Catalog.AllAccessories.Where(acc => World.Owned(acc.id) > 0 || worn.ContainsValue(acc.id)).Select(acc => new Mongle.Views.FriendCardView.Item
             {
-                var c = dressList.GetChild(i).gameObject; c.transform.SetParent(null);
-                if (Application.isPlaying) Destroy(c); else DestroyImmediate(c);
-            }
-            if (items.Count == 0)
-            {
-                SizeDress(1);
-                UiKit.Label(dressList, "가진 악세서리가 없어요. 컵케이크 악세서리점에서 사 와요!", 32, UiKit.Brown, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(1100, 120), TextAnchor.MiddleCenter, FontStyle.Normal);
-                SkinPart(dressPanel.transform);
-                return;
-            }
-            // one row of wide buttons for up to 4, two rows of up to 5 for more (9 accessories since D-010)
-            int n = items.Count, rows = n <= 4 ? 1 : 2, cols = Mathf.CeilToInt(n / (float)rows);
-            SizeDress(rows);
-            float listW = dressList.rect.width > 1f ? dressList.rect.width : 1140f, listH = rows == 1 ? 156f : 266f;
-            float step = n <= 3 ? 360f : listW / cols, rowH = listH / rows;
-            float bw = Mathf.Min(340f, step - 16f), bh = Mathf.Min(110f, rowH - 14f);
-            for (int i = 0; i < n; i++)
-            {
-                var acc = items[i]; bool on = wearing(acc);
-                int row = i / cols, col = i % cols, inRow = Mathf.Min(cols, n - row * cols);
-                // each row is centred under the words (a short last row too)
-                var b = UiKit.MakeButton(dressList, "", on ? acc.uiColor : Color.Lerp(acc.uiColor, Color.white, 0.45f),
-                    new Vector2(0.5f, 1f), new Vector2((col - (inRow - 1) / 2f) * step, -rowH * (row + 0.5f)), new Vector2(bw, bh), () => ToggleWear(acc));
-                UiKit.SetButtonText(b, "");
-                UiKit.Label(b.transform, (on ? "♥ " : "") + acc.displayName, rows == 1 ? 30 : 28, UiKit.Brown, new Vector2(0.5f, 0.5f), new Vector2(0, 14), new Vector2(bw - 12f, 44));
-                UiKit.Label(b.transform, on ? (rows == 1 ? "입는 중 · 누르면 벗어요" : "입는 중") : "가진 수 " + owned(acc), 22, UiKit.Brown, new Vector2(0.5f, 0.5f), new Vector2(0, -24), new Vector2(bw - 12f, 32), TextAnchor.MiddleCenter, FontStyle.Normal);
-                b.name = "Dress_" + acc.id;
-            }
-            SkinPart(dressPanel.transform);
+                id = acc.id, name = acc.displayName, icon = Resources.Load<Sprite>("UI/Accessories/" + acc.id), color = acc.uiColor,
+                count = World.Owned(acc.id), worn = worn.TryGetValue(acc.slot, out var cur) && cur == acc.id,
+            }).ToList();
         }
 
-        /// <summary>The dress panel grows a second row when there are more than four accessories to show.</summary>
-        void SizeDress(int rows)
+        /// <summary>The friend's first photo (the album's), loaded for the card; null when it has none yet.</summary>
+        Texture2D PhotoOf(ToyAgent a)
         {
-            float h = rows == 1 ? 240f : 350f;
-            var rt = (RectTransform)dressPanel.transform;
-            rt.sizeDelta = new Vector2(1500f, h); rt.anchoredPosition = new Vector2(0f, 30f + h / 2f);
+            var rec = a.IsMain ? state.Photo : SaveMapper.FromPhotoSave(ResidentOf(a)?.photo);
+            return rec != null ? PhotoStore.Load(root.Saves, rec) : null;
         }
+
+        /// <summary>The day it moved into the village, as the card writes it (2026.11.12).</summary>
+        string MovedInOf(ToyAgent a)
+        {
+            string d = a.IsMain ? state.AdmissionDate : ResidentOf(a)?.movedIn;
+            return string.IsNullOrEmpty(d) ? "" : d.Split(' ')[0].Replace('-', '.');
+        }
+
+        /// <summary>What kind of toy it is (the card's paw line).</summary>
+        static readonly Dictionary<string, string> Kinds = new Dictionary<string, string>
+        {
+            { "TeddyBear_001", "곰인형" }, { "Bunny_001", "토끼인형" }, { "Cat_001", "고양이인형" }, { "Robot_001", "로봇" }, { "Car_001", "자동차" },
+            { "Dino_001", "공룡인형" }, { "Bee_001", "꿀벌인형" }, { "Plane_001", "비행기" }, { "FireTruck_001", "소방차" }, { "Pawn_001", "나무인형" },
+            { "Frog_001", "개구리인형" },
+        };
+        public static string KindLabel(string kindId) => kindId != null && Kinds.TryGetValue(kindId, out var k) ? k : "인형";
+        string KindOf(ToyAgent a) => KindLabel(a.IsMain ? "TeddyBear_001" : a.Actor.name);
 
         /// <summary>Put an owned accessory on the resident (one is used up) or take it off again (it goes back to the box).</summary>
         public bool ToggleWear(AccessoryDefinition acc)

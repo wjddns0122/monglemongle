@@ -17,7 +17,7 @@ namespace Mongle.Village
     {
         public Ride ViewingRide { get; private set; }
         public int ViewingSeat { get; private set; } = -1;
-        GameObject rideBar; Text rideCaption; float viewEmptyFor;
+        float viewEmptyFor;
 
         void SetupRides()
         {
@@ -28,24 +28,6 @@ namespace Mongle.Village
                 else Grid.BlockDisc(r.transform.position, 0.6f);
                 Grid.BlockDisc(r.BoardWorld, 0.45f); // keep the queue spot free: furniture there would cut the ride off
             }
-            BuildRideUi();
-        }
-
-        void BuildRideUi()
-        {
-            // Figma D-020: the cream plate with the caption and the blue "밖에서 보기" pill
-            var bar = UiKit.Fig(canvas.transform, "ride_statusbar", UiKit.Edge.Middle, UiKit.Edge.End, 0f, 0f, true, "RideBar");
-            bar.rectTransform.anchoredPosition = new Vector2(0f, 120f);   // bottom centre (D-024)
-            rideBar = bar.gameObject;
-            // the caption owns the plate left of the button (button: 267 wide, its centre 344 right of the plate's)
-            rideCaption = UiKit.FigText(bar.transform, "", 38, UiKit.FigBrown, -150f, 0f, 680f, 110f);
-            rideCaption.rectTransform.sizeDelta = new Vector2(680f, 56f); rideCaption.verticalOverflow = VerticalWrapMode.Truncate;
-            rideCaption.horizontalOverflow = HorizontalWrapMode.Wrap; rideCaption.resizeTextForBestFit = true; rideCaption.resizeTextMinSize = 22; rideCaption.resizeTextMaxSize = 38;
-            var see = UiKit.FigIn(bar.transform, "ride_btn_see", "ride_statusbar", true, "Btn_밖에서 보기").gameObject.AddComponent<Button>();
-            see.targetGraphic = see.GetComponent<Image>(); see.onClick.AddListener(ExitRideView);
-            UiKit.FigTextAt(see.transform, "ride_btn_see", "밖에서 보기", 38, UiKit.FigBrown, 1514f, 831f, 260f, 80f);
-            rideBar.SetActive(false);
-            SkinPart(bar);
         }
 
         /// <summary>A ride with room that this toy can walk to (nearer ones a little more likely).</summary>
@@ -96,7 +78,7 @@ namespace Mongle.Village
             ViewingRide = r; ViewingSeat = r.ViewSeat(); viewEmptyFor = 0f;
             if (r.RiderCount == 0 && !AllAgents().Any(a => a.Riding == r)) CallFriendTo(r);
             Orbit.FocusFollow(() => { ViewingRide.InsideView(ViewingSeat, out var c, out _); return c; }, () => { ViewingRide.InsideView(ViewingSeat, out _, out var l); return l; });
-            mainBar.SetActive(false); hud.SetActive(false); rideBar.SetActive(true);
+            Hud.ShowHud(false);
             RefreshRideCaption();
         }
 
@@ -105,7 +87,7 @@ namespace Mongle.Village
             if (ViewingRide == null) return;
             ViewingRide = null; ViewingSeat = -1;
             Orbit.ReleaseFocus();
-            rideBar.SetActive(false); hud.SetActive(true); mainBar.SetActive(state.Admitted);
+            Hud.HideRide(); Hud.ShowHud(true); Hud.ShowToolbar(state.Admitted);
             root.Audio.Play("click", 0.5f);
         }
 
@@ -143,14 +125,14 @@ namespace Mongle.Village
 
         void RefreshRideCaption()
         {
-            if (rideCaption == null || ViewingRide == null) return;
+            if (Hud == null || ViewingRide == null) return;
             var names = ViewingRide.Riders.Select(NameOf).Where(n => n != "").ToList();
             string coming = string.Join(", ", AllAgents().Where(a => a.Riding == ViewingRide && !a.OnRide).Select(NameOf));
-            rideCaption.text = names.Count > 0 ? string.Join(", ", names) + " · " + ViewingRide.displayName + " 타는 중"
+            Hud.ShowRide(names.Count > 0 ? string.Join(", ", names) + " · " + ViewingRide.displayName + " 타는 중"
                 : coming != "" ? Josa.IGa(coming) + " " + ViewingRide.displayName + " 타러 오고 있어요"
-                : ViewingRide.displayName + " · 아직 아무도 안 탔어요";
+                : ViewingRide.displayName + " · 아직 아무도 안 탔어요");
         }
 
-        public string RideCaptionShown => rideBar != null && rideBar.activeSelf ? rideCaption.text : "";
+        public string RideCaptionShown => Hud != null ? Hud.RideText : "";
     }
 }

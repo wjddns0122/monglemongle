@@ -12,12 +12,20 @@ namespace Mongle.Photo
         public static readonly string[] Ids = { "plain", "dots", "gingham", "stars" };
         public static readonly string[] Names = { "기본", "물방울", "깅엄", "별" };
         public const int Tile = 96;
+        // the stars run in staggered rows (Figma 88:1081): 68 apart along a row, rows 56 apart, every other row shifted half a
+        // step, so one repeat is 68 x 112 pixels; at the studio's 1.875 screen px per pattern pixel that is Figma's 126 x 106 spacing
+        const int StarW = 68, StarH = 112;
+        const float StarR = 20f, StarInner = 0.5f, StarRound = 2.5f;
         static readonly Texture2D[] cache = new Texture2D[Ids.Length];
+
+        /// <summary>One repeat of the pattern in pixels (the stars' staggered rows need a tall tile; the rest are square).</summary>
+        public static Vector2Int Size(int index) => Ids[Mathf.Clamp(index, 0, Ids.Length - 1)] == "stars" ? new Vector2Int(StarW, StarH) : new Vector2Int(Tile, Tile);
 
         static readonly Color Cream = new Color(1f, 0.99f, 0.95f, 1f);
         static readonly Color Choco = new Color(0.27f, 0.13f, 0.06f, 1f), DotPink = new Color(1f, 0.87f, 0.9f, 1f);
-        static readonly Color G0 = new Color(1f, 0.97f, 0.97f, 1f), G1 = new Color(1f, 0.88f, 0.89f, 1f), G2 = new Color(0.99f, 0.8f, 0.82f, 1f);
-        static readonly Color StarBg = new Color(0.97f, 0.91f, 0.77f, 1f), StarBrown = new Color(0.48f, 0.35f, 0.3f, 1f);
+        // 11-26 (Figma 빈창 88:1040 / 사진찍기 88:1081): white + #FDEFEF + #FDDADA gingham, #C69C6D stars on #F9EDC8
+        static readonly Color G0 = new Color(1f, 1f, 1f, 1f), G1 = new Color(0.992f, 0.937f, 0.937f, 1f), G2 = new Color(0.992f, 0.855f, 0.855f, 1f);
+        static readonly Color StarBg = new Color(0.976f, 0.929f, 0.784f, 1f), StarBrown = new Color(0.776f, 0.612f, 0.427f, 1f);
 
         public static int Index(string id) { int i = System.Array.IndexOf(Ids, id); return i < 0 ? 0 : i; }
 
@@ -26,11 +34,12 @@ namespace Mongle.Photo
         {
             index = Mathf.Clamp(index, 0, Ids.Length - 1);
             if (cache[index] != null) return cache[index];
-            var t = new Texture2D(Tile, Tile, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Repeat, filterMode = FilterMode.Bilinear, name = "Frame_" + Ids[index] };
-            var px = new Color[Tile * Tile];
-            for (int y = 0; y < Tile; y++)
-                for (int x = 0; x < Tile; x++)
-                    px[y * Tile + x] = Sample(index, x + 0.5f, y + 0.5f);
+            var sz = Size(index);
+            var t = new Texture2D(sz.x, sz.y, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Repeat, filterMode = FilterMode.Bilinear, name = "Frame_" + Ids[index] };
+            var px = new Color[sz.x * sz.y];
+            for (int y = 0; y < sz.y; y++)
+                for (int x = 0; x < sz.x; x++)
+                    px[y * sz.x + x] = Sample(index, x + 0.5f, y + 0.5f);
             t.SetPixels(px); t.Apply();
             return cache[index] = t;
         }
@@ -53,7 +62,8 @@ namespace Mongle.Photo
                 }
                 case "stars":
                 {
-                    float s = Mathf.Max(Star(x - 26f, y - 26f, 17f), Star(x - 74f, y - 74f, 17f));
+                    // a star in the middle of the lower row, and the shifted row above it on the tile's corners
+                    float s = Mathf.Max(Star(x - StarW * 0.5f, y - StarH * 0.25f), Star(x, y - StarH * 0.75f));
                     return Color.Lerp(StarBg, StarBrown, s);
                 }
                 default: return Cream;
@@ -68,18 +78,27 @@ namespace Mongle.Photo
             return Mathf.Sqrt(dx * dx + dy * dy);
         }
 
-        /// <summary>Coverage (0..1) of a five-point star of outer radius r centred at the origin.</summary>
-        static float Star(float x, float y, float r)
+        /// <summary>Coverage (0..1) of an upright five-point star centred at the origin, its points rounded off (Figma 사진찍기 / 빈창).</summary>
+        static float Star(float x, float y)
         {
-            // wrap around the tile like the dots
-            if (x > Tile / 2f) x -= Tile; if (x < -Tile / 2f) x += Tile;
-            if (y > Tile / 2f) y -= Tile; if (y < -Tile / 2f) y += Tile;
-            float ang = Mathf.Atan2(x, y), dist = Mathf.Sqrt(x * x + y * y);
-            // the star's radius at this angle: between the outer points (r) and the inner corners (0.45 r)
-            float seg = Mathf.PI * 2f / 5f, a = Mathf.Repeat(ang, seg) - seg / 2f;
-            float k = Mathf.Abs(a) / (seg / 2f);
-            float edge = Mathf.Lerp(r * 0.45f, r, 1f - k);
-            return Mathf.Clamp01(edge - dist + 0.5f);
+            // wrap around the star tile, so stars on its edges join the next tile
+            if (x > StarW / 2f) x -= StarW; if (x < -StarW / 2f) x += StarW;
+            if (y > StarH / 2f) y -= StarH; if (y < -StarH / 2f) y += StarH;
+            return Mathf.Clamp01(StarRound - StarDistance(new Vector2(x, y), StarR - StarRound, StarInner) + 0.5f);
+        }
+
+        /// <summary>Signed distance to a five-point star pointing up (+y): outer radius r, inner corners at rf x r.</summary>
+        static float StarDistance(Vector2 p, float r, float rf)
+        {
+            var k1 = new Vector2(0.809016994f, -0.587785252f); var k2 = new Vector2(-k1.x, k1.y);
+            p.x = Mathf.Abs(p.x);
+            p -= 2f * Mathf.Max(Vector2.Dot(k1, p), 0f) * k1;
+            p -= 2f * Mathf.Max(Vector2.Dot(k2, p), 0f) * k2;
+            p.x = Mathf.Abs(p.x);
+            p.y -= r;
+            var ba = rf * new Vector2(-k1.y, k1.x) - new Vector2(0f, 1f);
+            float h = Mathf.Clamp(Vector2.Dot(p, ba) / Vector2.Dot(ba, ba), 0f, r);
+            return (p - ba * h).magnitude * Mathf.Sign(p.y * ba.x - p.x * ba.y);
         }
 
         /// <summary>Paints the pattern into the outer <paramref name="border"/> pixels of a photo (the plain frame leaves it as it is).</summary>
@@ -89,11 +108,12 @@ namespace Mongle.Photo
             int w = photo.width, h = photo.height;
             var px = photo.GetPixels();
             float scale = Mathf.Max(1f, w / 1024f) * 0.75f;   // the tile looks the same size as in the studio's viewfinder
+            var sz = Size(index);
             for (int y = 0; y < h; y++)
                 for (int x = 0; x < w; x++)
                 {
                     if (x >= border && x < w - border && y >= border && y < h - border) continue;
-                    px[y * w + x] = Sample(index, Mathf.Repeat(x / scale, Tile), Mathf.Repeat(y / scale, Tile));
+                    px[y * w + x] = Sample(index, Mathf.Repeat(x / scale, sz.x), Mathf.Repeat(y / scale, sz.y));
                 }
             photo.SetPixels(px); photo.Apply();
         }

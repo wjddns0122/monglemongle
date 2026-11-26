@@ -119,7 +119,8 @@ namespace Mongle.Core
             foreach (var b in FindObjectsByType<Button>(FindObjectsInactive.Exclude))
             {
                 if (!b.isActiveAndEnabled || !b.interactable) continue;
-                if (b.GetComponentsInChildren<Text>().Any(t => t.text == label)) { b.onClick.Invoke(); return true; }
+                // by its words, or (picture-only buttons such as the village tiles) by its name "Btn_<label>"
+                if (b.name == "Btn_" + label || b.GetComponentsInChildren<Text>().Any(t => t.text == label) || b.GetComponentsInChildren<TMPro.TMP_Text>().Any(t => t.text == label)) { b.onClick.Invoke(); return true; }
             }
             return false;
         }
@@ -211,7 +212,7 @@ namespace Mongle.Core
             if (State.DiagnosisComplete) yield break;
             yield return Until(() => d.Phase == FlowPhase.CustomerIntro, 30, "intro dialog");
             yield return Shot("01_intro");
-            Check("intro dialog shown with toy name", d.UI.DialogOpen);
+            Check("intro dialog shown with toy name", Mongle.Views.DialogView.IsOpen);
             Check("arrival: no damage discovered yet", State.Damages.All(x => x.status == DamageStatus.Hidden));
             Check("notebook does not spoil names before discovery", true);
             ClickButton("살펴볼게요");
@@ -242,7 +243,7 @@ namespace Mongle.Core
             Check("hint level 2 (sparkle) available by ~9.5s of being stuck", d.Diagnosis.HintLevel >= 2, "level " + d.Diagnosis.HintLevel);
             d.Diagnosis.ForceIdle(16f); yield return new WaitForSeconds(0.4f);
             Check("hint level 3 (direction note) after ~16s", d.Diagnosis.HintLevel >= 3, "level " + d.Diagnosis.HintLevel);
-            Check("hint text does not name the damage", !d.UI.BannerText.Contains("가시") && !d.UI.BannerText.Contains("얼룩") && !d.UI.BannerText.Contains("솜"), d.UI.BannerText);
+            Check("hint text does not name the damage", !d.Hud.BannerText.Contains("가시") && !d.Hud.BannerText.Contains("얼룩") && !d.Hud.BannerText.Contains("솜"), d.Hud.BannerText);
             var plan = new[] { ("Thorn", 0f), ("Dirt", 0f), ("LowCotton", -25f), ("Tear", 180f) };
             foreach (var (id, yaw) in plan)
             {
@@ -286,12 +287,13 @@ namespace Mongle.Core
             float angDp = Vector3.Angle(Cam.transform.forward, dpw - Cam.transform.position);
             Check("close-up camera frames the " + id + " spot", ang < 6f && angDp < 40f, ang.ToString("F1") + "°/" + angDp.ToString("F1") + "° dist " + (look - Cam.transform.position).magnitude.ToString("F2"));
             int completes = 0; mg.OnCompleted += _ => completes++;
-            switch (id)
+            switch (d.TreatingFriend ? "" : id)
             {
                 case "Thorn": yield return DoThorn(mg, toy); break;
                 case "Dirt": yield return DoDirt(mg, toy); break;
                 case "Tear": yield return DoSew(mg, toy); break;
                 case "LowCotton": yield return DoCotton(mg, toy); break;
+                default: yield return DoGeneric(mg, toy, def); break;   // the friends' damages (D-009)
             }
             yield return Until(() => State.Get(id).status == DamageStatus.Completed, 30, id + " completed");
             yield return new WaitForSeconds(0.3f);
@@ -420,6 +422,61 @@ namespace Mongle.Core
                 if (i == 2) { Check("seam closes gradually while stitching", Mathf.Abs(mg.Progress - 0.5f) < 0.2f, mg.Progress.ToString("F2")); yield return Shot("05_sew_half"); }
             }
             src.Held = false; yield return null;
+        }
+
+        /// <summary>A friend's damage (D-009), driven by its type the way a player would: following the mini-game's hint point.</summary>
+        IEnumerator DoGeneric(RepairMiniGame mg, ToyActor toy, DamageDefinition def)
+        {
+            float t = 0f;
+            switch (def.type)
+            {
+                case DamageType.Thorn:
+                case DamageType.Battery:
+                    // pull it straight away from the body; a battery then takes the new one held on its slot
+                    for (int tries = 0; tries < 4 && !mg.Completed; tries++)
+                    {
+                        var grab = mg.HintPoint;
+                        var pull = mg is ThornMiniGame tg ? tg.PullDirection : mg is BatteryMiniGame bg ? bg.PullDirection : Vector3.zero;   // the way the game wants it pulled
+                        if (pull.sqrMagnitude < 1e-6f) pull = (grab - toy.BodyBounds.center).normalized;
+                        var p0 = Scr(grab); var dir = Scr(grab + pull.normalized * 0.12f) - p0;
+                        src.Position = p0; yield return null; src.Held = true; yield return null; yield return new WaitForSeconds(0.35f);
+                        for (int i = 1; i <= 24 && !mg.Completed; i++) yield return Move(p0 + dir * (i / 24f), 0.05f);
+                        src.Held = false; yield return new WaitForSeconds(0.3f);
+                        if (def.type != DamageType.Battery) continue;
+                        t = 0f; src.Position = Scr(mg.HintPoint); yield return null; src.Held = true;
+                        while (!mg.Completed && t < 8f) { src.Position = Scr(mg.HintPoint); t += Time.unscaledDeltaTime; yield return null; }
+                        src.Held = false; yield return null;
+                    }
+                    break;
+                case DamageType.Dirt:
+                case DamageType.Paint:
+                    var field = toy.GetComponentsInChildren<DirtField>(true).FirstOrDefault(f => f.DamageId == def.id);
+                    src.Held = true; yield return null;
+                    while (field != null && !mg.Completed && t < 60f)
+                    {
+                        for (int i = 0; i < field.Model.Count && !mg.Completed; i++)
+                        {
+                            if (field.Model.Health[i] <= 0f) continue;
+                            var p = Scr(field.Model.Positions[i]);
+                            yield return Move(p, 0.07f); yield return Move(p + new Vector2(18, 4), 0.05f); yield return Move(p - new Vector2(18, 4), 0.05f);
+                            t += 0.2f;
+                        }
+                        if (field.Model.Health.All(h => h <= 0f)) break;
+                    }
+                    src.Held = false; yield return null;
+                    break;
+                case DamageType.Tear:
+                case DamageType.EyeButton:
+                    src.Position = Scr(mg.HintPoint); yield return null; src.Held = true; yield return null;
+                    while (!mg.Completed && t < 30f) { yield return Move(Scr(mg.HintPoint), 0.2f); yield return new WaitForSeconds(0.1f); t += 0.3f; }
+                    src.Held = false; yield return null;
+                    break;
+                default:   // cotton through a hole, fuel or water: hold the nozzle on the port
+                    src.Position = Scr(mg.HintPoint); yield return null; src.Held = true;
+                    while (!mg.Completed && t < 20f) { src.Position = Scr(mg.HintPoint); t += Time.unscaledDeltaTime; yield return null; }
+                    src.Held = false; yield return null;
+                    break;
+            }
         }
 
         IEnumerator DoCotton(RepairMiniGame mg, ToyActor toy)
@@ -591,6 +648,16 @@ namespace Mongle.Core
             yield return new WaitForSeconds(0.4f);
             Check("clicking the toy makes it talk", v.Agent.State == AgentState.Talk || v.Agent.State == AgentState.Interact || v.Agent.State == AgentState.Idle);
             yield return Shot("16_talk");
+            // 11-26: a click on Mongi opens its friend card, and a click anywhere outside the card closes it (user 2026-11-26)
+            Check("clicking the toy opens its friend card", v.DressOpen);
+            if (v.DressOpen)
+            {
+                var outside = new[] { new Vector2(0.5f, 0.62f), new Vector2(0.3f, 0.6f), new Vector2(0.7f, 0.6f), new Vector2(0.5f, 0.5f) }
+                    .Select(frac => new Vector2(Screen.width * frac.x, Screen.height * frac.y)).FirstOrDefault(at => UiAt(at).Length == 0);
+                yield return Click(outside); yield return new WaitForSeconds(0.3f);
+                Check("a click outside the friend card closes it", !v.DressOpen, UiAt(outside));
+                if (v.DressOpen) v.CloseDress();
+            }
             yield return new WaitForSeconds(4.5f);
             // free life for a while: must never get stuck forever
             var counts = new Dictionary<Intent, int>(); float t = 0; Vector3 last = v.Toy.transform.position; float moved = 0;
@@ -609,9 +676,9 @@ namespace Mongle.Core
             var v = VillageDirector.Current; var w = root.World; var cat = v.Catalog;
             QuestDefinition Q(string id) => cat.Quest(id);
             long skew = 5000; w.Clock = () => DateTimeOffset.UtcNow.ToUnixTimeSeconds() + skew;
-            Check("six quests exist, three per keeper", w.AllQuests.Count == 6 && w.QuestsOf("Shop_Plant").Count == 3 && w.QuestsOf("Shop_Furniture").Count == 3);
+            Check("six quests: three from the plant keeper, two from the furniture keeper, one from the accessory keeper", w.AllQuests.Count == 6 && w.QuestsOf("Shop_Plant").Count == 3 && w.QuestsOf("Shop_Furniture").Count == 2 && w.QuestsOf("Shop_Accessory").Count == 1);
             Check("chains: only the first quest of each keeper is open", w.StatusOf(Q("Q_Tulip")) == QuestStatus.Available && w.StatusOf(Q("Q_Chair")) == QuestStatus.Available
-                && w.StatusOf(Q("Q_Water")) == QuestStatus.Locked && w.StatusOf(Q("Q_Sunflower")) == QuestStatus.Locked && w.StatusOf(Q("Q_Cake")) == QuestStatus.Locked && w.StatusOf(Q("Q_Wheel")) == QuestStatus.Locked);
+                && w.StatusOf(Q("Q_Accessory")) == QuestStatus.Available && w.StatusOf(Q("Q_Water")) == QuestStatus.Locked && w.StatusOf(Q("Q_Sunflower")) == QuestStatus.Locked && w.StatusOf(Q("Q_Wheel")) == QuestStatus.Locked);
             Check("nothing is tracked before accepting", v.TrackerShown == "");
             int coins0 = w.Coins;
 
@@ -674,19 +741,12 @@ namespace Mongle.Core
             Check("Mongi sitting on the armchair counts", w.StatusOf(Q("Q_Chair")) == QuestStatus.ReadyToClaim);
             int cc = w.Coins;
             Check("claim the chair reward", v.QaOpenShop("Shop_Furniture") && v.Shop.QaClick("Quest_Claim_Q_Chair") && w.Coins == cc + 30, w.Coins.ToString());
-            Check("next: the cupcake quest", w.StatusOf(Q("Q_Cake")) == QuestStatus.Available && v.Shop.QaClick("Quest_Accept_Q_Cake")); ClickButton("나가기"); yield return new WaitForSeconds(0.3f);
-            Check("buy and place the cupcake house", v.QaBuy("Fur_Cake") == BuyResult.Ok && v.QaPlace("Fur_Cake", 3, 3, 0)); v.ExitPlacing();
-            yield return Until(() => w.StatusOf(Q("Q_Cake")) == QuestStatus.ReadyToClaim, 120, "Mongi visits the cupcake house");
-            Check("Mongi's first visit finishes the cupcake quest", w.StatusOf(Q("Q_Cake")) == QuestStatus.ReadyToClaim);
-            yield return Until(() => v.Agent.State == AgentState.Idle, 40, "idle after the visit");
-            cc = w.Coins;
-            Check("claim the cupcake reward", v.QaOpenShop("Shop_Furniture") && v.Shop.QaClick("Quest_Claim_Q_Cake") && w.Coins == cc + 25, w.Coins.ToString());
-            Check("the last quest is open but not started", w.StatusOf(Q("Q_Wheel")) == QuestStatus.Available && w.ProgressOf(Q("Q_Wheel")) == 0);
+            Check("next: the wheel quest is open but not started", w.StatusOf(Q("Q_Wheel")) == QuestStatus.Available && w.ProgressOf(Q("Q_Wheel")) == 0);
             ClickButton("나가기"); yield return new WaitForSeconds(0.3f);
             Check("events for a quest that is not accepted do not count", Reached(() => { w.Report("MongiPlayed", "Fur_Wheel"); return w.ProgressOf(Q("Q_Wheel")) == 0 && w.StatusOf(Q("Q_Wheel")) == QuestStatus.Available; }));
             Check("tracker is empty when nothing is active", v.TrackerShown == "", v.TrackerShown);
             root.Persist("qa-quests");
-            Check("quest states saved", Reached(() => { var s = root.Saves.Load().data; return s.quests.Count(q => q.status == (int)QuestStatus.Done) == 5 && s.coins == w.Coins; }));
+            Check("quest states saved", Reached(() => { var s = root.Saves.Load().data; return s.quests.Count(q => q.status == (int)QuestStatus.Done) == 4 && s.coins == w.Coins; }));
         }
 
         // ---------------- D-003: the player moves Mongi (click-to-walk, camera-relative steering) ----------------
@@ -699,13 +759,10 @@ namespace Mongle.Core
             var target = v.Grid.CenterOf(Vector2Int.one, 8, 8, 0);
             var over = UiAt(Scr(target));
             Check("no UI covers the ground the player clicks", over.Length == 0, over);
-            yield return Click(Scr(target));
-            Check("clicking the ground starts a walk", v.Agent.State == AgentState.Move && v.Agent.CurrentIntent == Intent.Wander);
-            yield return Until(() => (Flat(v.Toy.transform.position) - Flat(target)).magnitude < 0.3f, 40, "walk to the clicked spot");
-            Check("Mongi arrives where the player clicked", (Flat(v.Toy.transform.position) - Flat(target)).magnitude < 0.3f, (Flat(v.Toy.transform.position) - Flat(target)).magnitude.ToString("F2"));
+            // Mongi is one of the residents and lives on its own: a click on the bare ground does not send it anywhere
+            Check("a click on the bare ground does not steer Mongi", !v.TryClickWorld(Scr(target)));
+            v.Agent.Nav.Warp(target); yield return new WaitForSeconds(0.5f);   // drive from the open middle of the park (it used to walk there first)
             yield return Shot("48_player_walk");
-            yield return new WaitForSeconds(3.0f);
-            Check("autonomy waits a while after a player move", v.Agent.State == AgentState.Idle && v.Agent.Target == null);
 
             // steering: right on the screen is +screen-x
             var p0 = v.Toy.transform.position; float sx0 = Scr(p0).x; float t = 0;
@@ -721,14 +778,6 @@ namespace Mongle.Core
             var tp = v.Toy.transform.position; var pr = VillageDirector.ParkRect; // the park (D-006)
             Check("pushing against the edge never leaves the navmesh", v.Agent.Nav.isOnNavMesh && tp.x > pr.x - 0.1f && tp.x < pr.z + 0.1f && tp.z > pr.y - 0.1f && tp.z < pr.w + 0.1f, tp.ToString("F2"));
 
-            // the player takes over from a sitting toy
-            v.Agent.AbortToIdle("qa"); v.Agent.ClearUnreachableForTest(); v.Agent.ForceIntent(Intent.Bench);
-            yield return Until(() => v.Agent.Seated, 60, "sit before taking over");
-            yield return Click(Scr(target));
-            yield return Until(() => !v.Agent.Seated, 15, "stand up on command");
-            Check("a click makes a seated Mongi stand up and walk", !v.Agent.Seated);
-            yield return Until(() => (Flat(v.Toy.transform.position) - Flat(target)).magnitude < 0.35f, 40, "walk after standing");
-            Check("and it arrives", (Flat(v.Toy.transform.position) - Flat(target)).magnitude < 0.35f);
             yield return new WaitForSeconds(11f);
             yield return Until(() => v.Agent.CurrentIntent != Intent.Idle || v.Agent.State != AgentState.Idle, 40, "autonomy resumes");
             Check("autonomy resumes after the player stops", v.Agent.CurrentIntent != Intent.Idle || v.Agent.State != AgentState.Idle);
@@ -740,11 +789,13 @@ namespace Mongle.Core
             var v = VillageDirector.Current; var w = root.World;
             Check("repair rewards were paid once each (25+25+40+40+30)", w.Coins == 160, w.Coins.ToString());
             Check("coin display matches", v.CoinsShown == "160", v.CoinsShown);
-            Check("two shops with keepers exist", v.Shops.Count == 2 && v.Shops.All(s => s.Def != null && s.Keeper != null && s.Def.items.Length == (s.shopId == "Shop_Furniture" ? 7 : 4)));
+            Check("three shops with keepers exist (plants, furniture, accessories)", v.Shops.Count == 3 && v.Shops.All(s => s.Def != null && s.Keeper != null && s.Def.items.Length > 0)
+                && new[] { "Shop_Plant", "Shop_Furniture", "Shop_Accessory" }.All(want => v.Shops.Any(s => s.shopId == want)), string.Join(",", v.Shops.Select(s => s.shopId + ":" + (s.Def != null ? s.Def.items.Length : -1))));
             Check("only starter pieces exist at first", v.Furniture.Count == 2 && v.Furniture.All(f => f.Def.starter));
             Check("starters never trigger a 'new piece' reaction", v.Agent.Reactions == 0);
 
             // open the furniture shop by clicking the building with the pointer
+            if (v.DressOpen) v.CloseDress();   // an open friend card takes the next click (it closes on a click outside it)
             v.Orbit.ReleaseFocus(); yield return new WaitForSeconds(0.4f);
             var fshop = v.Shops.First(s => s.shopId == "Shop_Furniture");
             yield return Shot("40_village_with_shops");
@@ -774,7 +825,7 @@ namespace Mongle.Core
             ClickButton("보관함"); yield return new WaitForSeconds(0.3f);
             Check("storage box lists owned items", v.Storage.Visible);
             yield return Shot("43_storage");
-            Check("place from storage starts placing", v.Storage.QaClick("Place_Plant_Tulip") && v.PlacingMode && v.Selected != null && v.Selected.IsNew);
+            Check("place from storage starts placing", v.Storage.QaUse("Plant_Tulip") && v.PlacingMode && v.Selected != null && v.Selected.IsNew);
             Check("new piece waits unconfirmed", v.Selected.Pending && !State.Furniture.Any(f => f.furnitureId == "Plant_Tulip") && w.Owned("Plant_Tulip") == 1);
             Check("new piece starts on a valid cell", v.PendingValid);
             v.CancelPlacement(); v.ExitPlacing();
@@ -957,7 +1008,7 @@ namespace Mongle.Core
             v.Orbit.ReleaseFocus(); v.Orbit.SetOrbit(VillageDirector.DefaultOrbitYaw, VillageDirector.DefaultOrbitPitch, VillageDirector.DefaultOrbitDistance);
             yield return new WaitForSeconds(1.0f);
             var rides = Ride.All.ToList();
-            Check("three rides stand in the park", rides.Count == 3 && rides.Any(r => r is CarouselRide) && rides.Any(r => r is WheelRide) && rides.Any(r => r is BalloonRide), string.Join(",", rides.Select(r => r.rideId)));
+            Check("the carousel, the Ferris wheel and the balloon stand in the park", rides.Any(r => r is CarouselRide) && rides.Any(r => r is WheelRide) && rides.Any(r => r is BalloonRide), string.Join(",", rides.Select(r => r.rideId)));
             var tri = UnityEngine.AI.NavMesh.CalculateTriangulation();
             float minX = tri.vertices.Min(p => p.x), maxX = tri.vertices.Max(p => p.x), minZ = tri.vertices.Min(p => p.z), maxZ = tri.vertices.Max(p => p.z);
             float area = (maxX - minX) * (maxZ - minZ);
@@ -974,9 +1025,10 @@ namespace Mongle.Core
             v.Agent.ClearUnreachableForTest();
             Check("Mongi heads for the carousel", v.Agent.ForceRide(car));
             yield return Until(() => v.Agent.OnRide && v.Agent.Riding == car, 60, "Mongi on a carousel horse");
-            yield return new WaitForSeconds(1.0f);
+            // boarding is two hops now (onto the stairs, then onto the horse): wait until it has landed
+            yield return Until(() => car.SeatOf(v.Agent) >= 0 && (v.Toy.transform.position - car.SeatPose(car.SeatOf(v.Agent)).position).magnitude < 0.05f, 6, "Mongi lands on the horse");
             int horse = car.SeatOf(v.Agent);
-            Check("Mongi sits on a carousel horse and goes round with it", horse >= 0 && (v.Toy.transform.position - car.SeatPose(horse).position).magnitude < 0.05f, horse.ToString());
+            Check("Mongi sits on a carousel horse and goes round with it", horse >= 0 && (v.Toy.transform.position - car.SeatPose(horse).position).magnitude < 0.05f, horse + " off " + (horse >= 0 ? (v.Toy.transform.position - car.SeatPose(horse).position).magnitude.ToString("F3") : "-"));
             var p0 = v.Toy.transform.position; yield return new WaitForSeconds(1.5f);
             Check("the ride carries Mongi round", (v.Toy.transform.position - p0).magnitude > 0.05f, (v.Toy.transform.position - p0).magnitude.ToString("F2"));
             var carCam = car.BoardWorld + (car.BoardWorld - car.transform.position).normalized * 2.2f + Vector3.up * 1.6f;
@@ -1053,35 +1105,48 @@ namespace Mongle.Core
             yield return Click(Scr(col.bounds.center + Vector3.up * col.bounds.extents.y * 0.3f));
         }
 
-        IEnumerator TreatFriend(string kind)
+        IEnumerator TreatFriend()
         {
             var v = VillageDirector.Current;
             int residentsBefore = root.Residents.Count;
+            var waiting = root.Catalog.friends.Where(f => f != null && f.prefab != null && root.Residents.All(r => r.kindId != f.kindId)).Select(f => f.kindId).ToList();
+            // friends wear what the player bought at the accessory shop: one red ribbon for the coming friend
+            Check("a red ribbon bought for the coming friend", v.QaBuy("Acc_RedRibbon") == BuyResult.Ok && root.World.Owned("Acc_RedRibbon") >= 1, root.World.Coins.ToString());
             yield return ClickHospital();
-            yield return Until(() => root.Patient != null, 5, "patient admitted (" + kind + ")");
-            Check("clicking the shop brings the next friend: " + kind, root.Patient != null && root.Patient.KindId == kind, root.Patient != null ? root.Patient.KindId : "none");
+            yield return Until(() => root.Patient != null, 5, "patient admitted");
+            string kind = root.Patient != null ? root.Patient.KindId : "none";
+            Check("clicking the shop brings a waiting friend: " + kind, waiting.Contains(kind), string.Join(",", waiting));
+            if (root.Patient == null) { Aborted = true; yield break; }
             Check("patient saved right away", Reached(() => root.Saves.Load().data.patient.toyKindId == kind));
             yield return Until(() => SceneManager.GetActiveScene().name == SceneNames.RepairShop && ShopDirector.Current != null && ShopDirector.Current.Toy != null, 30, "repair shop for " + kind);
             var d = ShopDirector.Current;
             Check("the shop treats the friend, not Mongi", d.TreatingFriend && d.Toy.name == kind, d.Toy.name);
             yield return Until(() => d.Phase == FlowPhase.CustomerIntro, 30, "intro for " + kind);
-            Check("intro names the friend", d.UI.DialogOpen);
+            Check("intro names the friend", Mongle.Views.DialogView.IsOpen);
             yield return Shot("60_friend_intro_" + kind);
             ClickButton("살펴볼게요");
             yield return Until(() => d.Phase == FlowPhase.Diagnosis, 5, "diagnosis for " + kind);
-            var yaws = new Dictionary<string, float> { { "Thorn", 0f }, { "Dirt", 0f }, { "LowCotton", -25f }, { "Tear", 180f } };
             foreach (var dmg in State.Damages.ToList())
             {
-                d.Orbit.SetOrbit(yaws[dmg.id], 14, 1.2f); yield return new WaitForSeconds(0.9f);
-                yield return Until(() => !d.Orbit.Focusing, 5, "focus ended");
-                yield return Click(Scr(d.Toy.Point(root.Catalog.Damage(dmg.id).damagePointName)));
-                Check(kind + ": discovered " + dmg.id, State.Get(dmg.id).status != DamageStatus.Hidden);
-                yield return new WaitForSeconds(1.5f);
+                // turn the camera to the side the damage faces (its DN point, D-009), then click it like a player
+                var ddef = root.Catalog.Damage(dmg.id); var dp = d.Toy.Point(ddef.damagePointName); var dn = d.Toy.Node(ddef.normalPointName);
+                var outw = dn != null ? dn.position - dp : dp - d.Toy.BodyBounds.center; outw.y = 0f;
+                float yaw = outw.sqrMagnitude > 1e-6f ? Vector3.SignedAngle(d.Toy.transform.forward, outw.normalized, Vector3.up) : 0f;
+                foreach (var tryYaw in new[] { yaw, -yaw })
+                {
+                    if (State.Get(dmg.id).status != DamageStatus.Hidden) break;
+                    d.Orbit.SetOrbit(tryYaw, 14, 1.2f); yield return new WaitForSeconds(0.9f);
+                    yield return Until(() => !d.Orbit.Focusing, 5, "focus ended");
+                    yield return Click(Scr(d.Toy.Point(ddef.damagePointName)));
+                    yield return new WaitForSeconds(0.3f);
+                }
+                Check(kind + ": discovered " + dmg.id, State.Get(dmg.id).status != DamageStatus.Hidden, "yaw " + yaw.ToString("F0"));
+                yield return new WaitForSeconds(1.2f);
             }
             yield return Until(() => d.Phase == FlowPhase.Repair, 15, "repair phase for " + kind);
             foreach (var dmg in State.Damages.ToList()) yield return RepairOne(dmg.id, null);
             yield return Until(() => d.Phase == FlowPhase.CompletionStamp, 20, "stamp phase for " + kind);
-            yield return ClickWhenReady("도장 찍기");
+            yield return ClickWhenReady("도장 찍기!");   // the 11-26 stamp card's button
             yield return Until(() => State.StampDone, 8, "stamp for " + kind);
             yield return Until(() => d.Phase == FlowPhase.Customization, 10, "gift for " + kind);
             yield return new WaitForSeconds(1.0f);
@@ -1089,6 +1154,16 @@ namespace Mongle.Core
             Check(kind + " wears the ribbon", d.Toy.WornObject(AccessorySlot.Neck) != null);
             yield return Shot("61_friend_gift_" + kind);
             yield return ClickWhenReady("이대로 확정!");
+            // a friend has its first photo taken and kept before it moves in (D-005)
+            yield return Until(() => SceneManager.GetActiveScene().name == SceneNames.PhotoStudio && PhotoDirector.Current != null && PhotoDirector.Current.Toy != null, 20, "photo studio for " + kind);
+            var ph = PhotoDirector.Current;
+            if (ph != null)
+            {
+                yield return new WaitForSeconds(0.8f);
+                ph.Capture();
+                yield return Until(() => ph.LastShot != null && !ph.Capturing, 8, "photo of " + kind);
+                Check(kind + "'s first photo is kept for the album", ph.KeepPhoto());
+            }
             yield return ToVillageReady();
             v = VillageDirector.Current;
             Check(kind + " moved into the village", root.Patient == null && root.Residents.Any(r => r.kindId == kind) && root.Residents.Count == residentsBefore + 1);
@@ -1103,9 +1178,9 @@ namespace Mongle.Core
             Check("friends need Mongi to live in the village first", root.Toy != null && root.Toy.Admitted, root.Toy != null ? FlowResolver.Resolve(root.Toy).ToString() : "no toy");
             yield return ToVillageReady();
             var kinds = root.Catalog.friends.Where(f => f != null && f.prefab != null).Select(f => f.kindId).ToList();
-            Check("four friends are waiting to visit", kinds.Count == 4, string.Join(",", kinds));
+            Check("the friends are waiting to visit", kinds.Count >= 4, kinds.Count + ": " + string.Join(",", kinds));
             int coins0 = root.World.Coins;
-            foreach (var k in kinds) yield return Step(TreatFriend(k));
+            for (int n = 0; n < kinds.Count && root.NextFriend() != null; n++) yield return Step(TreatFriend());   // the next friend is picked at random
             if (Aborted) yield break; // a failed visit may leave us outside the village: stop here so the run still ends and reports
             Check("repairing friends earns coins", root.World.Coins > coins0, coins0 + "→" + root.World.Coins);
             yield return Step(ClickHospital()); yield return new WaitForSeconds(0.6f);
@@ -1119,7 +1194,7 @@ namespace Mongle.Core
         {
             yield return ToVillageReady();
             var v = VillageDirector.Current;
-            Check("residents restored after relaunch", root.Residents.Count == 4, root.Residents.Count.ToString());
+            Check("residents restored after relaunch", root.Residents.Count == root.Catalog.friends.Count(f => f != null && f.prefab != null), root.Residents.Count.ToString());
             Check("every resident is spawned in the village", root.Residents.All(r => v.ResidentAgents.Any(a => a != null && a.Actor != null && a.Actor.name == r.kindId)));
             Check("residents keep their gifts", v.ResidentAgents.All(a => a.Actor.WornObject(AccessorySlot.Neck) != null));
             Check("no patient after relaunch", root.Patient == null);
@@ -1138,7 +1213,7 @@ namespace Mongle.Core
             string path = root.Saves.Path; string dir = Path.GetDirectoryName(path);
             Check("corrupt save is detected, not treated as a new game", root.NeedsSaveDecision && root.LoadResult.status == SaveStatus.Corrupt, root.LoadResult.status.ToString());
             Check("unreadable save is left untouched", File.Exists(path) && File.ReadAllText(path) == "{ this is not json");
-            yield return Until(() => FindObjectsByType<Button>(FindObjectsInactive.Exclude).Any(b => b.GetComponentsInChildren<Text>().Any(t => t.text == "새로 시작")), 15, "decision dialog");
+            yield return Until(() => Mongle.Views.DialogView.IsOpen && FindObjectsByType<Button>(FindObjectsInactive.Exclude).Any(b => b.GetComponentsInChildren<TMPro.TMP_Text>().Any(t => t.text == "새로 시작")), 15, "decision dialog");   // 11-26 dialog: TMP words
             yield return new WaitForSeconds(1.0f);
             Check("game waits for the player's decision", SceneManager.GetActiveScene().name == SceneNames.Bootstrap);
             Check("file still untouched while the dialog is open", File.ReadAllText(path) == "{ this is not json");

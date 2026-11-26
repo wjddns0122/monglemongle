@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Mongle.Data;
 using Mongle.UI;
 using NUnit.Framework;
 using UnityEngine;
@@ -20,15 +21,25 @@ namespace Mongle.Tests
         {
             if (host != null) Object.DestroyImmediate(host);
             if (skin != null) Object.DestroyImmediate(skin);
+            if (accs != null) foreach (var a in accs) if (a != null) Object.DestroyImmediate(a);
             foreach (var es in Object.FindObjectsByType<EventSystem>(FindObjectsInactive.Include))
                 if (System.Array.IndexOf(before, es) < 0) Object.DestroyImmediate(es.gameObject);
         }
 
+        // The repair screen's code-built part since the 11-26 redesign: the dress-up panel (the rest is RepairHudView).
         ShopUI Repair()
         {
             host = new GameObject("ShopUI-test"); var ui = host.AddComponent<ShopUI>(); ui.Build();
+            accs = new AccessoryDefinition[6];   // more than four: the two-column panel the game shows (and the prefab was baked from)
+            for (int i = 0; i < accs.Length; i++)
+            {
+                var a = accs[i] = ScriptableObject.CreateInstance<AccessoryDefinition>();
+                a.id = "Acc_Test" + i; a.displayName = "소품 " + i; a.slot = (AccessorySlot)(i % 3); a.hideFlags = HideFlags.DontSave;
+            }
+            ui.BuildCustomization(accs, _ => { }, () => { });
             return ui;
         }
+        AccessoryDefinition[] accs;
 
         static Dictionary<string, string> State(Transform root)
         {
@@ -62,24 +73,27 @@ namespace Mongle.Tests
             var prefab = UiSkin.Find("RepairScreen");
             Assume.That(prefab, Is.Not.Null, "the repair screen prefab exists");
             skin = Object.Instantiate(prefab);   // a copy: the asset itself is never touched
-            var banner = (RectTransform)UiSkin.At(skin.transform, "Banner");
-            banner.anchoredPosition += new Vector2(0f, -40f);
-            var title = UiSkin.At(skin.transform, "Notebook").GetComponentInChildren<Text>(true);
+            var panel = (RectTransform)UiSkin.At(skin.transform, "Custom");
+            Assume.That(panel, Is.Not.Null, "the dress-up panel is in the prefab");
+            panel.anchoredPosition += new Vector2(0f, -40f);
+            var title = panel.GetComponentInChildren<Text>(true);
             title.color = Color.magenta;
             var sticker = new GameObject("Sticker", typeof(RectTransform), typeof(Image)); sticker.transform.SetParent(skin.transform, false);
 
             var ui = Repair();
-            var zoom = State(ui.Canvas.transform);
-            var codeBanner = ((RectTransform)UiSkin.At(ui.Canvas.transform, "Banner")).anchoredPosition;
+            var was = State(ui.Canvas.transform);
+            var codePanel = ((RectTransform)UiSkin.At(ui.Canvas.transform, "Custom")).anchoredPosition;
             UiSkin.Apply(ui.Canvas.transform, skin.transform);
 
-            Assert.AreEqual(codeBanner + new Vector2(0f, -40f), ((RectTransform)UiSkin.At(ui.Canvas.transform, "Banner")).anchoredPosition);
-            Assert.AreEqual(Color.magenta, UiSkin.At(ui.Canvas.transform, "Notebook").GetComponentInChildren<Text>(true).color);
+            Assert.AreEqual(codePanel + new Vector2(0f, -40f), ((RectTransform)UiSkin.At(ui.Canvas.transform, "Custom")).anchoredPosition);
+            Assert.AreEqual(Color.magenta, UiSkin.At(ui.Canvas.transform, "Custom").GetComponentInChildren<Text>(true).color);
             Assert.IsNotNull(UiSkin.At(ui.Canvas.transform, "Sticker"));
+            Assert.IsNull(UiSkin.At(ui.Canvas.transform, "Banner"), "an old part the code no longer makes does not come back");
             var now = State(ui.Canvas.transform);
-            foreach (var kv in zoom)
+            string titleKey = UiSkin.PathOf(UiSkin.At(ui.Canvas.transform, "Custom").GetComponentInChildren<Text>(true).transform, ui.Canvas.transform);
+            foreach (var kv in was)
             {
-                if (kv.Key == "Banner" || kv.Key.StartsWith("Notebook")) continue;
+                if (kv.Key == "Custom" || kv.Key == titleKey) continue;
                 Assert.AreEqual(kv.Value, now[kv.Key], kv.Key + " was not edited, so it stays as the code made it");
             }
         }
