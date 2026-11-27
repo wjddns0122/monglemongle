@@ -28,6 +28,7 @@ namespace Mongle.Repair
         float wrongCooldown, mendShown, mendTarget, liveSlack = 1f;
         bool site, animating, finishing, finished;
         Transform threadParent; Vector3 seamAxis;
+        Transform looseEye; Vector3 looseScale = Vector3.one;   // the button hanging from the eye socket (its pivot is the socket)
         DamageDefinition Def => Ctx.def;
         bool Eye => Def != null && Def.type == DamageType.EyeButton;
         const float ScoopLength = 0.0045f;   // the needle comes back out this far down the seam from where it went in
@@ -63,6 +64,9 @@ namespace Mongle.Repair
             ring = Fx.Ring(Ctx.catalog, sp[0].position, Mathf.Clamp(model.Radius * 1.3f, 0.014f, 0.022f), new Color(1f, 0.9f, 0.45f, 1f));   // as big as where a stitch counts
             ring.transform.SetParent(sp[0], true);
             ApplyMend(0f);
+            if (site && Eye) { looseEye = toy.Node(Def.visualName); if (looseEye != null) looseScale = looseEye.localScale; }
+            // hold still while being sewn, as for a thorn (user 2026-11-27: the bunny's ear kept moving under the needle)
+            if (toy.Animator != null) toy.Animator.speed = 0f;
             toy.SetFace(0, 0.7f);
         }
 
@@ -98,7 +102,13 @@ namespace Mongle.Repair
         {
             var toy = Ctx.toy;
             if (Def.type == DamageType.Tear) toy.SetTearClosed(Def, k >= 0.999f ? 1f : k * 0.85f);
-            if (Eye) toy.SetShapeAll(Def.shapeKey, 1f - k);
+            if (Eye)
+            {
+                // the loose button is reeled in on its thread, up into the socket it hangs from, and the eye settles back in its
+                // place over the last stitches (user 2026-11-27: two eyes showed and the loose one vanished at the end)
+                if (looseEye != null) looseEye.localScale = looseScale * Mathf.Lerp(1f, 0.12f, Ease(k));
+                toy.SetShapeAll(Def.shapeKey, 1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.35f, 1f, k)));
+            }
             if (!string.IsNullOrEmpty(Def.limpBone)) toy.LimpTarget = 1f - k;
         }
 
@@ -225,6 +235,8 @@ namespace Mongle.Repair
             Ctx.sfx.Play("success", 0.7f);
             Fx.Burst(Ctx.catalog, site ? Ctx.toy.Point(Def.damagePointName, sp[sp.Count - 1].position) : Ctx.toy.Point("DP_BACK"), new Color(1f, 0.92f, 0.7f), 24, 0.012f, 0.3f, 0.8f, -0.05f);
             Ctx.orbit.Punch(0.01f);
+            if (looseEye != null) looseEye.localScale = looseScale;   // hidden now; its own size again for another time
+            if (Ctx.toy.Animator != null) Ctx.toy.Animator.speed = 1f;
             Ctx.toy.PlayThen("Relief", "Idle");
             Finish();
         }
@@ -244,6 +256,8 @@ namespace Mongle.Repair
             foreach (var t in threads) if (t != null) Destroy(t.gameObject);
             ApplyMend(0f);
             if (site && Eye) Ctx.toy.SetVisual(Def.visualName, true);
+            if (looseEye != null) looseEye.localScale = looseScale;
+            if (Ctx.toy.Animator != null) Ctx.toy.Animator.speed = 1f;
             if (ring != null) Destroy(ring);
             ClearMarkers();
         }

@@ -19,7 +19,7 @@ namespace Mongle.EditorTools
     public static class FriendTalkBuild
     {
         public const string PrefabPath = UiEditFolder.VillageDir + "/FriendTalk.prefab";
-        static readonly Color Pink = Hex("#FFE1E6"), Peach = Hex("#FFB58A"), Row = Hex("#FDE5ED"), Line = Hex("#ECE9E8"),
+        static readonly Color Sky = Hex("#A0DCF8"), Pink = Hex("#FFE1E6"), Peach = Hex("#FFB58A"), Row = Hex("#FDE5ED"), Line = Hex("#ECE9E8"),
             Track = Hex("#FFEBCB"), Handle = Hex("#B68892"), ItemBrown = Hex("#79594B"), Shadow = new Color(0f, 0f, 0f, 0.5f);
 
         public static GameObject Make()
@@ -47,20 +47,27 @@ namespace Mongle.EditorTools
             // a request: ♥ 좋아! (the pill with the pink edge) and 다음에 할게. Every pill of the answers' column — 좋아!, the answers'
             // drop-down, the birthday pill — takes the 다음에 할게 pill's box (x 1262, 361.5 x 80), right above it, so the column
             // lines up (user 2026-11-26: "버튼 위치 통일")
+            // Both are the white pill; the one the pointer is on wears the sky-blue 5 px edge and the heart (user 2026-11-27:
+            // "하늘색 5px로 바꾸고 마우스 커서 위로 올리면 밑에랑 위에 하트랑 같이 선택")
             var pill = new Vector2(361.5f, 80f);
-            v.yesButton = PictureButton(root, "Btn_Yes", "Village/choice_heart.png", 1262f, 774f, pill.x, pill.y, B);
+            v.yesButton = PictureButton(root, "Btn_Yes", "Village/choice.png", 1262f, 774f, pill.x, pill.y, B);
             ((Image)v.yesButton.targetGraphic).preserveAspect = false;   // fills the box edge to edge, like the drop-down and 다음에 할게
-            Picture(v.yesButton.transform, "Heart", "Village/heart.png", 34f, (pill.y - 29f) / 2f - 1f, 32f, 29f, TL, pill);
-            v.yesLabel = PillWords(v.yesButton.transform, "좋아!", pill, 6f);
+            v.yesRing = Ring(v.yesButton.transform, pill);
+            v.yesHeart = Picture(v.yesButton.transform, "Heart", "Village/heart.png", 34f, (pill.y - 29f) / 2f - 1f, 32f, 29f, TL, pill).gameObject;
+            v.yesLabel = PillWords(v.yesButton.transform, "좋아!", pill, 3f);
             v.laterButton = PictureButton(root, "Btn_Later", "Village/choice.png", 1262f, 885.5f, 361.5f, 80f, B);
+            v.laterRing = Ring(v.laterButton.transform, pill);
+            v.laterHeart = Picture(v.laterButton.transform, "Heart", "Village/heart.png", 34f, (pill.y - 29f) / 2f - 1f, 32f, 29f, TL, pill).gameObject;
             v.laterLabel = PillWords(v.laterButton.transform, "다음에 할게", new Vector2(361.5f, 80f), 3f);
             v.yesButton.gameObject.SetActive(false);
 
             // a question: the answers in a drop-down in the first pill's place (Figma 88:369 / 88:470)
             Image arrow;
-            v.answer = Dropdown(root, "Answer", 1262f, 774f, pill.x, pill.y, "Village/choice_heart.png", "Village/next_arrow.png",
+            v.answer = Dropdown(root, "Answer", 1262f, 774f, pill.x, pill.y, "Village/choice.png", "Village/next_arrow.png",
                 new Rect(pill.x - 63.7f, (pill.y - 32.9f) / 2f, 35.8f, 32.9f), new Vector4(30f, 60f, 0f, 0f), "골라 볼래?", 33.15f,
                 new Vector4(13.7f, 12.45f, 1.6f, 187.5f), 19f, 18f, new Vector4(4f, 14f, 7.7f, 14.2f), out arrow);
+            v.answerRing = Ring(v.answer.transform, pill);
+            v.answerRing.transform.SetSiblingIndex(0);   // under the words and the ▼
             v.answer.gameObject.SetActive(false);
             var arrows = new RectTransform[3]; arrows[0] = arrow.rectTransform;
 
@@ -88,6 +95,16 @@ namespace Mongle.EditorTools
 
             root.gameObject.SetActive(false);   // the village opens it (FriendTalkView.Get)
             return root.gameObject;
+        }
+
+        /// <summary>The sky-blue 5 px edge of the chosen pill: over the white pill's own edge (its node 357.1 x 75.3 sits 1.2 in the
+        /// picture), half outside, half inside.</summary>
+        static Graphic Ring(Transform pill, Vector2 box)
+        {
+            var r = Node(pill, "Ring", 1.2f - 2.5f, 1.2f - 2.5f, 357.1f + 5f, 75.3f + 5f, TL, box);
+            var s = Shape(r.gameObject, new Color(1f, 1f, 1f, 0f), Vector4.one * (75.3f + 5f) * 0.5f, 5f, Sky);
+            r.gameObject.SetActive(false);
+            return s;
         }
 
         static TextMeshProUGUI PillWords(Transform pill, string words, Vector2 size, float up)

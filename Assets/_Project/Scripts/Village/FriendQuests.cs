@@ -20,6 +20,8 @@ namespace Mongle.Village
         public int target = 1, progress, reward;
         public FriendQuestStatus status;
         public long acceptedUnix, doneUnix;
+        /// <summary>Done, but the friend has not been told yet: its reward waits for the click on it (user 2026-11-27).</summary>
+        public bool waiting;
         public bool Done => status == FriendQuestStatus.Done;
         public int Left => Math.Max(0, target - progress);
     }
@@ -70,8 +72,10 @@ namespace Mongle.Village
         public event Action Changed;
         /// <summary>Accepted, progressed or done.</summary>
         public event Action<FriendQuest> QuestChanged;
-        /// <summary>Done just now (the world pays the reward).</summary>
+        /// <summary>Done just now: the friend still has to be told (<see cref="Claim"/>).</summary>
         public event Action<FriendQuest> Completed;
+        /// <summary>The friend was told: the world pays the reward.</summary>
+        public event Action<FriendQuest> Claimed;
         readonly Dictionary<string, long> nextFrom = new Dictionary<string, long>();
         readonly Dictionary<string, FriendQuestKind> lastKind = new Dictionary<string, FriendQuestKind>();
         long nextAny;
@@ -82,6 +86,19 @@ namespace Mongle.Village
         public IEnumerable<FriendQuest> Active => Quests.Where(q => !q.Done);
         public IEnumerable<FriendQuest> Finished => Quests.Where(q => q.Done).OrderByDescending(q => q.doneUnix);
         public FriendQuest ActiveOf(string giver) => Quests.FirstOrDefault(q => !q.Done && q.giver == giver);
+        /// <summary>Done requests whose friends have not been told yet.</summary>
+        public IEnumerable<FriendQuest> Waiting => Quests.Where(q => q.Done && q.waiting);
+        public FriendQuest WaitingOf(string giver) => Quests.FirstOrDefault(q => q.Done && q.waiting && q.giver == giver);
+
+        /// <summary>The player tells the friend its request is done: the reward is paid now, once. Null when nothing waits.</summary>
+        public FriendQuest Claim(string giver)
+        {
+            var q = WaitingOf(giver); if (q == null) return null;
+            q.waiting = false;
+            Claimed?.Invoke(q);
+            Changed?.Invoke(); QuestChanged?.Invoke(q);
+            return q;
+        }
         public FriendQuest Find(string id) => Quests.FirstOrDefault(q => q.id == id);
         public FriendOffer OfferOf(string giver) => Offers.FirstOrDefault(o => o.giver == giver);
         public long NextOfferFrom(string giver) => giver != null && nextFrom.TryGetValue(giver, out var t) ? t : 0;
@@ -102,7 +119,7 @@ namespace Mongle.Village
             if (changed) Changed?.Invoke();
             if (Offers.Count >= MaxOpenOffers || now < nextAny || candidates == null) return null;
             ctx = ctx ?? new OfferContext();
-            var free = candidates.Where(c => !string.IsNullOrEmpty(c.giver) && OfferOf(c.giver) == null && ActiveOf(c.giver) == null && now >= NextOfferFrom(c.giver))
+            var free = candidates.Where(c => !string.IsNullOrEmpty(c.giver) && OfferOf(c.giver) == null && ActiveOf(c.giver) == null && WaitingOf(c.giver) == null && now >= NextOfferFrom(c.giver))
                 .GroupBy(c => c.giver).Select(g => g.First()).ToList();
             if (free.Count == 0) return null;
             var who = free[Rng.Next(free.Count)];
@@ -227,7 +244,7 @@ namespace Mongle.Village
             hit.progress = Math.Min(hit.target, hit.progress + 1);
             if (hit.progress >= hit.target)
             {
-                hit.status = FriendQuestStatus.Done; hit.doneUnix = Now;
+                hit.status = FriendQuestStatus.Done; hit.doneUnix = Now; hit.waiting = true;
                 nextFrom[hit.giver] = Now + PerToyCooldown;
                 Completed?.Invoke(hit);
                 TrimDone();
@@ -238,7 +255,7 @@ namespace Mongle.Village
 
         void TrimDone()
         {
-            var done = Quests.Where(q => q.Done).OrderBy(q => q.doneUnix).ToList();
+            var done = Quests.Where(q => q.Done && !q.waiting).OrderBy(q => q.doneUnix).ToList();
             for (int i = 0; i < done.Count - KeepDone; i++) Quests.Remove(done[i]);
         }
 
@@ -246,7 +263,7 @@ namespace Mongle.Village
         public List<FriendQuestSave> ToSave() => Quests.Select(q => new FriendQuestSave
         {
             id = q.id, giver = q.giver, kind = q.kind.ToString(), param = q.param ?? "", target = q.target, progress = q.progress, reward = q.reward,
-            status = q.Done ? 1 : 0, accepted = q.acceptedUnix, done = q.doneUnix
+            status = q.Done ? 1 : 0, accepted = q.acceptedUnix, done = q.doneUnix, waiting = q.waiting ? 1 : 0
         }).ToList();
 
         /// <summary>Back from a save; unknown kinds (a newer build) and duplicates are skipped. Bubbles are never saved.</summary>
@@ -264,7 +281,7 @@ namespace Mongle.Village
                     // an unfinished request never comes back full: one more step finishes it and pays
                     int progress = Math.Max(0, Math.Min(done ? target : target - 1, s.progress));
                     Quests.Add(new FriendQuest { id = s.id, giver = s.giver, kind = k, param = s.param, target = target, progress = progress, reward = Math.Max(0, s.reward),
-                        status = done ? FriendQuestStatus.Done : FriendQuestStatus.Active, acceptedUnix = s.accepted, doneUnix = s.done });
+                        status = done ? FriendQuestStatus.Done : FriendQuestStatus.Active, acceptedUnix = s.accepted, doneUnix = s.done, waiting = done && s.waiting == 1 });
                     if (s.id.StartsWith("FQ") && int.TryParse(s.id.Substring(2), out var n)) maxSeq = Math.Max(maxSeq, n);
                 }
             Seq = Math.Max(Math.Max(0, seq), maxSeq);

@@ -27,13 +27,14 @@ namespace Mongle.EditorTools
 
             Viewfinder(root, v);
 
-            // the hint pill: in the middle of the screen (user 2026-11-26: "center로 박아두고"; Figma had it over the polaroid), hugging
-            // its words with a slimmer margin ("padding 줄여")
-            var banner = Node(root, "Banner", 960f - 1118.17f / 2f, 44.73f, 1118.17f, 115.78f, T);
-            Shape(banner.gameObject, Pill, Vector4.one * 57.89f);
-            var bt = Words(banner, "Text", "프레임과 포즈를 고르고 사진을 찍어요", 48f, Brown, 0f, 0f, 1118.17f, 115.78f, C, HorizontalAlignmentOptions.Center, null, new Vector2(1118.17f, 115.78f));
-            bt.rectTransform.anchorMin = Vector2.zero; bt.rectTransform.anchorMax = Vector2.one; bt.rectTransform.offsetMin = new Vector2(40f, 0.7f); bt.rectTransform.offsetMax = new Vector2(-40f, 0.7f);
-            v.banner = banner; v.bannerText = bt; v.bannerPad = 56f; v.bannerMinWidth = 300f;
+            // the hint pill: in the middle of the screen, the cream pill of Figma 115:1573 like every top line (user 2026-11-27: "사진
+            // 찍고 찍었어요 할때 맨 위에 뜨는 설명글 padding이 달라 그것도 다 맞춰"): 97 tall, middle at y 97.75, 38 px, 62 in from its ends
+            var banner = Node(root, "Banner", 640.5f, 49.25f, 639f, 97f, T);
+            banner.pivot = new Vector2(0.5f, 0.5f); banner.anchoredPosition = new Vector2(0f, -97.75f);
+            Shape(banner.gameObject, Pill, Vector4.one * 48.5f);
+            var bt = Words(banner, "Text", "프레임과 포즈를 고르고 사진을 찍어요", 38f, Brown, 0f, 0f, 639f, 97f, C, HorizontalAlignmentOptions.Center, null, new Vector2(639f, 97f));
+            bt.rectTransform.anchorMin = Vector2.zero; bt.rectTransform.anchorMax = Vector2.one; bt.rectTransform.offsetMin = Vector2.zero; bt.rectTransform.offsetMax = Vector2.zero;
+            v.banner = banner; v.bannerText = bt; v.bannerPad = 62f; v.bannerMinWidth = 300f;
 
             v.gearButton = PictureButton(root, "Btn_Gear", "Common/gear.png", 1772.9f, 32f, 103f, 103f, TR);
 
@@ -52,7 +53,7 @@ namespace Mongle.EditorTools
             v.controls = controls.gameObject;
 
             // after the shot: keep it, or take it again (the message box's pills), in the camera button's place — clear of the
-            // polaroid (its right edge is at 1454) with the same 40 margin to the screen's edge as the gear's side
+            // polaroid (its right edge is at 1383) with the same 40 margin to the screen's edge as the gear's side
             var review = Node(root, "Review", ReviewX, 750.5f, ReviewW, 192.57f, BR);
             var col = review.gameObject.AddComponent<VerticalLayoutGroup>(); col.spacing = 19.43f; col.childAlignment = TextAnchor.UpperRight;
             col.childControlWidth = col.childControlHeight = false; col.childForceExpandWidth = col.childForceExpandHeight = false;
@@ -71,7 +72,7 @@ namespace Mongle.EditorTools
         static void Viewfinder(RectTransform root, PhotoView v)
         {
             var vs = new Vector2(845.37f, 858.64f);
-            var vf = Node(root, "ViewFinder", 608.98f, 187.31f, vs.x, vs.y, B);
+            var vf = Node(root, "ViewFinder", 960f - vs.x / 2f, 187.31f, vs.x, vs.y, B);   // in the middle of the screen (user 2026-11-27; Figma had it 71.7 right)
             var photo = Node(vf, "Photo", 56.98f, 59.4f, 731.44f, 631.59f, TL, vs).gameObject.AddComponent<RawImage>();
             photo.raycastTarget = false; photo.enabled = false;
             v.borders = new[]

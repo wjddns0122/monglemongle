@@ -36,8 +36,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 35, y: -41}
-  m_SizeDelta: {x: 90.5, y: 94}
+  m_AnchoredPosition: {x: 48.5, y: -46.5}
+  m_SizeDelta: {x: 104.5, y: 108}
   m_Pivot: {x: 0, y: 1}
 --- !u!222 &8741716972867462826
 CanvasRenderer:
@@ -67,7 +67,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: feac1248bcc8c4e4894e0759e7bfe3b1, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 1084a7727927748e8a936da1357c5206, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -134,6 +134,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Mongle.Runtime::Mongle.UI2.PressScale
   pressed: 0.94
+  pressedTint: 1
 --- !u!1 &925073135555902514
 GameObject:
   m_ObjectHideFlags: 0
@@ -883,6 +884,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Mongle.Runtime::Mongle.UI2.PressScale
   pressed: 0.94
+  pressedTint: 1
 --- !u!1 &1899490373790556089
 GameObject:
   m_ObjectHideFlags: 0
@@ -1247,8 +1249,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0.69999695}
-  m_SizeDelta: {x: -80, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6093220121314091883
 CanvasRenderer:
@@ -1305,8 +1307,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 48
-  m_fontSizeBase: 48
+  m_fontSize: 38
+  m_fontSizeBase: 38
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -1386,8 +1388,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
-  m_AnchoredPosition: {x: -19.5, y: 14.5}
-  m_SizeDelta: {x: 103, y: 103}
+  m_AnchoredPosition: {x: -24.5, y: 48}
+  m_SizeDelta: {x: 107, y: 107}
   m_Pivot: {x: 1, y: 0.5}
 --- !u!222 &1601076937554108717
 CanvasRenderer:
@@ -1417,7 +1419,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 22374f32591654deb9bf559d75eb0d1c, type: 3}
+  m_Sprite: {fileID: 21300000, guid: af39c549b3a4f4364813abf3fb9859b8, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -1484,6 +1486,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Mongle.Runtime::Mongle.UI2.PressScale
   pressed: 0.94
+  pressedTint: 1
 --- !u!1 &3858133459346768684
 GameObject:
   m_ObjectHideFlags: 0
@@ -2180,6 +2183,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Mongle.Runtime::Mongle.UI2.PressScale
   pressed: 0.94
+  pressedTint: 1
 --- !u!1 &5219653073160271272
 GameObject:
   m_ObjectHideFlags: 0
@@ -2290,9 +2294,9 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 71.55002, y: -36.68}
-  m_SizeDelta: {x: 630.46, y: 115.78}
-  m_Pivot: {x: 0.5, y: 1}
+  m_AnchoredPosition: {x: 0, y: -97.75}
+  m_SizeDelta: {x: 639, y: 97}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3472348013060046649
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -2321,7 +2325,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  radius: {x: 57.89, y: 57.89, z: 57.89, w: 57.89}
+  radius: {x: 48.5, y: 48.5, z: 48.5, w: 48.5}
   gradient: 0
   bottomColor: {r: 1, g: 1, b: 1, a: 1}
   borderWidth: 0
@@ -2555,8 +2559,8 @@ MonoBehaviour:
   gearButton: {fileID: 6315362481851768760}
   banner: {fileID: 6663615978900483618}
   bannerText: {fileID: 8774679114806221434}
-  bannerMinWidth: 630.46
-  bannerPad: 165
+  bannerMinWidth: 300
+  bannerPad: 62
   notebook: {fileID: 8775935090328111377}
   rowTemplate: {fileID: 4192100952746926993}
   rowOn: {r: 0.627, g: 0.863, b: 0.973, a: 1}
@@ -2612,8 +2616,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
-  m_AnchoredPosition: {x: -18, y: -105}
-  m_SizeDelta: {x: 103, y: 103}
+  m_AnchoredPosition: {x: -24.5, y: -80}
+  m_SizeDelta: {x: 107, y: 107}
   m_Pivot: {x: 1, y: 0.5}
 --- !u!222 &4293912552225277064
 CanvasRenderer:
@@ -2643,7 +2647,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 81983bd180195427783eb4a9bcc78be9, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 58c06e5a0f2db4208b22c9d4a685a69a, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -2710,6 +2714,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Mongle.Runtime::Mongle.UI2.PressScale
   pressed: 0.94
+  pressedTint: 1
 --- !u!1 &6059496847586225859
 GameObject:
   m_ObjectHideFlags: 0
@@ -3170,6 +3175,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Mongle.Runtime::Mongle.UI2.PressScale
   pressed: 0.94
+  pressedTint: 1
 --- !u!1 &6802528053685187291
 GameObject:
   m_ObjectHideFlags: 0
@@ -3624,6 +3630,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Mongle.Runtime::Mongle.UI2.PressScale
   pressed: 0.94
+  pressedTint: 1
 --- !u!1 &7799899620796569875
 GameObject:
   m_ObjectHideFlags: 0
@@ -3660,8 +3667,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -37.80005, y: -47.67}
-  m_SizeDelta: {x: 103, y: 103}
+  m_AnchoredPosition: {x: -24.5, y: -45.5}
+  m_SizeDelta: {x: 107, y: 107}
   m_Pivot: {x: 1, y: 1}
 --- !u!222 &3437216636293277365
 CanvasRenderer:
@@ -3691,7 +3698,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 8c56208f98be94b60a45ae4ab4472fa7, type: 3}
+  m_Sprite: {fileID: 21300000, guid: faf06429b50a54c6bae2a0bee1c6f899, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -3758,6 +3765,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Mongle.Runtime::Mongle.UI2.PressScale
   pressed: 0.94
+  pressedTint: 1
 --- !u!1 &7954333950843305309
 GameObject:
   m_ObjectHideFlags: 0
@@ -3905,6 +3913,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Mongle.Runtime::Mongle.UI2.PressScale
   pressed: 0.94
+  pressedTint: 1
 --- !u!1 &8257255714486751175
 GameObject:
   m_ObjectHideFlags: 0
@@ -4015,7 +4024,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 35.04, y: -10.61}
+  m_AnchoredPosition: {x: 36.70996, y: -12.609985}
   m_SizeDelta: {x: 35, y: 78}
   m_Pivot: {x: 0, y: 1}
 --- !u!222 &2131661851938794931
@@ -4291,6 +4300,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Mongle.Runtime::Mongle.UI2.PressScale
   pressed: 0.94
+  pressedTint: 1
 --- !u!1 &8775244638559929395
 GameObject:
   m_ObjectHideFlags: 0
@@ -4403,11 +4413,11 @@ RectTransform:
   - {fileID: 4192100952746926993}
   m_Father: {fileID: 3506662123485680653}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 47.44995, y: -207.10999}
+  m_AnchorMin: {x: 0, y: 0.5}
+  m_AnchorMax: {x: 0, y: 0.5}
+  m_AnchoredPosition: {x: 47.44995, y: 0}
   m_SizeDelta: {x: 430.18, y: 543.16}
-  m_Pivot: {x: 0, y: 1}
+  m_Pivot: {x: 0, y: 0.5}
 --- !u!222 &4749996175183586964
 CanvasRenderer:
   m_ObjectHideFlags: 0

@@ -32,5 +32,13 @@ namespace Mongle.Tests
             }
             finally { Object.DestroyImmediate(go); }
         }
+
+        [Test]
+        public void EveryToyMendedBeforeHasItsStampOnTheCard()
+        {
+            Assert.AreEqual(0, Mongle.Core.ShopDirector.StampsBefore(false, 0), "Mongi is the first");
+            Assert.AreEqual(1, Mongle.Core.ShopDirector.StampsBefore(true, 0), "the first friend comes after Mongi");
+            Assert.AreEqual(4, Mongle.Core.ShopDirector.StampsBefore(true, 3));
+        }
     }
 }

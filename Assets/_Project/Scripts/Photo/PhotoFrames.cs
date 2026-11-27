@@ -101,6 +101,35 @@ namespace Mongle.Photo
             return (p - ba * h).magnitude * Mathf.Sign(p.y * ba.x - p.x * ba.y);
         }
 
+        /// <summary>How big one pattern pixel is in a photo <paramref name="width"/> pixels wide (what <see cref="Bake"/> paints with).</summary>
+        public static float PhotoScale(int width) => Mathf.Max(1f, width / 1024f) * 0.75f;
+
+        /// <summary>
+        /// Which pattern <see cref="Bake"/> painted into a photo's border (0, the plain frame, when none matches): the border's
+        /// pixels against each pattern at the same places. The photo record does not keep the frame, its picture does.
+        /// </summary>
+        public static int Detect(Texture2D photo)
+        {
+            if (photo == null || !photo.isReadable || photo.width < 64) return 0;
+            int w = photo.width, h = photo.height, border = Mathf.Max(2, Mathf.Min(w, h) / 16);
+            float scale = PhotoScale(w);
+            int best = 0; float bestErr = 0.08f;   // a mean colour difference under 8 % is that pattern
+            for (int i = 1; i < Ids.Length; i++)
+            {
+                var sz = Size(i); float err = 0f; int n = 0;
+                for (int k = 0; k < 48; k++)
+                {
+                    // along the bottom and the left border, inside it
+                    int x = k < 24 ? border + (w - 2 * border) * k / 24 : border / 2, y = k < 24 ? border / 2 : border + (h - 2 * border) * (k - 24) / 24;
+                    Color a = photo.GetPixel(x, y), b = Sample(i, Mathf.Repeat(x / scale, sz.x), Mathf.Repeat(y / scale, sz.y));
+                    err += (Mathf.Abs(a.r - b.r) + Mathf.Abs(a.g - b.g) + Mathf.Abs(a.b - b.b)) / 3f; n++;
+                }
+                err /= n;
+                if (err < bestErr) { bestErr = err; best = i; }
+            }
+            return best;
+        }
+
         /// <summary>Paints the pattern into the outer <paramref name="border"/> pixels of a photo (the plain frame leaves it as it is).</summary>
         public static void Bake(Texture2D photo, int index, int border)
         {

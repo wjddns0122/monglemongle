@@ -255,6 +255,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Mongle.Runtime::Mongle.UI2.PressScale
   pressed: 0.94
+  pressedTint: 1
 --- !u!1 &1319468178585509098
 GameObject:
   m_ObjectHideFlags: 0
@@ -1495,7 +1496,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.AspectRatioFitter
   m_AspectMode: 4
-  m_AspectRatio: 1.7768332
+  m_AspectRatio: 1.7802547
 --- !u!1 &8280442010613475489
 GameObject:
   m_ObjectHideFlags: 0

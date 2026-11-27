@@ -18,7 +18,7 @@ namespace Mongle.Core
     [Serializable] public class QuestSave { public string id; public int status; public int progress; }
     [Serializable] public class SettingsSave { public float masterVolume = 0.8f; }
     /// <summary>A request a moved-in friend gave (D-011). kind is the FriendQuestKind name, status 0 = active, 1 = done.</summary>
-    [Serializable] public class FriendQuestSave { public string id, giver, kind, param; public int target, progress, reward, status; public long accepted, done; }
+    [Serializable] public class FriendQuestSave { public string id, giver, kind, param; public int target, progress, reward, status; public long accepted, done; public int waiting; }   // waiting 1: done, the friend not told yet (older saves: 0, already paid)
     /// <summary>What the player told a friend who asked "?" (D-011): key = question (Birthday = "month-day"), askedBy = the friend's kind id.</summary>
     [Serializable] public class AnswerSave { public string key, value, askedBy; }
 

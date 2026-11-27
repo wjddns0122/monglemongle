@@ -24,7 +24,8 @@ namespace Mongle.EditorTools
         const float CardX = 692f - SX, CardY = 481.8f - SY, CardStep = 286.8f, CardW = 245.6f, CardH = 392.9f;
         // the request rows: the quest window's (1356.6 x 173.7) at 70 % in height and sizes, as wide as the keeper's field
         // (Figma 88:1226, x 672.4, 1153.2 wide) so the edges line up; left parts from the left, the reward and the button from the right
-        const float K = 0.7f, RowX = 672.38f - SX, RowW = 1153.23f, RowStep = 133f;
+        // (user 2026-11-27: "너무 작아서 위에 정보 칸이랑 똑같이"): the rows as tall as the field too (136.95), the first 8.4 under it
+        const float RowH = 136.95f, K = RowH / 173.73f, RowX = 672.38f - SX, RowW = 1153.23f, RowStep = RowH + 6f, RowY = 324.67f + 136.95f + 8.4f - SY;
 
         public static GameObject Make()
         {
@@ -59,7 +60,7 @@ namespace Mongle.EditorTools
             // the requests
             var asksGroup = Node(sheet, "Asks", 0f, 0f, SW, SH, TL, Sheet); v.asksGroup = asksGroup.gameObject;
             v.rows = new AskRow[3];
-            for (int i = 0; i < 3; i++) v.rows[i] = AskRowBuild.Make(asksGroup, "Quest_" + i, RowX, CardY + 2.6f + i * RowStep, RowW, K, Sheet);
+            for (int i = 0; i < 3; i++) v.rows[i] = AskRowBuild.Make(asksGroup, "Quest_" + i, RowX, RowY + i * RowStep, RowW, K, Sheet);
             asksGroup.gameObject.SetActive(false);
             v.style = AskRowBuild.Style();
 

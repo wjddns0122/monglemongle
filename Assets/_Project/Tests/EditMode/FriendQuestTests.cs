@@ -62,6 +62,11 @@ namespace Mongle.Tests
             Assert.IsNull(b.OfferOf(Bori.giver)); Assert.AreSame(q, b.ActiveOf(Bori.giver));
             for (int i = 0; i < 5; i++) { now += b.OfferGap; Assert.IsNull(b.Tick(new[] { Bori }, Park()), "busy with its own request"); }
             while (!q.Done) Assert.IsTrue(b.Report(Event(q), Param(q)));
+            // done but not told yet (user 2026-11-27): no new request from that friend, however long it waits
+            Assert.IsTrue(q.waiting);
+            now += b.PerToyCooldown + 600; Assert.IsNull(b.Tick(new[] { Bori }, Park()), "it waits to be told first");
+            now -= b.PerToyCooldown + 600;
+            Assert.IsNotNull(b.Claim(Bori.giver));
             Assert.GreaterOrEqual(b.PerToyCooldown, 120, "a few minutes between requests");
             now += b.PerToyCooldown - 1; Assert.IsNull(b.Tick(new[] { Bori }, Park()), "resting after a finished request");
             now += 1; Assert.IsNotNull(b.Tick(new[] { Bori }, Park()));
@@ -107,7 +112,12 @@ namespace Mongle.Tests
             w.Report(FriendQuestBook.FruitPicked); w.Report(FriendQuestBook.FruitPicked);
             Assert.AreEqual(2, q.progress); Assert.IsFalse(q.Done); Assert.AreEqual(0, w.Coins);
             w.Report(FriendQuestBook.FruitPicked);
-            Assert.IsTrue(q.Done); Assert.AreEqual(22, w.Coins, "the reward is paid the moment it is done"); Assert.AreEqual(1, done);
+            Assert.IsTrue(q.Done); Assert.AreEqual(1, done);
+            // done, but the friend has to be told first (user 2026-11-27): the reward waits for that
+            Assert.IsTrue(q.waiting); Assert.AreEqual(0, w.Coins); Assert.AreEqual(q, w.FriendQuests.WaitingOf("Bunny_001"));
+            Assert.IsNull(w.FriendQuests.Claim("Cat_001"), "another friend has nothing to be told");
+            Assert.AreEqual(q, w.FriendQuests.Claim("Bunny_001")); Assert.AreEqual(22, w.Coins); Assert.IsFalse(q.waiting);
+            Assert.IsNull(w.FriendQuests.Claim("Bunny_001"), "told once, paid once"); Assert.AreEqual(22, w.Coins);
             Assert.IsFalse(w.FriendQuests.Report(FriendQuestBook.FruitPicked, ""), "nothing left to count");
             Assert.AreEqual(22, w.Coins); Assert.AreEqual(3, q.progress);
             CollectionAssert.Contains(w.FriendQuests.Finished.ToList(), q); Assert.AreEqual(0, w.FriendQuests.Active.Count());
@@ -126,6 +136,8 @@ namespace Mongle.Tests
             w.Report("AccessoryWorn", "Cat_001"); Assert.IsTrue(dress.Done);
             w.Report(FriendQuestBook.StarsFound, "Cat_001"); Assert.IsFalse(stars.Done);
             w.Report(FriendQuestBook.StarsFound, "TeddyBear_001"); Assert.IsTrue(stars.Done);
+            Assert.AreEqual(0, w.Coins, "nothing until the friends are told");
+            foreach (var g in new[] { "Bunny_001", "Cat_001", "TeddyBear_001" }) Assert.IsNotNull(w.FriendQuests.Claim(g), g);
             Assert.AreEqual(20 + 20 + 30, w.Coins);
         }
 
@@ -137,7 +149,8 @@ namespace Mongle.Tests
             w.EnsurePlant("Plant_T#1", plant.id);
             Assert.AreEqual(WaterResult.Ok, w.Water("Plant_T#1", plant, out _, out _)); Assert.AreEqual(1, q.progress);
             now += 30; Assert.AreEqual(WaterResult.Ok, w.Water("Plant_T#1", plant, out _, out _));
-            Assert.IsTrue(q.Done); Assert.AreEqual(16, w.Coins);
+            Assert.IsTrue(q.Done); Assert.AreEqual(0, w.Coins);
+            w.FriendQuests.Claim("Pawn_001"); Assert.AreEqual(16, w.Coins);
             UnityEngine.Object.DestroyImmediate(plant);
         }
 
@@ -201,9 +214,11 @@ namespace Mongle.Tests
             var f2 = back.FriendQuests.Find(fruit.id); var r2 = back.FriendQuests.Find(ride.id);
             Assert.AreEqual(FriendQuestKind.Fruit, f2.kind); Assert.AreEqual(1, f2.progress); Assert.AreEqual(4, f2.target); Assert.AreEqual(26, f2.reward); Assert.IsFalse(f2.Done);
             Assert.IsTrue(r2.Done); Assert.AreEqual("Ride_Carousel", r2.param); Assert.AreEqual("Cat_001", r2.giver);
+            Assert.IsTrue(r2.waiting, "still waiting to be told after a restart");
             Assert.AreEqual("3-15", back.Profile.Get(PlayerProfile.Birthday)); Assert.AreEqual("푸딩", back.Profile.Get("Food")); Assert.AreEqual("Cat_001", back.Profile.AskedBy("Food"));
             Assert.AreEqual(2026, back.Profile.BirthdayGiftYear);
             Assert.AreEqual(w.Coins, back.Coins);
+            Assert.IsNotNull(back.FriendQuests.Claim("Cat_001")); Assert.AreEqual(w.Coins + 20, back.Coins, "told after the restart: paid then");
             var next = Give(back, "Robot_001", FriendQuestKind.Stars);
             Assert.AreNotEqual(fruit.id, next.id); Assert.AreNotEqual(ride.id, next.id);
             Assert.AreEqual(0, back.FriendQuests.Offers.Count, "bubbles are never saved");

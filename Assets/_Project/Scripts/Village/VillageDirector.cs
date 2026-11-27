@@ -44,7 +44,6 @@ namespace Mongle.Village
         GameRoot root; ToyRuntime state; Camera cam;
         ShopUI baseUi; Canvas canvas;
         Text bubbleText; GameObject bubble; Transform bubbleAnchor; float bubbleUntil;
-        GameObject placeBar;
         /// <summary>The 11-26 HUD (VillageHudView, Figma 88:231 / 88:510 / 88:2367): a Village scene object.</summary>
         public Mongle.Views.VillageHudView Hud { get; private set; }
         FurniturePlacement pendingOriginal; int pendingRot, pendingX, pendingY;
@@ -181,6 +180,7 @@ namespace Mongle.Village
         void EnterLife(bool justMovedIn)
         {
             Hud.ShowToolbar(true);
+            if (root.GiveStarterAccessories()) root.Persist("starter accessories");   // a save from before: Mongi's unworn gifts reach the box
             if (justMovedIn) { Hud.Hint("오른쪽 버튼으로 끌거나 W.A.S.D로 공원을 둘러봐요.\n휠로 멀리 볼 수 있어요.", 7f); Hud.ShowTips(7f); }
             else Hud.Hint("몽이의 마을 · " + state.AdmissionDate + " 입주", 4f);
             Agent.Enable();
@@ -198,16 +198,8 @@ namespace Mongle.Village
             canvas = baseUi.Canvas;
             BindHud();
             BuildShopUi();
-            // placement bar (fits a 4:3 screen: 1420 wide); "나가기" always ends placing, ESC too
-            placeBar = UiKit.Panel(canvas.transform, "PlaceBar", UiKit.Paper, new Vector2(0.5f, 0f), new Vector2(0, 110), new Vector2(1420, 150), false).gameObject;
-            UiKit.MakeButton(placeBar.transform, "돌리기", UiKit.Sky, new Vector2(0.5f, 0.5f), new Vector2(-560, 0), new Vector2(240, 100), RotateSelected, 38);
-            UiKit.MakeButton(placeBar.transform, "보관함에 넣기", new Color(0.95f, 0.85f, 0.6f, 1f), new Vector2(0.5f, 0.5f), new Vector2(-275, 0), new Vector2(300, 100), StoreSelected, 34);
-            UiKit.MakeButton(placeBar.transform, "여기에 두기", UiKit.Peach, new Vector2(0.5f, 0.5f), new Vector2(40, 0), new Vector2(300, 100), () => ConfirmPlacement(), 36);
-            UiKit.MakeButton(placeBar.transform, "취소", UiKit.Mint, new Vector2(0.5f, 0.5f), new Vector2(295, 0), new Vector2(180, 100), CancelOrExitPlacing, 36);
-            UiKit.MakeButton(placeBar.transform, "나가기", UiKit.Pink, new Vector2(0.5f, 0.5f), new Vector2(535, 0), new Vector2(270, 100), ExitPlacing, 38);
-            // plain pills on the stitched bar (D-026: one dashed line is enough)
-            foreach (var b in placeBar.GetComponentsInChildren<Button>(true)) UiKit.NoStitch(b.GetComponent<Image>());
-            placeBar.SetActive(false);
+            // furniture placing's own screen (Figma 115:1398): ◀ (or ESC) ends placing, 되돌리기 / 다시 하기, the bar at the bottom left
+            BindPlaceBar();
             // speech bubble (Figma 58:1332 "말풍선"): a white pill 406x98 with a little tail in the middle of its bottom; the plate
             // grows with long lines while the tail stays centred, its tip just above the head
             var bp = UiKit.SpriteImage(canvas.transform, "Bubble", "speech_body", Vector2.zero, new Vector2(0.5f, 0f), Vector2.zero, new Vector2(BubbleW, BubbleH));
@@ -292,7 +284,24 @@ namespace Mongle.Village
                 list.Add(new Mongle.Views.AlbumView.Entry(AlbumLine(rec, name), () => PhotoStore.Load(root.Saves, rec)));
             }
             Mongle.Views.AlbumView.Open(list);
+            // every photo has been seen now: the 앨범 tile's dot goes
+            bool any = false;
+            foreach (var (ph, name) in AlbumEntries()) { var k = AlbumKey(ph, name); if (!World.HasSeen(k)) { World.MarkSeen(k); any = true; } }
+            if (any) root.Persist("album seen");
             root.Audio.Play("click", 0.5f, 1.1f);
+        }
+
+        /// <summary>What remembers that a photo has been looked at in the album (WorldState.Seen).</summary>
+        static string AlbumKey(PhotoRecord ph, string name) =>
+            "album:" + (!string.IsNullOrEmpty(ph.photoId) ? ph.photoId : !string.IsNullOrEmpty(ph.imageFile) ? ph.imageFile : name + ph.takenAt);
+
+        /// <summary>The 앨범 tile's dot: photos not looked at yet (Figma 115:1398).</summary>
+        void RefreshAlbumBadge()
+        {
+            if (Hud == null || state == null) return;
+            int n = 0;
+            foreach (var (ph, name) in AlbumEntries()) if (!World.HasSeen(AlbumKey(ph, name))) n++;
+            Hud.SetAlbumNews(n);
         }
 
         /// <summary>The line under a photo in the album (Figma: "2026.11.26 · 몽이").</summary>
@@ -307,6 +316,7 @@ namespace Mongle.Village
         void Update()
         {
             if (!Ready) return;
+            if (Hud != null) Hud.SetWindowOpen(WindowOpen);
             if (bubble.activeSelf)
             {
                 if (Time.time > bubbleUntil || bubbleAnchor == null) bubble.SetActive(false);
@@ -318,8 +328,10 @@ namespace Mongle.Village
             if (ViewingRide != null) { UpdateRideView(); return; } // watching a ride up close: only the "back" button acts
             HandleEscape();
             UpdatePlaceRing();
+            RefreshPlaceBar();
             UpdateHousePlacing();
-            if ((PlacingMode || HousePlacing || !AnyPanelOpen) && state.Admitted) PollKeyboardPan(); // W/A/S/D also while placing (user)
+            // W/A/S/D also while placing (user); not while a friend's talk is up: its arrows choose the answer (user 2026-11-27)
+            if ((PlacingMode || HousePlacing || !AnyPanelOpen) && !FriendDialogOpen && state.Admitted) PollKeyboardPan();
             if (PlacingMode) UpdatePlacing(f);
             else
             {
@@ -377,11 +389,11 @@ namespace Mongle.Village
             {
                 // panels opened earlier (a friend's dress-up, the album) used to sit on top of the bar and swallow its buttons
                 CloseDress(); Mongle.Views.AlbumView.Close(); CloseQuestUi();
-                placeBar.transform.SetAsLastSibling();
             }
-            placeBar.SetActive(on);
+            placeHistory.Clear();   // 되돌리기 reaches back to when placing began
+            if (PlaceUi != null) PlaceUi.Show(on);
             Hud.SetPlacing(on);
-            Hud.Hint(on ? "옮길 가구를 눌러서 끌어요 · 다 옮겼으면 '나가기'" : null);
+            Hud.Hint(on ? "옮길 가구를 눌러서 끌어요." : null);   // Figma 115:1398 (◀ at the top left leaves)
             dragging = false; Orbit.allowRotate = true;
             if (!on && placeRing != null) placeRing.SetActive(false);
             root.Audio.Play("click", 0.5f);
@@ -519,6 +531,8 @@ namespace Mongle.Village
             if (!PendingValid) { root.Say("여기에는 둘 수 없어요"); root.Audio.Play("wrong", 0.5f); return false; }
             if (Selected.InUse) { root.Say("몽이가 쓰고 있어요"); return false; }
             var f = Selected;
+            bool wasNew = f.IsNew;
+            var before = new FurniturePlacement { furnitureId = f.Placement.furnitureId, instanceId = f.Placement.instanceId, cellX = f.Placement.cellX, cellY = f.Placement.cellY, rotation = f.Placement.rotation };
             f.Placement.cellX = pendingX; f.Placement.cellY = pendingY; f.Placement.rotation = pendingRot;
             f.Apply(Grid); f.SetTint(null);
             if (f.IsNew)
@@ -538,6 +552,9 @@ namespace Mongle.Village
             }
             root.Persist("furniture");
             Agent.OnFurnitureChanged(f);
+            // 되돌리기 can take it back: out of the box, or from where it stood
+            if (wasNew) RecordPlacement(PlacementChange.Place, f, null, pendingX, pendingY, pendingRot);
+            else if (before.cellX != pendingX || before.cellY != pendingY || before.rotation != pendingRot) RecordPlacement(PlacementChange.Move, f, before, pendingX, pendingY, pendingRot);
             root.Audio.Play("success", 0.5f);
             root.Say("가구를 놓았어요");
             Selected = null;

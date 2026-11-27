@@ -43,6 +43,11 @@ namespace Mongle.Tests
                 v.SetTimer("다음 하트 12:30"); Assert.IsTrue(v.timer.gameObject.activeSelf);
                 Assert.AreEqual("", v.ResultShown);
                 v.ShowResult("와! 포근 의자가 나왔어요!"); Assert.AreEqual("와! 포근 의자가 나왔어요!", v.ResultShown);
+                // the village's first hint pill's size (user 2026-11-27): 38 px, 62 in from its ends, 97 tall, taller for two lines
+                Assert.AreEqual(38f, v.resultText.fontSize, 0.01f);
+                Assert.AreEqual(v.resultText.GetPreferredValues(v.ResultShown, 1200f, 0f).x + 124f, v.result.sizeDelta.x, 0.5f);
+                Assert.AreEqual(97f, v.result.sizeDelta.y, 0.5f);
+                v.ShowResult("와! 포근 의자가 나왔어요!\n보관함에 넣어 뒀어요"); Assert.AreEqual(142.6f, v.result.sizeDelta.y, 4f);
                 v.backButton.onClick.Invoke(); Assert.IsTrue(back);
             }
             finally { Object.DestroyImmediate(go); }

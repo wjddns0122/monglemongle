@@ -19,16 +19,16 @@ namespace Mongle.Views
         [Tooltip("오른쪽 하늘색 버튼 (확인·살펴볼게요 …)")] public Button okButton;
         [Tooltip("왼쪽 복숭아색 버튼 (죄송합니다·취소 …), 없으면 숨어요")] public Button secondButton;
         [Header("크기 (피그마)")]
-        [Tooltip("판의 가장 작은 폭")] public float minWidth = 1179.03f;
+        [Tooltip("판의 가장 작은 폭")] public float minWidth = 1182.03f;
         [Tooltip("판의 가장 큰 폭")] public float maxWidth = 1760f;
         [Tooltip("글자 양옆 여백")] public float sidePad = 120f;
         [Tooltip("판 위 끝 ~ 하늘색 띠 아래 끝")] public float headerHeight = 113.47f;
-        [Tooltip("띠 ~ 글 사이")] public float bodyTop = 57.6f;
-        [Tooltip("글 ~ 버튼 사이")] public float bodyBottom = 51.9f;
+        [Tooltip("띠 ~ 글 사이")] public float bodyTop = 70.36f;
+        [Tooltip("글 ~ 버튼 사이")] public float bodyBottom = 40.36f;
         [Tooltip("버튼 높이")] public float buttonHeight = 86.57f;
-        [Tooltip("버튼 ~ 판 아래 끝")] public float bottomPad = 40.95f;
+        [Tooltip("버튼 ~ 판 아래 끝")] public float bottomPad = 39.76f;
         [Tooltip("버튼의 가장 작은 폭")] public float buttonMinWidth = 344.78f;
-        [Tooltip("버튼 글자 양옆 여백")] public float buttonPad = 60f;
+        [Tooltip("버튼 글자 양옆 여백")] public float buttonPad = 40f;
 
         Action onOk, onSecond;
         static DialogView current;
@@ -105,7 +105,10 @@ namespace Mongle.Views
             {
                 bodyH = string.IsNullOrEmpty(body.text) ? 0f : body.GetPreferredValues(body.text, w - sidePad * 2f, 0f).y;
                 body.rectTransform.sizeDelta = new Vector2(w - sidePad * 2f, bodyH);   // anchored at the band's foot, centred
+                body.rectTransform.anchoredPosition = new Vector2(body.rectTransform.anchoredPosition.x, -(headerHeight + bodyTop));
             }
+            if (okButton != null && okButton.transform.parent is RectTransform row)
+                row.anchoredPosition = new Vector2(row.anchoredPosition.x, bottomPad);   // the buttons' row sits bottomPad over the foot
             float h = headerHeight + bodyTop + bodyH + bodyBottom + buttonHeight + bottomPad;
             panel.sizeDelta = new Vector2(w, h);
         }

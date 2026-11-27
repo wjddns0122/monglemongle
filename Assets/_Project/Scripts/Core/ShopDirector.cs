@@ -22,6 +22,8 @@ namespace Mongle.Core
         public ShopUI UI { get; private set; }   // still the dress-up window (11-26: to be replaced)
         /// <summary>The 11-26 repair screen: banner, 진료 수첩, tool bar, zoom, back (a RepairShop scene object).</summary>
         public RepairHudView Hud { get; private set; }
+        /// <summary>Dressing up after the stamp (Figma 115:1573): Assets/_UI수정/2_수선점/Customize.prefab.</summary>
+        public CustomizeView Custom { get; private set; }
         public OrbitCamera Orbit { get; private set; }
         public DiagnosisController Diagnosis { get; private set; }
         public RepairSession Repair { get; private set; }
@@ -52,6 +54,18 @@ namespace Mongle.Core
             ViewUtil.EnsureEventSystem();
             Hud.gameObject.SetActive(true); Hud.HideAll();
             Hud.OnZoom = f => Orbit.ZoomStep(f);
+            Custom = FindAnyObjectByType<CustomizeView>(FindObjectsInactive.Include);
+            if (Custom == null)
+            {
+                var prefab = ViewIndex.Prefab("Customize");
+                if (prefab != null) Custom = Instantiate(prefab).GetComponent<CustomizeView>();
+            }
+            if (Custom != null)
+            {
+                Custom.OnPick = id => { var a = customList.FirstOrDefault(x => x.id == id); if (a != null) ToggleAccessory(a); };
+                Custom.OnConfirm = ConfirmCustomization;
+                Custom.Hide();
+            }
             root.Audio.StartBgm();
             if (state == null) { GoBootstrap(); yield break; }
 
@@ -176,7 +190,7 @@ namespace Mongle.Core
             Toy.ApplyRepairState(state);
             yield return new WaitForSeconds(0.6f);
             StampView stamp = null;
-            stamp = StampView.Open(root.Residents.Count, () =>
+            stamp = StampView.Open(StampsBefore(TreatingFriend, root.Residents.Count), () =>
             {
                 root.Audio.Play("thump", 1f);
                 stamp.PlayStamp(() =>
@@ -190,6 +204,10 @@ namespace Mongle.Core
                 });
             });
         }
+
+        /// <summary>Stamps already on the card when this toy gets its own: Mongi's comes first, then one per friend who moved
+        /// in (user 2026-11-27: the second repair stamped the first slot again).</summary>
+        public static int StampsBefore(bool friend, int residents) => (friend ? 1 : 0) + Mathf.Max(0, residents);
 
         IEnumerator StampToCustomize()
         {
@@ -214,21 +232,28 @@ namespace Mongle.Core
             {
                 // friends wear what the player bought at the accessory shop (one item is used up per friend)
                 customList = catalog.AllAccessories.Where(a => root.World.Owned(a.id) > 0).ToArray();
-                UI.BuildCustomization(customList, ToggleAccessory, ConfirmCustomization,
-                    a => (a.slot == AccessorySlot.Head ? "머리" : a.slot == AccessorySlot.Face ? "얼굴" : "목") + (customList.Length > 4 ? " · " : " 자리 · 가진 수 ") + root.World.Owned(a.id) + (customList.Length > 4 ? "개" : ""),
-                    "아직 가진 악세서리가 없어요.\n마을의 컵케이크 악세서리점에서 사 오면 입혀 줄 수 있어요.\n\n이대로도 괜찮아요!");
-                Hud.Banner(customList.Length > 0 ? "악세서리점에서 산 것으로 꾸며줘요" : "이번엔 그대로 가도 괜찮아요");
+                if (Custom != null)
+                    Custom.Show(customList.Length > 0 ? "악세서리점에서 산 것으로 꾸며줘요" : "이번엔 그대로 가도 괜찮아요",
+                        customList.Select(a => CardOf(a, root.World.Owned(a.id))).ToList(),
+                        "아직 가진 악세서리가 없어요.\n마을의 컵케이크 악세서리점에서 사 오면 입혀 줄 수 있어요.\n이대로도 괜찮아요!");
             }
             else
             {
                 // Mongi's first dress-up: the free gifts only (the rest is sold at the accessory shop later)
                 customList = (def.giftAccessories != null && def.giftAccessories.Length > 0 ? def.giftAccessories : def.accessories ?? new AccessoryDefinition[0]).Where(a => a != null).ToArray();
-                UI.BuildCustomization(customList, ToggleAccessory, ConfirmCustomization);
-                Hud.Banner("마음에 드는 것을 골라 꾸며줘요");
+                if (Custom != null) Custom.Show("마음에 드는 것을 골라 꾸며줘요", customList.Select(a => CardOf(a, -1)).ToList());
             }
             RefreshCustomButtons();
         }
         AccessoryDefinition[] customList = new AccessoryDefinition[0];
+
+        /// <summary>A card: the accessory's name and picture (the accessory shop's icon, else one drawn from the accessory itself);
+        /// <paramref name="count"/> below 0 shows no badge (Mongi's free gifts).</summary>
+        CustomizeView.Item CardOf(AccessoryDefinition a, int count) => new CustomizeView.Item
+        {
+            id = a.id, name = a.displayName, count = count,
+            icon = IconBaker.Get(catalog.Furniture(a.id)) ?? (a.prefab != null ? IconBaker.Get("acc:" + a.id, a.prefab) : null),
+        };
 
         void ToggleAccessory(AccessoryDefinition a)
         {
@@ -242,11 +267,7 @@ namespace Mongle.Core
 
         void RefreshCustomButtons()
         {
-            foreach (var a in customList)
-            {
-                state.Visible.TryGetValue(a.slot, out var cur);
-                UI.SetAccessorySelected(a.id, cur == a.id);
-            }
+            if (Custom != null) Custom.SetWorn(state.Visible.Values);
         }
 
         void ConfirmCustomization()
@@ -254,7 +275,7 @@ namespace Mongle.Core
             if (!state.ConfirmCustomization()) return;
             root.Audio.Play("success", 0.9f);
             Toy.PlayThen("Happy", "Idle");
-            UI.ShowCustomization(false);
+            if (Custom != null) Custom.Hide();
             if (TreatingFriend)
             {
                 // what a friend wears was bought at the accessory shop: it is used up now (D-005, accessory shop)
@@ -263,7 +284,11 @@ namespace Mongle.Core
                 root.Persist("friend dressed");
                 Hud.Banner("멋져요! " + Josa.IGa(def.displayName) + " 사진을 찍으러 가요");
             }
-            else Hud.Banner("멋져요! 사진을 남기러 가요");
+            else
+            {
+                if (root.GiveStarterAccessories()) root.Persist("starter accessories");   // the gifts Mongi does not wear wait in the box
+                Hud.Banner("멋져요! 사진을 남기러 가요");
+            }
             StartCoroutine(Next());
         }
 

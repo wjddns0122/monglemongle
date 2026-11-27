@@ -50,5 +50,22 @@ namespace Mongle.Tests
             Assert.AreEqual(blue, photo.GetPixel(8, 8), "the first pixel inside the border stays");
             Object.DestroyImmediate(photo);
         }
+
+        [Test]
+        public void ThePatternBakedIntoAPhotoIsFoundAgain()
+        {
+            // the album fills the polaroid with the photo's own frame (user 2026-11-27): the record does not keep it, the border does
+            for (int f = 0; f < PhotoFrames.Ids.Length; f++)
+            {
+                var photo = new Texture2D(1024, 1024, TextureFormat.RGBA32, false);
+                var px = new Color32[1024 * 1024];
+                for (int i = 0; i < px.Length; i++) px[i] = new Color32((byte)(40 + i % 97), (byte)(90 + i % 61), (byte)(150 + i % 53), 255);   // a busy picture
+                photo.SetPixels32(px); photo.Apply();
+                PhotoFrames.Bake(photo, f, 1024 / 16);
+                Assert.AreEqual(f, PhotoFrames.Detect(photo), PhotoFrames.Ids[f]);
+                Object.DestroyImmediate(photo);
+            }
+            Assert.AreEqual(0, PhotoFrames.Detect(null));
+        }
     }
 }

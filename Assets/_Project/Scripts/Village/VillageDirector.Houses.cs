@@ -24,7 +24,7 @@ namespace Mongle.Village
         Transform housesRoot;
         public bool HousePlacing { get; private set; }
         ResidentSave houseTarget; HouseView ghost; float ghostYaw; Vector3 ghostPos; bool ghostValid;
-        GameObject houseBar; Text houseText; Button houseOk;
+
         readonly HashSet<string> housePrompted = new HashSet<string>();
         const float HouseHalf = 1.0f, HouseSnap = 0.2f;
 
@@ -36,7 +36,6 @@ namespace Mongle.Village
             if (housesRoot == null) housesRoot = new GameObject("Houses").transform;
             BlockTrackInGrid();
             foreach (var r in root.Residents) SpawnHouse(r);
-            BuildHouseUi();
             StartCoroutine(PromptUnplacedHouses());
         }
 
@@ -73,19 +72,7 @@ namespace Mongle.Village
             return hv;
         }
 
-        // ---------------- choosing the place ----------------
-        void BuildHouseUi()
-        {
-            if (houseBar != null) return;
-            var bar = UiKit.Panel(canvas.transform, "HouseBar", UiKit.Paper, new Vector2(0.5f, 0f), new Vector2(0, 130), new Vector2(1060, 190), true);
-            houseBar = bar.gameObject;
-            houseText = UiKit.Label(bar.transform, "", 34, UiKit.Brown, new Vector2(0.5f, 1f), new Vector2(0, -52), new Vector2(1000, 80));
-            houseOk = UiKit.MakeButton(bar.transform, "여기에 놓기", UiKit.Pink, new Vector2(0.5f, 0f), new Vector2(-300, 52), new Vector2(330, 86), HouseConfirm, 36);
-            UiKit.MakeButton(bar.transform, "돌리기 (R)", UiKit.Sky, new Vector2(0.5f, 0f), new Vector2(40, 52), new Vector2(290, 86), HouseRotate, 34);
-            UiKit.MakeButton(bar.transform, "나중에", UiKit.Mint, new Vector2(0.5f, 0f), new Vector2(340, 52), new Vector2(230, 86), HouseLater, 34);
-            houseBar.SetActive(false);
-            SkinPart(bar);
-        }
+        // ---------------- choosing the place (the furniture placing screen, PlaceBarView) ----------------
 
         /// <summary>A moved-in friend (or one still without a house from before) asks for its place, once things are quiet.</summary>
         IEnumerator PromptHouse(string kind, float delay)
@@ -127,8 +114,8 @@ namespace Mongle.Village
             var t = Orbit.target; ghostPos = SnapHouse(new Vector3(t.x, 0f, t.z));
             HousePlacing = true; SetHud(false); Hud.Hint(null);
             var def = Catalog.ToyDef(r.kindId); string name = def != null ? def.displayName : "친구";
-            houseText.text = Josa.IGa(name) + " 이사 왔어요! 집을 놓을 곳을 골라 주세요";
-            houseBar.SetActive(true);
+            Hud.Hint(Josa.IGa(name) + " 이사 왔어요! 집을 놓을 곳을 골라 주세요");   // the village's hint pill, as while moving furniture
+            WirePlaceBarForHouse();
             root.Audio.Play("hello", 0.7f, 1.2f);
             UpdateGhost(false);
             return true;
@@ -170,7 +157,7 @@ namespace Mongle.Village
             ghostValid = HouseFits(ghostPos, ghostYaw);
             ghost.transform.SetPositionAndRotation(ghostPos, Quaternion.Euler(0f, ghostYaw, 0f));
             ghost.SetGhost(ghostValid ? new Color(0.55f, 1f, 0.65f) : new Color(1f, 0.5f, 0.5f));
-            if (houseOk != null) houseOk.interactable = ghostValid;
+            if (PlaceUi != null) PlaceUi.SetPutReady(ghostValid);
         }
 
         void UpdateHousePlacing()
@@ -192,7 +179,7 @@ namespace Mongle.Village
             var r = houseTarget;
             r.housePlaced = true; r.houseX = ghostPos.x; r.houseZ = ghostPos.z; r.houseYaw = ghostYaw; r.house = -1;
             Destroy(ghost.gameObject); ghost = null; houseTarget = null; HousePlacing = false;
-            houseBar.SetActive(false); SetHud(true);
+            EndHousePlaceBar(); SetHud(true);
             var hv = SpawnHouse(r);
             root.Persist("house-placed:" + r.kindId);
             if (hv != null)
@@ -213,15 +200,65 @@ namespace Mongle.Village
             if (agent != null && !agent.OnRide) { ShowBubble(agent.Actor, "와! 내 집이다!", 2.4f); agent.ForceHome(); }
         }
 
-        /// <summary>Not now: the house stays unplaced and the friend asks again the next time the village opens.</summary>
+        /// <summary>
+        /// Not now: the house waits in the storage box (사용하기 sets it down any time) and the friend asks again the next time
+        /// the village opens (user 2026-11-27: after 나중에 the house seemed gone).
+        /// </summary>
         void HouseLater()
         {
             if (!HousePlacing) return;
+            var r = houseTarget;
             if (ghost != null) Destroy(ghost.gameObject);
             ghost = null; houseTarget = null; HousePlacing = false;
-            houseBar.SetActive(false); SetHud(true);
-            root.Say("집은 나중에 정해요. 마을에 다시 오면 물어볼게요", 2.6f);
+            EndHousePlaceBar(); SetHud(true);
+            if (r != null && !newInBox.Contains(HouseItemPrefix + r.kindId)) { newInBox.Add(HouseItemPrefix + r.kindId); RefreshStorageBadge(); }
+            root.Say("집은 보관함에 넣어 뒀어요. 보관함에서 언제든 놓을 수 있어요", 3f);
         }
+
+        void EndHousePlaceBar()
+        {
+            if (PlaceUi != null) PlaceUi.Show(false);
+            WirePlaceBarForFurniture();
+            Hud.Hint(null);
+        }
+
+        const string HouseItemPrefix = "house:";
+
+        /// <summary>The houses not set down yet, as storage-box entries.</summary>
+        System.Collections.Generic.IEnumerable<Mongle.Views.StorageView.Item> HousesInBox()
+        {
+            if (Catalog.houses == null || Catalog.houses.Length == 0) yield break;
+            foreach (var r in root.Residents)
+            {
+                if (r == null || SpotOf(r, out _, out _) || !HouseLots.HasLook(r)) continue;
+                var def = Catalog.ToyDef(r.kindId); string name = def != null ? def.displayName : "친구";
+                var prefab = Catalog.houses[r.houseVariant % Catalog.houses.Length];
+                yield return new Mongle.Views.StorageView.Item
+                {
+                    id = HouseItemPrefix + r.kindId, name = name + "의 집", count = 1, kind = Mongle.Views.StorageView.Kind.Furniture,
+                    description = Josa.IGa(name) + " 살 집이에요. 사용하기를 누르면 마을에 놓아요.",
+                    icon = prefab != null ? IconBaker.Get(HouseItemPrefix + r.houseVariant, prefab) : null,
+                };
+            }
+        }
+
+        /// <summary>Still waiting in the box: a bought piece, or a house not set down yet.</summary>
+        bool InBox(string id) => id != null && id.StartsWith(HouseItemPrefix)
+            ? root.Residents.Any(r => r != null && HouseItemPrefix + r.kindId == id && !SpotOf(r, out _, out _))
+            : World.Owned(id) > 0;
+
+        /// <summary>사용하기 on a house: the box closes and the house follows the pointer to be set down.</summary>
+        bool UseHouseFromBox(string id)
+        {
+            if (id == null || !id.StartsWith(HouseItemPrefix)) return false;
+            var r = root.Residents.FirstOrDefault(x => x != null && HouseItemPrefix + x.kindId == id);
+            if (StorageOpen) CloseStorage();
+            if (r != null && !SpotOf(r, out _, out _)) { housePrompted.Remove(r.kindId); BeginHousePlacement(r); }
+            return true;
+        }
+
+        public bool QaBoxHas(string id) => StorageItems().Any(i => i.id == id);
+        public void QaUseFromBox(string id) => UseFromBox(id);
 
         // ---------------- living in it ----------------
         public void ClickHouse(HouseView h)

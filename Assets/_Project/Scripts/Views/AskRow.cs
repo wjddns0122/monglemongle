@@ -80,7 +80,7 @@ namespace Mongle.Views
         public static string ButtonWords(Ask a)
         {
             if (a.state == AskState.Done || a.state == AskState.Note) return null;
-            if (a.action != null) return a.action.Length > 0 ? a.action : null;
+            if (a.action != null) return a.action.Length > 0 ? a.action : a.state == AskState.Doing ? Loc.Get("quest.doing") : null;
             return Loc.Get(a.state == AskState.Open ? "quest.accept" : a.state == AskState.Ready ? "quest.claim" : "quest.go");
         }
 
@@ -100,7 +100,11 @@ namespace Mongle.Views
             var words = ButtonWords(a);
             button.gameObject.SetActive(words != null);
             if (words == null) return;
-            button.name = (a.state == AskState.Open ? "Quest_Accept_" : a.state == AskState.Ready ? "Quest_Claim_" : "Quest_Go_") + a.id;
+            // accepted, nothing to do from here: the button's place says 진행중 and does not press (user 2026-11-27)
+            bool underWay = a.state == AskState.Doing && a.action != null && a.action.Length == 0;
+            button.interactable = !underWay;
+            var cb = button.colors; cb.disabledColor = cb.normalColor; button.colors = cb;
+            button.name = (underWay ? "Quest_Doing_" : a.state == AskState.Open ? "Quest_Accept_" : a.state == AskState.Ready ? "Quest_Claim_" : "Quest_Go_") + a.id;
             ((Image)button.targetGraphic).sprite = a.state == AskState.Doing ? s.goButton : s.openButton;
             buttonText.text = words;
         }

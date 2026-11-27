@@ -48,6 +48,22 @@ namespace Mongle.Tests
                 Assert.IsTrue(v.yesButton.gameObject.activeSelf); Assert.IsTrue(v.laterButton.gameObject.activeSelf);
                 Assert.IsFalse(v.answer.gameObject.activeSelf); Assert.IsFalse(v.datePanel.activeSelf);
                 Assert.AreEqual("좋아!", v.yesLabel.text);
+                // the top pill wears the sky-blue edge and the heart; the pointer on 다음에 할게 moves them there (user 2026-11-27)
+                Assert.AreEqual(0, v.Lit); Assert.IsTrue(v.yesRing.gameObject.activeSelf); Assert.IsTrue(v.yesHeart.activeSelf);
+                Assert.IsFalse(v.laterRing.gameObject.activeSelf); Assert.IsFalse(v.laterHeart.activeSelf);
+                v.Light(1);
+                Assert.IsFalse(v.yesRing.gameObject.activeSelf); Assert.IsFalse(v.yesHeart.activeSelf);
+                Assert.IsTrue(v.laterRing.gameObject.activeSelf); Assert.IsTrue(v.laterHeart.activeSelf);
+                var ring = (Mongle.UI2.SoftRect)v.laterRing;
+                Assert.AreEqual(5f, ring.borderWidth, 0.01f); Assert.AreEqual(Mongle.EditorTools.ViewKit.Hex("#A0DCF8"), ring.borderColor);
+                Assert.AreEqual(0f, ring.color.a, 0.01f, "only the edge");
+                Assert.AreEqual(1, v.laterButton.GetComponent<UnityEngine.EventSystems.EventTrigger>().triggers.Count, "the pointer chooses");
+                // the arrow keys choose too, Enter / Space answers with the lit pill (user 2026-11-27)
+                v.Move(-1); Assert.AreEqual(0, v.Lit); v.Move(-1); Assert.AreEqual(0, v.Lit, "nothing above the top pill");
+                v.Move(1); Assert.AreEqual(1, v.Lit);
+                yes = later = false; v.PressLit(); Assert.IsTrue(later); Assert.IsFalse(yes);
+                v.Ask("몽이", Color.white, "같이 타줄래?", "", "좋아!", () => yes = true, "다음에 할게", null);
+                v.PressLit(); Assert.IsTrue(yes, "the top pill is lit at first");
                 Assert.IsTrue(v.QaYes()); Assert.IsTrue(yes);
                 Assert.IsTrue(v.QaLater()); Assert.IsTrue(later);
                 float w = ((RectTransform)v.nameTag.transform).sizeDelta.x;

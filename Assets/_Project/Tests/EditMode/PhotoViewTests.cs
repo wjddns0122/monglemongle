@@ -126,6 +126,10 @@ namespace Mongle.Tests
             {
                 var v = go.GetComponent<PhotoView>();
                 Assert.AreEqual(0f, v.banner.anchoredPosition.x, 0.01f, "in the middle of the screen");
+                Assert.AreEqual(0f, v.viewfinder.anchoredPosition.x, 0.01f, "the polaroid in the middle too (user 2026-11-27)");
+                Assert.AreEqual(62f, v.bannerPad, 0.01f, "Figma 115:1573's pill: 62 in from its ends");
+                Assert.AreEqual(38f, v.bannerText.fontSize, 0.01f); Assert.AreEqual(97f, v.banner.sizeDelta.y, 0.01f);
+                Assert.AreEqual(-97.75f, v.banner.anchoredPosition.y, 0.01f, "its middle at y 97.75 like every top line");
                 v.Banner("찰칵");
                 Assert.AreEqual(v.bannerMinWidth, v.banner.sizeDelta.x, 0.01f);
                 v.Banner("프레임과 포즈를 고르고 사진을 찍어요, 마음에 들면 남겨요");

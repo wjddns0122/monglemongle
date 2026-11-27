@@ -32,6 +32,7 @@ namespace Mongle.Views
         public Button startButton;
         public TMP_Text startText;
         [Tooltip("알약이 글자에 맞춰 늘어날 때 양옆 여백")] public float pillPad = 34f;
+        [Tooltip("나온 것 알약: 글자 양옆 / 위아래 여백, 한 줄 높이 (마을 첫 안내 알약과 같은 크기)")] public float resultPad = 62f, resultPadY = 24f, resultHeight = 97f;
 
         public Action OnBack, OnStart;
 
@@ -83,7 +84,15 @@ namespace Mongle.Views
         public void SetHint(string text) => Pill(hint, hintText, text, 394.17f);
 
         /// <summary>What came out of the machine, in the middle (null hides it).</summary>
-        public void ShowResult(string text) => Pill(result, resultText, text, 0f);
+        public void ShowResult(string text)
+        {
+            Pill(result, resultText, text, 0f);
+            if (result == null || string.IsNullOrEmpty(text)) return;
+            // the first hint's pill: 62 in from its ends, 97 tall for one line, taller for two
+            var size = resultText.GetPreferredValues(text, 1200f, 0f);
+            result.sizeDelta = new Vector2(size.x + 2f * resultPad, Mathf.Max(resultHeight, size.y + 2f * resultPadY));
+            var shape = result.GetComponent<Mongle.UI2.SoftRect>(); if (shape != null) { shape.radius = Vector4.one * resultHeight * 0.5f; shape.SetVerticesDirty(); }
+        }
 
         /// <summary>The big button: its words and whether it can be pressed now.</summary>
         public void SetStart(string label, bool can)

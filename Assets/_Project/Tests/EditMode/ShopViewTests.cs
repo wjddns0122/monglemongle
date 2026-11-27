@@ -142,6 +142,9 @@ namespace Mongle.Tests
                 var row = (RectTransform)v.rows[0].root.transform;
                 Assert.AreEqual(1153.23f, row.sizeDelta.x, 0.01f, "the field's width (Figma 88:1226)");
                 Assert.AreEqual(672.38f - 621f, row.anchoredPosition.x, 0.01f, "its left edge");
+                Assert.AreEqual(136.95f, row.sizeDelta.y, 0.01f, "as tall as the field too (user 2026-11-27)");
+                var last = (RectTransform)v.rows[2].root.transform;
+                Assert.Less(-last.anchoredPosition.y + last.sizeDelta.y + 153.5f, 905f, "the third row ends above the page arrows' middle");
                 var btn = (RectTransform)v.rows[0].button.transform;
                 Assert.AreEqual(new Vector2(1f, 1f), btn.anchorMin, "the button keeps to the right end");
                 Assert.IsTrue(v.rows[0].plate is Mongle.UI2.SoftRect s && s.stitch, "a drawn plate: the stitch keeps its spacing at any width");

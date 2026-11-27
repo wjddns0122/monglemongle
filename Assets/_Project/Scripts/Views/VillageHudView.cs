@@ -32,16 +32,24 @@ namespace Mongle.Views
         public Button furnitureButton, albumButton, storageButton;
         [Tooltip("도구마다 파란 테두리 (가구 · 앨범 · 보관함)")] public GameObject[] glows = new GameObject[0];
         [Tooltip("도구마다 말풍선 도움말 (가구 · 앨범 · 보관함)")] public GameObject[] tips = new GameObject[0];
-        public GameObject storageBadge;
+        [Tooltip("새 소식 점 (Figma 115:1398): 퀘스트 · 앨범 · 보관함")] public GameObject storageBadge;
         public TMP_Text storageBadgeText;
+        public GameObject albumBadge;
         [Tooltip("P · E · T 키로 도구를 눌러요")] public bool keys = true;
         [Header("안내")]
         public RectTransform hint;
         public TMP_Text hintText;
         [Tooltip("안내 알약의 글자 양옆 여백")] public float hintPad = 62f;
+        [Tooltip("안내 알약의 글자 위아래 여백 (Figma 115:1255: 두 줄 94.6 + 24 + 24 = 142.6)")] public float hintPadY = 24f;
         public float hintMinWidth = 420f, hintMaxWidth = 1060f;
         public RectTransform tracker;
         public TMP_Text trackerText;
+        [Header("별 찾기")]
+        public RectTransform hunt;
+        public TMP_Text huntText;
+        public RectTransform huntInfo;
+        public TMP_Text huntInfoText;
+        [Tooltip("별 찾기 알약 글자 양옆 여백 / 설명 알약 글자 양옆 여백")] public float huntPad = 50f, huntInfoPad = 32f;
         [Header("탈것 알림")]
         public GameObject rideBar;
         public TMP_Text rideText;
@@ -85,9 +93,9 @@ namespace Mongle.Views
         {
             if (hint != null && hint.gameObject.activeSelf && Time.unscaledTime > hintUntil) Hint(null);
             if (tipsUntil > 0f && Time.unscaledTime > tipsUntil) { tipsUntil = 0f; RefreshTiles(); }
-            Pulse(questBadge); Pulse(storageBadge);
+            Pulse(questBadge); Pulse(storageBadge); Pulse(albumBadge);
             var kb = UnityEngine.InputSystem.Keyboard.current;
-            if (!keys || kb == null || toolbar == null || !toolbar.activeInHierarchy) return;
+            if (!keys || kb == null || toolbar == null || !toolbar.activeInHierarchy || WindowHidden) return;   // not under a window (a friend's talk …)
             if (EventSystem.current != null && EventSystem.current.currentSelectedGameObject != null && EventSystem.current.currentSelectedGameObject.GetComponent<TMP_InputField>() != null) return;
             if (kb.pKey.wasPressedThisFrame) OnFurniture?.Invoke();
             if (kb.eKey.wasPressedThisFrame) OnAlbum?.Invoke();
@@ -104,6 +112,9 @@ namespace Mongle.Views
         public string CoinsText => coinText != null ? coinText.text : "";
 
         public void SetQuestNews(int n) => Badge(questBadge, questBadgeText, n);
+        /// <summary>New photos in the album since it was last opened: the dot on the 앨범 tile.</summary>
+        public void SetAlbumNews(int n) => Badge(albumBadge, null, n);
+        public bool AlbumNewsShown => albumBadge != null && albumBadge.activeSelf;
         public void SetStorageNews(int n) => Badge(storageBadge, storageBadgeText, n);
 
         static void Badge(GameObject badge, TMP_Text text, int n)
@@ -118,16 +129,38 @@ namespace Mongle.Views
         public void Hint(string text, float seconds = 0f)
         {
             if (hint == null) return;
-            if (string.IsNullOrEmpty(text)) { hint.gameObject.SetActive(false); hintUntil = float.MaxValue; return; }
+            if (string.IsNullOrEmpty(text)) { hint.gameObject.SetActive(false); hintUntil = float.MaxValue; RefreshHunt(); return; }
             hintText.text = text;
             var size = hintText.GetPreferredValues(text, hintMaxWidth - 2f * hintPad, 0f);
             float w = Mathf.Clamp(size.x + 2f * hintPad, hintMinWidth, hintMaxWidth);
-            hint.sizeDelta = new Vector2(w, Mathf.Max(76f, size.y + 32f));
+            hint.sizeDelta = new Vector2(w, Mathf.Max(76f, size.y + 2f * hintPadY));
             hint.gameObject.SetActive(true);
             hintUntil = seconds > 0f ? Time.unscaledTime + seconds : float.MaxValue;
+            RefreshHunt();
         }
 
         public bool HintShown => hint != null && hint.gameObject.activeSelf;
+
+        // ---------------- the star hunt ----------------
+        string huntLine, huntInfoLine;
+        /// <summary>The star hunt in the top row (how many, the time) and what to do under it; a hint in the same place goes first.</summary>
+        public void ShowHunt(string line, string info) { huntLine = line; huntInfoLine = info; RefreshHunt(); }
+        public void HideHunt() { huntLine = huntInfoLine = null; RefreshHunt(); }
+        public bool HuntShown => hunt != null && hunt.gameObject.activeSelf;
+        public string HuntText => HuntShown ? huntText.text : "";
+        public bool HuntInfoShown => huntInfo != null && huntInfo.gameObject.activeSelf;
+
+        void RefreshHunt()
+        {
+            if (hunt == null) return;
+            bool on = !string.IsNullOrEmpty(huntLine) && !HintShown;
+            if (hunt.gameObject.activeSelf != on) hunt.gameObject.SetActive(on);
+            bool infoOn = on && huntInfo != null && !string.IsNullOrEmpty(huntInfoLine);
+            if (huntInfo != null && huntInfo.gameObject.activeSelf != infoOn) huntInfo.gameObject.SetActive(infoOn);
+            if (!on) return;
+            if (huntText.text != huntLine) { huntText.text = huntLine; hunt.sizeDelta = new Vector2(Mathf.Max(300f, huntText.GetPreferredValues(huntLine, 99999f, 0f).x + 2f * huntPad), hunt.sizeDelta.y); }
+            if (infoOn && huntInfoText.text != huntInfoLine) { huntInfoText.text = huntInfoLine; huntInfo.sizeDelta = new Vector2(huntInfoText.GetPreferredValues(huntInfoLine, 99999f, 0f).x + 2f * huntInfoPad, huntInfo.sizeDelta.y); }
+        }
         public string HintText => HintShown ? hintText.text : "";
 
         // ---------------- what is under way ----------------
@@ -135,7 +168,7 @@ namespace Mongle.Views
         public void SetTracker(IList<string> lines)
         {
             if (tracker == null) return;
-            bool any = lines != null && lines.Count > 0 && !focus;
+            bool any = lines != null && lines.Count > 0 && !focus && !placing;
             tracker.gameObject.SetActive(any);
             if (!any) return;
             trackerText.text = string.Join("\n", lines);
@@ -152,7 +185,7 @@ namespace Mongle.Views
         {
             toolbarWanted = on;
             if (toolbar != null) toolbar.SetActive(on && !focus && (top == null || top.activeSelf));
-            if (tracker != null && (!on || focus)) tracker.gameObject.SetActive(false);
+            if (tracker != null && (!on || focus || placing)) tracker.gameObject.SetActive(false);
         }
 
         /// <summary>A friend's card is open (Figma 88:1912): only the home, zoom, coins and gear stay; the 퀘스트 pill, what is under
@@ -164,16 +197,42 @@ namespace Mongle.Views
         public void Focus(bool on, bool home)
         {
             focus = on;
-            if (questButton != null) questButton.gameObject.SetActive(!on);
-            if (homeButton != null) homeButton.gameObject.SetActive(!on || home);
+            if (questButton != null) questButton.gameObject.SetActive(!on && !placing);
+            if (homeButton != null) homeButton.gameObject.SetActive((!on || home) && !placing);
             ShowToolbar(toolbarWanted);
         }
         public bool Focused => focus;
+
+        /// <summary>
+        /// A window is open (shop, storage, quest board, album, claw machine, a friend's talk, a dialog, settings): the whole HUD
+        /// steps away until it closes; only the friend card keeps it (user 2026-11-27: "다른 UI들 들어가지면 기본 UI는 꺼지는걸로
+        /// … 프로필만 빼고").
+        /// </summary>
+        public void SetWindowOpen(bool on)
+        {
+            if (windowFade != null && on == WindowHidden) return;
+            if (windowFade == null) { windowFade = GetComponent<CanvasGroup>(); if (windowFade == null) windowFade = gameObject.AddComponent<CanvasGroup>(); }
+            WindowHidden = on;
+            windowFade.alpha = on ? 0f : 1f; windowFade.blocksRaycasts = !on; windowFade.interactable = !on;
+        }
+        public bool WindowHidden { get; private set; }
+        CanvasGroup windowFade;
         public bool HomeShown => homeButton != null && homeButton.gameObject.activeInHierarchy;
         public bool ToolbarShown => toolbar != null && toolbar.activeInHierarchy;
 
-        /// <summary>While furniture is being moved the 가구 tile keeps its blue edge.</summary>
-        public void SetPlacing(bool on) { placing = on; RefreshTiles(); }
+        /// <summary>
+        /// Furniture is being moved (Figma 115:1398): the placing screen's ◀ stands where the home button was, so the home button,
+        /// the 퀘스트 pill and what is under way step aside; the tiles, the zoom pair, the coins and the gear stay (no blue edges).
+        /// </summary>
+        public void SetPlacing(bool on)
+        {
+            placing = on;
+            if (homeButton != null) homeButton.gameObject.SetActive(!on);
+            if (questButton != null) questButton.gameObject.SetActive(!on && !focus);
+            if (on && tracker != null) tracker.gameObject.SetActive(false);
+            RefreshTiles();
+        }
+        public bool Placing => placing;
 
         /// <summary>All three tips (and edges) for a while: the first look at the village (Figma 88:510).</summary>
         public void ShowTips(float seconds) { tipsUntil = Time.unscaledTime + seconds; RefreshTiles(); }
@@ -186,7 +245,7 @@ namespace Mongle.Views
             {
                 bool tip = all || hovered[i];
                 if (i < tips.Length && tips[i] != null) tips[i].SetActive(tip);
-                if (i < glows.Length && glows[i] != null) glows[i].SetActive(tip || (i == 0 && placing));
+                if (i < glows.Length && glows[i] != null) glows[i].SetActive(tip);
             }
         }
 
@@ -205,7 +264,7 @@ namespace Mongle.Views
         /// </summary>
         public Rect FreeTopBand(float gap = 16f)
         {
-            if (hint == null || HintShown || top == null || !top.activeInHierarchy) return Rect.zero;
+            if (hint == null || HintShown || HuntShown || top == null || !top.activeInHierarchy) return Rect.zero;
             var canvas = GetComponentInParent<Canvas>(); float s = canvas != null ? canvas.scaleFactor : 1f;
             hint.GetWorldCorners(corners); float bottom = corners[0].y, topY = corners[1].y;
             float mid = Screen.width * 0.5f, room = mid;

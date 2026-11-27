@@ -231,6 +231,32 @@ namespace Mongle.Core
         }
         void OnPhoto(PhotoRecord p) => Persist("photo");
 
+        const string StarterGiftsKey = "gift:mongi-starter";
+
+        /// <summary>
+        /// Mongi's free first-dress-up accessories that it is not wearing go to the storage box, once (user 2026-11-27: "기본
+        /// 아이템들을 처음에 착용 안하면 없다"); a save from before gets them on its next visit to the village.
+        /// </summary>
+        public bool GiveStarterAccessories()
+        {
+            if (Toy == null || !Toy.CustomizationConfirmed || Catalog == null || World.HasSeen(StarterGiftsKey)) return false;
+            foreach (var id in StarterGiftsToBox(Catalog.toy, Toy.Equipped, World.Owned)) World.AddToInventory(id);
+            World.MarkSeen(StarterGiftsKey);
+            return true;
+        }
+
+        /// <summary>Mongi's free gifts that it does not wear and that the box does not hold already.</summary>
+        public static System.Collections.Generic.List<string> StarterGiftsToBox(ToyDefinition def,
+            System.Collections.Generic.IReadOnlyDictionary<AccessorySlot, string> worn, Func<string, int> owned)
+        {
+            var list = new System.Collections.Generic.List<string>();
+            var gifts = def == null ? null : def.giftAccessories != null && def.giftAccessories.Length > 0 ? def.giftAccessories : def.accessories;
+            if (gifts == null) return list;
+            foreach (var a in gifts)
+                if (a != null && !worn.Values.Contains(a.id) && owned(a.id) == 0 && !list.Contains(a.id)) list.Add(a.id);
+            return list;
+        }
+
         public void Persist(string reason)
         {
             if (Toy == null) return;

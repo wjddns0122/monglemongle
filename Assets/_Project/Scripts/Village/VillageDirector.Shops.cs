@@ -20,6 +20,10 @@ namespace Mongle.Village
         public ShopBuilding OpenedShop { get; private set; }
         public readonly System.Collections.Generic.List<ShopBuilding> Shops = new System.Collections.Generic.List<ShopBuilding>();
         public bool AnyPanelOpen => ShopOpen || StorageOpen || ClawOpen || HousePlacing;
+        /// <summary>A window over the village — everything but the friend card: the HUD steps away (VillageHudView.SetWindowOpen).</summary>
+        public bool WindowOpen => ShopOpen || StorageOpen || ClawOpen || QuestBoardOpen || FriendDialogOpen
+            || Mongle.Views.AlbumView.IsOpen || Mongle.Views.DialogView.IsOpen || Mongle.UI2.UiFront.SettingsOpen;
+        public bool HudHidden => Hud != null && Hud.WindowHidden;
         bool ShopOpen => Shop != null && Shop.Visible;
         bool StorageOpen => Storage != null && Storage.Visible;
         static readonly Color Water = new Color(0.55f, 0.8f, 1f, 1f);
@@ -72,6 +76,11 @@ namespace Mongle.Village
                 var giver = Catalog.ToyDef(fq.giver);
                 lines.Add((giver != null ? giver.displayName : fq.giver) + " · " + FriendQuestText.Title(fq.kind) + (fq.target > 1 ? "  " + fq.progress + "/" + fq.target : ""));
             }
+            foreach (var fq in World.FriendQuests.Waiting)
+            {
+                var giver = Catalog.ToyDef(fq.giver); string n = giver != null ? giver.displayName : fq.giver;
+                lines.Add(n + " · 다 했어요! 가서 알려 주기");
+            }
             Hud.SetTracker(lines);   // under the 퀘스트 pill
         }
 
@@ -111,7 +120,7 @@ namespace Mongle.Village
             RefreshShop();
         }
 
-        void RefreshCoins() { if (Hud != null) Hud.SetCoins(World.Coins); RefreshStorageBadge(); }
+        void RefreshCoins() { if (Hud != null) Hud.SetCoins(World.Coins); RefreshStorageBadge(); RefreshAlbumBadge(); }
 
         void SetHud(bool on) { if (Hud != null) Hud.ShowHud(on); }
 
@@ -136,6 +145,7 @@ namespace Mongle.Village
             foreach (var h in hits)
             {
                 var toyHit = h.collider.GetComponentInParent<ToyAgent>();
+                if (toyHit != null && ClaimDoneOf(toyHit)) return true; // its request is done: telling it pays (user 2026-11-27)
                 if (toyHit != null && OpenOfferOf(toyHit)) return true; // a "!" or "?" over its head: the request comes first
                 if (toyHit == Agent) return TryClickToy(screen);
                 if (toyHit != null && !toyHit.IsMain) { GreetResident(toyHit); return true; }
@@ -351,18 +361,24 @@ namespace Mongle.Village
             root.Audio.Play("click", 0.5f);
         }
 
-        /// <summary>What is in the box: furniture, then plants, then accessories (the 전체 / 가구 / 악세서리 tabs read the same way).</summary>
-        System.Collections.Generic.List<Mongle.Views.StorageView.Item> StorageItems() =>
-            Catalog.furniture.Where(f => f != null && (f.Placeable || f.IsAccessory) && World.Owned(f.id) > 0).OrderBy(f => (int)f.category)
+        /// <summary>What is in the box: furniture, then plants, then accessories (the 전체 / 가구 / 악세서리 tabs read the same way),
+        /// and a friend's house that was left for later.</summary>
+        System.Collections.Generic.List<Mongle.Views.StorageView.Item> StorageItems()
+        {
+            var list = Catalog.furniture.Where(f => f != null && (f.Placeable || f.IsAccessory) && World.Owned(f.id) > 0).OrderBy(f => (int)f.category)
                 .Select(f => new Mongle.Views.StorageView.Item
                 {
                     id = f.id, name = f.displayName, description = f.description, icon = IconBaker.Get(f), count = World.Owned(f.id),
                     kind = f.IsAccessory ? Mongle.Views.StorageView.Kind.Accessory : Mongle.Views.StorageView.Kind.Furniture,
                 }).ToList();
+            list.AddRange(HousesInBox());
+            return list;
+        }
 
         /// <summary>사용하기: a piece goes into the village to be placed, an accessory onto a friend.</summary>
         void UseFromBox(string id)
         {
+            if (UseHouseFromBox(id)) return;
             var def = Catalog.Furniture(id);
             if (def == null) return;
             if (def.IsAccessory) DressFromBox(def); else BeginPlaceFromInventory(def);
@@ -375,7 +391,7 @@ namespace Mongle.Village
         void RefreshStorageBadge()
         {
             if (Hud == null || root == null) return;
-            Hud.SetStorageNews(newInBox.Count(id => World.Owned(id) > 0));
+            Hud.SetStorageNews(newInBox.Count(InBox));
         }
 
         /// <summary>An accessory from the box: open Mongi's dress-up right away (other friends: click them in the park).</summary>
@@ -448,6 +464,7 @@ namespace Mongle.Village
             if (f.IsNew) { DiscardNew(f, "보관함으로 돌아갔어요"); return; }
             if (!f.Def.Storable) { root.Say(f.Def.IsPlant ? "식물은 보관함에 넣을 수 없어요" : "이 가구는 마을에 계속 있어요"); root.Audio.Play("wrong", 0.4f); return; }
             if (f.InUse) { root.Say("몽이가 쓰고 있어요"); return; }
+            if (PlacingMode) RecordPlacement(PlacementChange.Store, f, f.Placement, 0, 0, 0);   // 되돌리기 puts it back where it stood
             state.Furniture.RemoveAll(x => x.Id == f.Placement.Id);
             World.AddToInventory(f.Def.id);
             Agent.OnFurnitureChanged(f);

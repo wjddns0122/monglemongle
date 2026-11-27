@@ -37,6 +37,7 @@ namespace Mongle.Views
         [Header("도구 막대")]
         public RectTransform toolBar;
         [Tooltip("도구 칸 (왼쪽부터)")] public Button[] slots = new Button[0];
+        [Tooltip("도구 그림 밝기 (그림에 곱해요; 흰 칸 위에서 너무 밝아 잘 안 보여서 낮춰요)")] public Color toolTint = new Color(0.8f, 0.8f, 0.8f, 1f);
         public Button prevPage, nextPage;
         [Tooltip("도구 설명 말풍선")] public RectTransform tip;
         public TMP_Text tipText;
@@ -146,7 +147,7 @@ namespace Mongle.Views
                 var t = ToolAt(i);
                 var icon = Find(slots[i].transform, "Icon").GetComponent<Image>();
                 var sp = t != null ? Resources.Load<Sprite>("UI/Tools/" + t.id) : null;
-                icon.sprite = sp; icon.enabled = sp != null;
+                icon.sprite = sp; icon.enabled = sp != null; icon.color = toolTint;
                 var label = Find(slots[i].transform, "Name").GetComponent<TMP_Text>();
                 label.text = t != null && sp == null ? t.displayName : "";   // a tool without a picture shows its name
                 slots[i].interactable = t != null;

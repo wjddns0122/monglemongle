@@ -27,20 +27,23 @@ namespace Mongle.EditorTools
             var root = Root("RepairHud", 10);
             var v = root.gameObject.AddComponent<RepairHudView>();
 
-            v.backButton = PictureButton(root, "Btn_Back", "Common/back.png", 35f, 41f, 90.5f, 94f, TL);
-            v.gearButton = PictureButton(root, "Btn_Gear", "Common/gear.png", 1779.2f, 47.67f, 103f, 103f, TR);
+            // the corner buttons every screen shares (Figma 통일본 115:1254): ◀ node 99.5 at (50, 48), the gear 99.52 at (1791, 48)
+            v.backButton = PictureButton(root, "Btn_Back", "Common/back_corner.png", 48.5f, 46.5f, 104.5f, 108f, TL);
+            v.gearButton = PictureButton(root, "Btn_Gear", "Village/gear.png", 1788.5f, 45.5f, 107f, 107f, TR);
 
-            // the hint banner: a cream pill (no stroke) centred 71.5 right of the middle, 48 px words
-            var banner = Node(root, "Banner", 716.32f, 36.68f, 630.46f, 115.78f, T);
-            Shape(banner.gameObject, Pill, Vector4.one * 57.89f);
-            var bt = Words(banner, "Text", "해냈어요!", 48f, Brown, 0f, 0f, 630.46f, 115.78f, C, HorizontalAlignmentOptions.Center, null, new Vector2(630.46f, 115.78f));
-            Stretch(bt.rectTransform, 40f, 0.7f);
-            v.banner = banner; v.bannerText = bt;
+            // the hint banner: the cream pill of Figma 115:1573 (user 2026-11-27: "여기 여백을 … 이렇게 하고 폰트사이즈도"): 97 tall,
+            // its middle at y 97.75, round ends, 38 px words 62 in from its ends; in the middle of the screen
+            var banner = Node(root, "Banner", 640.5f, 49.25f, 639f, 97f, T);
+            banner.pivot = new Vector2(0.5f, 0.5f); banner.anchoredPosition = new Vector2(0f, -97.75f);
+            Shape(banner.gameObject, Pill, Vector4.one * 48.5f);
+            var bt = Words(banner, "Text", "해냈어요!", 38f, Brown, 0f, 0f, 639f, 97f, C, HorizontalAlignmentOptions.Center, null, new Vector2(639f, 97f));
+            Stretch(bt.rectTransform, 0f, 0f);
+            v.banner = banner; v.bannerText = bt; v.bannerPad = 62f; v.bannerMinWidth = 300f;   // hugs short lines too
 
-            // zoom at the right edge
-            v.zoomIn = PictureButton(root, "Btn_ZoomIn", "Common/zoom_plus.png", 1797.5f, 474f, 103f, 103f, R);
-            v.zoomOut = PictureButton(root, "Btn_ZoomOut", "Common/sq_plate.png", 1799f, 593.5f, 103f, 103f, R);
-            Words(v.zoomOut.transform, "Minus", "-", 60f, Minus, 35.04f, 10.61f, 35f, 78f, TL, HorizontalAlignmentOptions.Center, null, new Vector2(103f, 103f));
+            // zoom at the right edge (115:1573: nodes 99.52 at (1791, 441) / (1791, 569), the pictures 2.5 out; "-" 60 px at (1825.21, 579.11))
+            v.zoomIn = PictureButton(root, "Btn_ZoomIn", "Village/zoom_plus.png", 1788.5f, 438.5f, 107f, 107f, R);
+            v.zoomOut = PictureButton(root, "Btn_ZoomOut", "Village/zoom_minus.png", 1788.5f, 566.5f, 107f, 107f, R);
+            Words(v.zoomOut.transform, "Minus", "-", 60f, Minus, 1825.21f - 1788.5f, 579.11f - 566.5f, 35f, 78f, TL, HorizontalAlignmentOptions.Center, null, new Vector2(107f, 107f));
 
             Notebook(root, v);
             ToolBar(root, v);
@@ -56,7 +59,9 @@ namespace Mongle.EditorTools
         static void Notebook(RectTransform root, RepairHudView v)
         {
             var size = new Vector2(430.18f, 543.16f);
-            var nb = Node(root, "Notebook", 47.45f, 207.11f, size.x, size.y, TL);
+            // in the middle of the screen's height down the left column, under ◀ (user 2026-11-27: "진료수첩을 좀 밑으로 … Column줄에
+            // Center로"): pinned to the left middle, it grows both ways with its rows
+            var nb = Node(root, "Notebook", 47.45f, 540f - size.y / 2f, size.x, size.y, L);
             var sheet = Shape(nb.gameObject, Sheet, Vector4.one * 28f); sheet.raycastTarget = true;
             sheet.stitch = true; sheet.stitchColor = Stitch; sheet.stitchWidth = 3f; sheet.dash = 14.59f; sheet.gap = 14.6f; sheet.roundCaps = true;
             sheet.stitchPad = new Vector4(11.95f, 15.09f, 11.95f, 15.09f); sheet.stitchRadius = 28f; sheet.stitchPeriod = 29.19f;

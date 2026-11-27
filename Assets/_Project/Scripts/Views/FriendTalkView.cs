@@ -25,6 +25,8 @@ namespace Mongle.Views
         [Header("부탁 (좋아! / 다음에 할게)")]
         public Button yesButton, laterButton;
         public TMP_Text yesLabel, laterLabel;
+        [Tooltip("고른 쪽의 하늘색 테두리 (좋아! · 다음에 할게 · 질문 칸)")] public Graphic yesRing, laterRing, answerRing;
+        [Tooltip("고른 쪽의 하트")] public GameObject yesHeart, laterHeart;
         [Header("질문 (고르기)")]
         public TMP_Dropdown answer;
         [Header("생일 (월 / 일)")]
@@ -70,12 +72,69 @@ namespace Mongle.Views
             if (month != null) month.onValueChanged.AddListener(_ => { FillDays(); TryDate(); });
             if (day != null) day.onValueChanged.AddListener(_ => TryDate());
             if (next != null) nextY = next.anchoredPosition.y;
+            // the pointer chooses: the pill under it wears the edge and the heart (the top one at first)
+            Hover(yesButton != null ? yesButton.gameObject : null, 0);
+            Hover(answer != null ? answer.gameObject : null, 0);
+            Hover(laterButton != null ? laterButton.gameObject : null, 1);
+        }
+
+        void Hover(GameObject go, int i)
+        {
+            if (go == null) return;
+            var t = go.GetComponent<UnityEngine.EventSystems.EventTrigger>() ?? go.AddComponent<UnityEngine.EventSystems.EventTrigger>();
+            var enter = new UnityEngine.EventSystems.EventTrigger.Entry { eventID = UnityEngine.EventSystems.EventTriggerType.PointerEnter };
+            enter.callback.AddListener(_ => Light(i));
+            t.triggers.Add(enter);
+        }
+
+        /// <summary>Which pill wears the sky-blue edge and the heart: 0 the top one (좋아! or the answers), 1 다음에 할게.</summary>
+        public void Light(int i)
+        {
+            Lit = i;
+            if (yesRing != null) yesRing.gameObject.SetActive(i == 0);
+            if (yesHeart != null) yesHeart.SetActive(i == 0);
+            if (answerRing != null) answerRing.gameObject.SetActive(i == 0);
+            if (laterRing != null) laterRing.gameObject.SetActive(i == 1);
+            if (laterHeart != null) laterHeart.SetActive(i == 1);
+        }
+        public int Lit { get; private set; }
+
+        bool AnyListOpen => (answer != null && answer.IsExpanded) || (month != null && month.IsExpanded) || (day != null && day.IsExpanded);
+        bool LaterShown => laterButton != null && laterButton.gameObject.activeSelf;
+        bool TopShown => (yesButton != null && yesButton.gameObject.activeSelf) || (answer != null && answer.gameObject.activeSelf) || (datePanel != null && datePanel.activeSelf);
+
+        /// <summary>↑ (-1) / ↓ (+1): the other pill, if there is one.</summary>
+        public void Move(int step)
+        {
+            int to = Mathf.Clamp(Lit + step, 0, 1);
+            if (to == 1 && !LaterShown) return;
+            if (to == 0 && !TopShown) return;
+            Light(to);
+        }
+
+        /// <summary>Enter / Space: 좋아!, the answers' list (opened), the month's list, or 다음에 할게 — whichever wears the edge.</summary>
+        public void PressLit()
+        {
+            if (!Visible) return;
+            if (Lit == 1) { if (LaterShown) laterButton.onClick.Invoke(); return; }
+            if (yesButton != null && yesButton.gameObject.activeSelf) yesButton.onClick.Invoke();
+            else if (answer != null && answer.gameObject.activeSelf) answer.Show();
+            else if (datePanel != null && datePanel.activeSelf && month != null) month.Show();
         }
 
         void OnDestroy() { if (current == this) current = null; }
 
         void Update()
         {
+            // the talk has the keys while it is up (user 2026-11-27: "질문에 집중 … 방향키로는 질문에 답할 수 있게만"):
+            // ↑ / ↓ choose the pill, Enter or Space answers with it (a drop-down's open list keeps its own keys)
+            var kb = UnityEngine.InputSystem.Keyboard.current;
+            if (kb != null && !AnyListOpen)
+            {
+                if (kb.upArrowKey.wasPressedThisFrame) Move(-1);
+                if (kb.downArrowKey.wasPressedThisFrame) Move(1);
+                if (kb.enterKey.wasPressedThisFrame || kb.numpadEnterKey.wasPressedThisFrame || kb.spaceKey.wasPressedThisFrame) PressLit();
+            }
             // the little ▼ of a drop-down points up while its list is open (Figma 88:367)
             var downs = new[] { answer, month, day };
             for (int i = 0; i < arrows.Length && i < downs.Length; i++)
@@ -138,6 +197,7 @@ namespace Mongle.Views
             laterButton.gameObject.SetActive(!string.IsNullOrEmpty(later));
             yesButton.gameObject.SetActive(false); answer.gameObject.SetActive(false); datePanel.SetActive(false);
             onYes = null; onAnswer = null; onDate = null;
+            Light(0);
             transform.SetAsLastSibling();
         }
 

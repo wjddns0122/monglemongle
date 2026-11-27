@@ -53,6 +53,16 @@ namespace Mongle.EditorTools
 
         public static Sprite Art(string file) => AssetDatabase.LoadAssetAtPath<Sprite>(ArtDir + "/" + file);
 
+        /// <summary>The TMP line spacing that puts two lines <paramref name="pitch"/> apart (Figma's line height).</summary>
+        public static float LineSpacingFor(TMP_Text t, float pitch)
+        {
+            string keep = t.text; t.lineSpacing = 0f;
+            t.text = "가\n가"; t.ForceMeshUpdate();
+            float p0 = t.textInfo.lineCount > 1 ? t.textInfo.lineInfo[0].baseline - t.textInfo.lineInfo[1].baseline : pitch;
+            t.text = keep;
+            return (pitch - p0) / (t.fontSize * 0.01f);
+        }
+
         public static Image Picture(Transform parent, string name, string art, float x, float y, float w, float h, Vector2 anchor, Vector2? parentSize = null, bool sliced = false)
         {
             var img = Node(parent, name, x, y, w, h, anchor, parentSize).gameObject.AddComponent<Image>();

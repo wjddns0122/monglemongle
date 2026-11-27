@@ -122,7 +122,7 @@ namespace Mongle.Views
         public bool QaPress(string id)
         {
             int i = asks.FindIndex(a => a.id == id);
-            if (i < 0 || !Visible || i >= rows.Count || !rows[i].button.gameObject.activeSelf) return false;
+            if (i < 0 || !Visible || i >= rows.Count || !rows[i].button.gameObject.activeSelf || !rows[i].button.interactable) return false;
             rows[i].button.onClick.Invoke(); return true;
         }
 

@@ -44,7 +44,10 @@ namespace Mongle.Tests
                 Assert.AreEqual(-v.step, ((RectTransform)shown[1]).anchoredPosition.y - ((RectTransform)shown[0]).anchoredPosition.y, 0.01f, "200.5 apart");
                 Assert.IsTrue(v.scroll.verticalScrollbar.gameObject.activeSelf, "five rows scroll (four fit)");
                 Assert.IsTrue(v.QaPress("F1")); Assert.IsTrue(went);
-                Assert.IsFalse(v.QaPress("F2"), "nothing to do from here: no button");
+                Assert.IsFalse(v.QaPress("F2"), "nothing to do from here: it only says it is under way");
+                Assert.IsTrue(v.RowOf("F2").button.gameObject.activeSelf, "accepted: the button's place says 진행중 (user 2026-11-27)");
+                Assert.AreEqual("진행중", v.RowOf("F2").buttonText.text); Assert.IsFalse(v.RowOf("F2").button.interactable);
+                Assert.AreEqual("Quest_Doing_F2", v.RowOf("F2").button.name);
                 Assert.AreEqual("Quest_Claim_S1", v.RowOf("S1").button.name); Assert.AreEqual(v.style.openButton, ((UnityEngine.UI.Image)v.RowOf("S1").button.targetGraphic).sprite);
                 Assert.AreEqual("가게 가기", v.RowOf("S1").buttonText.text);
                 Assert.AreEqual(v.style.goButton, ((UnityEngine.UI.Image)v.RowOf("F1").button.targetGraphic).sprite);

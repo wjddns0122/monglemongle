@@ -14,7 +14,15 @@ namespace Mongle.UI
         {
             if (def == null || def.prefab == null) return null;
             if (cache.TryGetValue(def.id, out var s) && s != null) return s;
-            s = Bake(def); cache[def.id] = s; return s;
+            s = Bake(def.prefab, def); cache[def.id] = s; return s;
+        }
+
+        /// <summary>An icon of any prefab (a friend's house in the storage box), cached under <paramref name="key"/>.</summary>
+        public static Sprite Get(string key, GameObject prefab)
+        {
+            if (prefab == null || string.IsNullOrEmpty(key)) return null;
+            if (cache.TryGetValue(key, out var s) && s != null) return s;
+            s = Bake(prefab, null); cache[key] = s; return s;
         }
 
         public static void Clear() => cache.Clear();
@@ -22,17 +30,17 @@ namespace Mongle.UI
         // the editor's screen-prefab baker draws the cards outside play mode too (D-035): nothing may stay behind in the open scene
         static void Kill(Object o) { if (Application.isPlaying) Object.Destroy(o); else Object.DestroyImmediate(o); }
 
-        static Sprite Bake(FurnitureDefinition def)
+        static Sprite Bake(GameObject prefab, FurnitureDefinition def)
         {
             const int size = 256;
-            var inst = Object.Instantiate(def.prefab, new Vector3(5000f + 40f * (bakes++ % 50), 0f, 5000f), Quaternion.Euler(0, 28f, 0));
+            var inst = Object.Instantiate(prefab, new Vector3(5000f + 40f * (bakes++ % 50), 0f, 5000f), Quaternion.Euler(0, 28f, 0));
             // plants: show the fully grown stage
             for (int i = 0; ; i++)
             {
                 var st = inst.transform.Find("Stage" + i); if (st == null) break;
                 st.gameObject.SetActive(false);
             }
-            if (def.IsPlant) { int last = Mathf.Max(0, def.MaxStage); var st = inst.transform.Find("Stage" + last); if (st != null) st.gameObject.SetActive(true); }
+            if (def != null && def.IsPlant) { int last = Mathf.Max(0, def.MaxStage); var st = inst.transform.Find("Stage" + last); if (st != null) st.gameObject.SetActive(true); }
             var drop = inst.transform.Find("Drop"); if (drop != null) drop.gameObject.SetActive(false);
             foreach (var c in inst.GetComponentsInChildren<Collider>()) c.enabled = false;
 

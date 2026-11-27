@@ -3,8 +3,8 @@ using UnityEngine;
 namespace Mongle.Photo
 {
     /// <summary>
-    /// Framing of the photo studio (11-26 design). The viewfinder is a window in the polaroid, a little right of the screen's
-    /// middle, so the studio camera is shifted to put the toy in the middle of that window, and sized from the toy itself so
+    /// Framing of the photo studio (11-26 design). The viewfinder is a window in the polaroid (in the middle of the screen since
+    /// 2026-11-27); the studio camera is shifted to put the toy in the middle of that window, and sized from the toy itself so
     /// every friend — a short bear or a tall bunny — fills the same share of it. The photo is taken with the same framing:
     /// its inside (without the frame's border) is exactly as wide as the window, so what the window shows is what is kept.
     /// </summary>

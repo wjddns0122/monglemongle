@@ -50,6 +50,9 @@ namespace Mongle.Core
 
         static string Arg(string[] a, string key) { for (int i = 0; i < a.Length - 1; i++) if (a[i] == key) return a[i + 1]; return null; }
 
+        /// <summary>The friend the next visit brings (a look at one friend's repair); null = the game's random pick.</summary>
+        public static string ForceFriend;
+
         public static QaDriver StartForTest(string scenario, string outPath, string shotsDir)
         {
             var go = new GameObject("QaDriver"); DontDestroyOnLoad(go);
@@ -468,7 +471,12 @@ namespace Mongle.Core
                 case DamageType.Tear:
                 case DamageType.EyeButton:
                     src.Position = Scr(mg.HintPoint); yield return null; src.Held = true; yield return null;
-                    while (!mg.Completed && t < 30f) { yield return Move(Scr(mg.HintPoint), 0.2f); yield return new WaitForSeconds(0.1f); t += 0.3f; }
+                    yield return Shot("sew_" + def.id + "_0");
+                    for (int n = 1; !mg.Completed && t < 30f; n++)
+                    {
+                        yield return Move(Scr(mg.HintPoint), 0.2f); yield return new WaitForSeconds(0.1f); t += 0.3f;
+                        if (n <= 8) yield return Shot("sew_" + def.id + "_" + n);
+                    }
                     src.Held = false; yield return null;
                     break;
                 default:   // cotton through a hole, fuel or water: hold the nozzle on the port
@@ -528,7 +536,7 @@ namespace Mongle.Core
             toy.Play("Idle"); yield return new WaitForSeconds(0.4f);
             d.Orbit.SetOrbit(15, 8, 0.95f); yield return new WaitForSeconds(0.9f);
             yield return Shot("08_customization");
-            yield return ClickWhenReady("이대로 확정!");
+            yield return ClickWhenReady("이대로 확정");   // Figma 115:1573
             yield return Until(() => State.CustomizationConfirmed, 5, "customization confirmed");
             Check("customization saved", Reached(() => root.Saves.Load().data.equipped.Count == 3));
         }
@@ -606,6 +614,9 @@ namespace Mongle.Core
             ClickButton("여기에 두기");
             yield return new WaitForSeconds(0.3f);
             Check("pointer placement confirmed and saved", State.Furniture.First(f => f.furnitureId == "Fur_FlowerPot").cellX == 11 && Reached(() => root.Saves.Load().data.furniture.First(f => f.furnitureId == "Fur_FlowerPot").cellX == 11));
+            // Figma 115:1398: 되돌리기 (Z) takes the move back, 다시 하기 (Y) does it again
+            Check("undo takes the pot back", v.QaUndo() && State.Furniture.First(f => f.furnitureId == "Fur_FlowerPot").cellX != 11);
+            Check("redo puts it there again", v.QaRedo() && State.Furniture.First(f => f.furnitureId == "Fur_FlowerPot").cellX == 11);
             v.ExitPlacing();
             Check("confirmed placement survives leaving placement mode", State.Furniture.First(f => f.furnitureId == "Fur_FlowerPot").cellX == 11);
             v.QaBeginPlacing(); v.QaMove("Fur_FlowerPot", 9, 2, 0); v.ExitPlacing();
@@ -650,6 +661,7 @@ namespace Mongle.Core
             yield return Shot("16_talk");
             // 11-26: a click on Mongi opens its friend card, and a click anywhere outside the card closes it (user 2026-11-26)
             Check("clicking the toy opens its friend card", v.DressOpen);
+            Check("the HUD stays for the friend card", !v.HudHidden);
             if (v.DressOpen)
             {
                 var outside = new[] { new Vector2(0.5f, 0.62f), new Vector2(0.3f, 0.6f), new Vector2(0.7f, 0.6f), new Vector2(0.5f, 0.5f) }
@@ -803,6 +815,7 @@ namespace Mongle.Core
             yield return Until(() => v.Shop.Visible, 5, "shop opens on click");
             Check("clicking a shop opens it", v.OpenedShop == fshop && v.Shop.Visible);
             Check("first visit is remembered", w.HasSeen("shop:Shop_Furniture"));
+            Check("the HUD steps away while the shop is open", v.HudHidden);
             yield return new WaitForSeconds(1.2f);
             yield return Shot("41_shop_furniture");
             Check("buying a chair works", v.Shop.QaClick("Buy_Fur_Armchair")); yield return null;
@@ -812,6 +825,7 @@ namespace Mongle.Core
             Check("purchase is saved immediately", Reached(() => { var s = root.Saves.Load().data; return s.coins == 80 && s.inventory.Any(i => i.itemId == "Fur_Armchair" && i.count == 1); }));
             ClickButton("나가기"); yield return new WaitForSeconds(0.3f);
             Check("shop closes", !v.Shop.Visible && v.OpenedShop == null);
+            Check("the HUD comes back when the shop closes", !v.HudHidden);
 
             // plant shop
             Check("plant shop opens", v.QaOpenShop("Shop_Plant")); yield return new WaitForSeconds(1.0f);
@@ -1112,6 +1126,8 @@ namespace Mongle.Core
             var waiting = root.Catalog.friends.Where(f => f != null && f.prefab != null && root.Residents.All(r => r.kindId != f.kindId)).Select(f => f.kindId).ToList();
             // friends wear what the player bought at the accessory shop: one red ribbon for the coming friend
             Check("a red ribbon bought for the coming friend", v.QaBuy("Acc_RedRibbon") == BuyResult.Ok && root.World.Owned("Acc_RedRibbon") >= 1, root.World.Coins.ToString());
+            if (!string.IsNullOrEmpty(ForceFriend) && root.Patient == null && waiting.Contains(ForceFriend)) root.AdmitPatient(root.Catalog.ToyDef(ForceFriend));
+            ForceFriend = null;
             yield return ClickHospital();
             yield return Until(() => root.Patient != null, 5, "patient admitted");
             string kind = root.Patient != null ? root.Patient.KindId : "none";
@@ -1146,6 +1162,14 @@ namespace Mongle.Core
             yield return Until(() => d.Phase == FlowPhase.Repair, 15, "repair phase for " + kind);
             foreach (var dmg in State.Damages.ToList()) yield return RepairOne(dmg.id, null);
             yield return Until(() => d.Phase == FlowPhase.CompletionStamp, 20, "stamp phase for " + kind);
+            yield return Until(() => Mongle.Views.StampView.IsOpen, 10, "stamp card for " + kind);
+            var card = FindAnyObjectByType<Mongle.Views.StampView>();
+            if (card != null)
+            {
+                // Mongi's stamp first, then one per friend who moved in (user 2026-11-27: the second repair stamped the first slot)
+                int shown = card.marks.Count(m => m != null && m.activeSelf), want = Mathf.Min(1 + residentsBefore, card.marks.Length - 1);
+                Check(kind + "'s stamp card already shows the stamps before it", shown == want, shown + " shown, " + want + " expected");
+            }
             yield return ClickWhenReady("도장 찍기!");   // the 11-26 stamp card's button
             yield return Until(() => State.StampDone, 8, "stamp for " + kind);
             yield return Until(() => d.Phase == FlowPhase.Customization, 10, "gift for " + kind);
@@ -1153,7 +1177,7 @@ namespace Mongle.Core
             yield return ClickWhenReady("빨간 리본"); yield return new WaitForSeconds(0.3f);
             Check(kind + " wears the ribbon", d.Toy.WornObject(AccessorySlot.Neck) != null);
             yield return Shot("61_friend_gift_" + kind);
-            yield return ClickWhenReady("이대로 확정!");
+            yield return ClickWhenReady("이대로 확정");
             // a friend has its first photo taken and kept before it moves in (D-005)
             yield return Until(() => SceneManager.GetActiveScene().name == SceneNames.PhotoStudio && PhotoDirector.Current != null && PhotoDirector.Current.Toy != null, 20, "photo studio for " + kind);
             var ph = PhotoDirector.Current;
@@ -1167,6 +1191,20 @@ namespace Mongle.Core
             yield return ToVillageReady();
             v = VillageDirector.Current;
             Check(kind + " moved into the village", root.Patient == null && root.Residents.Any(r => r.kindId == kind) && root.Residents.Count == residentsBefore + 1);
+            if (residentsBefore == 0)
+            {
+                // the first friend's house: 나중에 puts it in the storage box, 사용하기 brings it back to be set down
+                yield return Until(() => v.HousePlacing, 10, "house prompt for " + kind);
+                if (v.HousePlacing)
+                {
+                    ClickButton("취소"); yield return new WaitForSeconds(0.3f);   // the placing screen's ✕ (Figma 115:1398): not now
+                    Check(kind + "'s house waits in the storage box after 나중에", !v.HousePlacing && v.QaBoxHas("house:" + kind));
+                    v.QaUseFromBox("house:" + kind); yield return new WaitForSeconds(0.3f);
+                    Check("사용하기 on it brings the house back to be set down", v.HousePlacing);
+                    yield return Shot("63a_house_from_box_" + kind);
+                    ClickButton("보관함에 넣기"); yield return new WaitForSeconds(0.3f);   // back in the box: the visits go on
+                }
+            }
             Check(kind + " walks around the village", v.ResidentAgents.Any(a => a != null && a.Actor != null && a.Actor.name == kind && a.State != AgentState.Disabled));
             Check(kind + " saved as a resident with the gift", Reached(() => { var s2 = root.Saves.Load().data; return string.IsNullOrEmpty(s2.patient.toyKindId) && s2.residents.Any(r => r.kindId == kind && r.equipped.Any(e => e.accessoryId == "Acc_RedRibbon")); }));
             Check("Mongi is still the main toy after " + kind, root.Toy.Admitted && v.Agent != null && v.Agent.IsMain);

@@ -35,9 +35,12 @@ namespace Mongle.EditorTools
             v.timer = Cream(root, "Timer", 972.25f, 139f, 300f, 40f, T, 22f, out v.timerText);
             v.timer.gameObject.SetActive(false);
 
-            // middle: what came out
-            v.result = Cream(root, "Result", 972.25f, 250f, 600f, 132f, T, 44f, out v.resultText);
+            // middle: what came out, in the village's first hint pill's size (user 2026-11-27: "처음에 설명하는 container랑 사이즈"):
+            // 38 px, 62 in from its ends, 97 tall for a line (two lines 45.6 apart, 24 above and below)
+            v.result = Cream(root, "Result", 972.25f, 250f, 600f, 97f, T, 38f, out v.resultText);
             v.resultText.textWrappingMode = TextWrappingModes.Normal;
+            v.resultText.rectTransform.offsetMin = Vector2.zero; v.resultText.rectTransform.offsetMax = Vector2.zero;
+            v.resultText.lineSpacing = LineSpacingFor(v.resultText, 45.6f);
             v.result.gameObject.SetActive(false);
 
             // bottom: the key caps (left, right, up, down), the tip, 시작하기

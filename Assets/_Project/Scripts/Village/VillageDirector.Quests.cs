@@ -31,6 +31,8 @@ namespace Mongle.Village
         public readonly List<FruitTree> FruitTrees = new List<FruitTree>();
         int questNews, boardTab;
         RectTransform markLayer; readonly Dictionary<FriendOffer, QuestMark> marks = new Dictionary<FriendOffer, QuestMark>();
+        /// <summary>The ★ bubbles over friends whose request is done and who wait to be told.</summary>
+        readonly Dictionary<FriendQuest, QuestMark> doneMarks = new Dictionary<FriendQuest, QuestMark>();
         FriendOffer talking; float offerTick, boardTick; bool fruitHintShown;
         readonly System.Random chatRng = new System.Random();
         static string birthdayGreeted; // the day the village last cheered (once per day and run)
@@ -43,11 +45,9 @@ namespace Mongle.Village
         {
             markLayer = UiKit.Rect(canvas.transform, "QuestMarks", Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             markLayer.SetAsFirstSibling(); // under every panel
-            BuildHuntHud();
             Talk = Mongle.Views.FriendTalkView.Get();
             if (Application.isPlaying) QuestWindow = Mongle.Views.QuestView.Get();
             if (QuestWindow != null) { QuestWindow.OnClose = CloseQuestBoard; QuestWindow.OnTab = t => { boardTab = t; RefreshQuestBoard(); root.Audio.Play("click", 0.4f, 1.2f); }; }
-            SkinPart(huntHud);
         }
 
         void SetupFriendQuests()
@@ -121,11 +121,13 @@ namespace Mongle.Village
         {
             foreach (var gone in marks.Keys.Where(o => !Book.Offers.Contains(o)).ToList()) { Destroy(marks[gone].go); marks.Remove(gone); }
             foreach (var o in Book.Offers) if (!marks.ContainsKey(o)) marks[o] = MakeMark(o);
+            foreach (var gone in doneMarks.Keys.Where(q => !q.waiting || !Book.Quests.Contains(q)).ToList()) { Destroy(doneMarks[gone].go); doneMarks.Remove(gone); }
+            foreach (var q in Book.Waiting) if (!doneMarks.ContainsKey(q)) doneMarks[q] = MakeDoneMark(q);
             bool hideAll = !state.Admitted || PlacingMode || ViewingRide != null || AnyPanelOpen || QuestUiOpen || root.Transitioning;
             float scale = canvas.scaleFactor;
-            foreach (var kv in marks)
+            foreach (var kv in marks.Select(x => (x.Key.giver, x.Value)).Concat(doneMarks.Select(x => (x.Key.giver, x.Value))))
             {
-                var m = kv.Value; var a = AgentOf(kv.Key.giver);
+                var m = kv.Item2; var a = AgentOf(kv.Item1);
                 bool show = !hideAll && a != null && !a.OnRide && !a.AtHome && a.State != AgentState.Disabled;
                 Vector3 sp = default;
                 if (show)
@@ -155,6 +157,31 @@ namespace Mongle.Village
             var b = ring.gameObject.AddComponent<Button>(); b.targetGraphic = ring;
             b.onClick.AddListener(() => OpenOffer(o));
             return new QuestMark { go = ring.gameObject, rt = ring.rectTransform, phase = Random.value * 6f };
+        }
+
+        /// <summary>A done request's bubble: ★ in a yellow bubble over the friend; clicking it (or the friend) tells it.</summary>
+        QuestMark MakeDoneMark(FriendQuest q)
+        {
+            var ring = UiKit.SpriteImage(markLayer, "DoneMark_" + q.giver, "shop_bub_excl", Vector2.zero, new Vector2(0.05f, 0.07f), Vector2.zero, new Vector2(100, 100), true);
+            ring.color = new Color(1f, 0.93f, 0.55f, 1f);
+            UiKit.TitleLabel(ring.transform, "★", 54, UiKit.FigBrown2, new Vector2(0.5f, 0.5f), new Vector2(0, 5), new Vector2(90, 90));
+            var b = ring.gameObject.AddComponent<Button>(); b.targetGraphic = ring;
+            b.onClick.AddListener(() => { var a = AgentOf(q.giver); if (a != null) ClaimDoneOf(a); });
+            return new QuestMark { go = ring.gameObject, rt = ring.rectTransform, phase = Random.value * 6f };
+        }
+
+        /// <summary>
+        /// A friend whose request is done: clicking it tells it, and only then the reward comes and it celebrates (user
+        /// 2026-11-27: "퀘스트 하고 나면 캐릭터 다시 눌러서 상호작용 하는걸로"). True when there was one.
+        /// </summary>
+        public bool ClaimDoneOf(ToyAgent a)
+        {
+            var q = Book.Claim(GiverOf(a)); if (q == null) return false;
+            string name = GiverName(q.giver);
+            root.Say(name + "의 부탁 완료! 몽글 코인 +" + q.reward, 3.4f);
+            root.Audio.Play("success", 0.8f);
+            StartCoroutine(Celebrate(a, FriendQuestText.Done(q.kind, PersonalityOf(a)), true));
+            return true;
         }
 
         /// <summary>Clicking a toy with a bubble opens its request first (true when it did).</summary>
@@ -317,11 +344,11 @@ namespace Mongle.Village
                 else if (q.kind == FriendQuestKind.Water) root.Say(name + "의 부탁: 물 주기 " + q.progress + "/" + q.target, 2f);
                 return;
             }
+            if (!q.waiting) return;   // told just now: ClaimDoneOf paid and celebrates
+            // done: the friend waits to be told (a ★ over its head); the reward comes with the click on it
             NoteQuestNews();
-            var a = AgentOf(q.giver);
-            root.Say(name + "의 부탁 완료! 몽글 코인 +" + q.reward, 3.4f);
-            root.Audio.Play("success", 0.8f);
-            if (a != null) StartCoroutine(Celebrate(a, FriendQuestText.Done(q.kind, PersonalityOf(a)), true));
+            root.Say(name + "의 부탁을 다 했어요! " + name + "에게 가서 알려 줘요", 3.4f);
+            root.Audio.Play("chime", 0.6f, 1.2f);
         }
 
         void NoteQuestNews()
@@ -386,21 +413,9 @@ namespace Mongle.Village
         // ---------------- the star hunt ----------------
         class StarHunt { public FriendQuest quest; public readonly List<QuestPickup> stars = new List<QuestPickup>(); public float left; public int found; }
         StarHunt hunt;
-        RectTransform huntHud; Text huntText; readonly List<RectTransform> huntArrows = new List<RectTransform>();
+        readonly List<RectTransform> huntArrows = new List<RectTransform>();
         public bool HuntRunning => hunt != null;
         public int HuntStarsLeft => hunt == null ? 0 : hunt.stars.Count - hunt.found;
-
-        void BuildHuntHud()
-        {
-            // top middle, under the toast; narrow enough to clear the quest tracker on a 4:3 screen
-            // D-024: the same pill as the coin notice, just under the notice's place; it hugs its text
-            var p = UiKit.Fig(canvas.transform, "hud_toast", UiKit.Edge.Middle, UiKit.Edge.Start, 0f, 106f, false, "StarHunt");
-            UiKit.Slice(p, true);
-            huntHud = p.rectTransform;
-            huntText = UiKit.TitleLabel(p.transform, "", 36, UiKit.FigBrown, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(800f, 70f));
-            UiKit.AutoFit(p, huntText, 300f, 110f, 1200f);
-            huntHud.gameObject.SetActive(false);
-        }
 
         public bool StartStarHunt(FriendQuest q)
         {
@@ -447,7 +462,7 @@ namespace Mongle.Village
             if (hunt == null) return;
             foreach (var s in hunt.stars) if (s != null && !s.Collected) s.FadeAway();
             var q = hunt.quest; hunt = null;
-            if (huntHud != null) huntHud.gameObject.SetActive(false);
+            if (Hud != null) Hud.HideHunt();
             foreach (var a in huntArrows) a.gameObject.SetActive(false);
             if (success || silent) return;
             root.Say("시간이 다 됐어요. '퀘스트'에서 다시 해 봐요!", 3.4f);
@@ -464,9 +479,15 @@ namespace Mongle.Village
             if (!paused) hunt.left -= Time.deltaTime;
             if (hunt.left <= 0f) { EndHunt(false); return; }
             bool hudOn = ViewingRide == null && !AnyPanelOpen && !QuestBoardOpen;
-            if (huntHud.gameObject.activeSelf != hudOn) huntHud.gameObject.SetActive(hudOn);
             int sec = Mathf.CeilToInt(hunt.left);
-            huntText.text = "★ 별 찾기 " + hunt.found + "/" + hunt.stars.Count + "   " + sec / 60 + ":" + (sec % 60).ToString("00") + (paused ? "  (멈춤)" : "");
+            // in the HUD's top row, level with the coins; what to do under it (user 2026-11-27)
+            if (!hudOn) Hud.HideHunt();
+            else
+            {
+                var gd = Catalog.ToyDef(hunt.quest.giver);
+                Hud.ShowHunt("★ 별 찾기 " + hunt.found + "/" + hunt.stars.Count + "   " + sec / 60 + ":" + (sec % 60).ToString("00") + (paused ? "  (멈춤)" : ""),
+                    FriendQuestText.Detail(hunt.quest.kind, hunt.stars.Count, hunt.quest.param, gd != null ? gd.displayName : "") + " · 화면 끝 ★가 별 쪽을 가리켜요");
+            }
             // off-screen stars: a little ★ at the screen edge in their direction
             float scale = canvas.scaleFactor; var c = new Vector2(Screen.width, Screen.height) * 0.5f; int k = 0;
             foreach (var s in hunt.stars)
@@ -604,6 +625,12 @@ namespace Mongle.Village
                 id = q.id, title = FriendQuestText.Title(q.kind), giver = name, line = FriendQuestText.Detail(q.kind, q.target, ride, name),
                 reward = q.reward, iconColor = KindColor(q.kind), state = q.Done ? Mongle.Views.AskState.Done : Mongle.Views.AskState.Doing, action = "",
             };
+            if (q.Done && q.waiting)
+            {
+                row.state = Mongle.Views.AskState.Doing;
+                row.line = "다 했어요! " + name + "에게 가서 알려 줘요";
+                return row;
+            }
             if (q.Done)
             {
                 row.line = FriendQuestText.Title(q.kind) + " 끝! " + System.DateTimeOffset.FromUnixTimeSeconds(q.doneUnix).ToLocalTime().ToString("M월 d일") + "에 도와줬어요";

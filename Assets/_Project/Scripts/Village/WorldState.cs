@@ -48,7 +48,7 @@ namespace Mongle.Village
         public WorldState()
         {
             FriendQuests = new FriendQuestBook(() => Clock());
-            FriendQuests.Completed += q => Earn(q.reward);
+            FriendQuests.Claimed += q => Earn(q.reward);   // when the friend is told (user 2026-11-27), not the moment it is done
             Profile = new PlayerProfile();
         }
 

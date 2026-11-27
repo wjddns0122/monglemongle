@@ -42,10 +42,21 @@ namespace Mongle.EditorTools
             // the chosen photo: the cream slot when there is none, the gingham frame and the tape over it
             var slot = Turned(book, "Slot", 322f).gameObject.AddComponent<Image>();
             slot.sprite = Art("Album/slot.png"); slot.raycastTarget = false;
+            // the photo as it was taken, its own frame pattern and all (user 2026-11-27: "왼쪽 프레임이 우리가 처음 사진 찍을때 프레임
+            // 처럼"), on a white polaroid card like the cards on the right (16 round, 70 under)
+            var card = Node(book, "Polaroid", 0f, 0f, PhotoSize + 32f, PhotoSize + 86f, C, Book);
+            // its middle 27 under the photo's, along the turned card (so the pattern meets the photo's border exactly)
+            Centre(card, PhotoCX + 27f * Mathf.Sin(PhotoTurn * Mathf.Deg2Rad), PhotoCY + 27f * Mathf.Cos(PhotoTurn * Mathf.Deg2Rad)); card.localEulerAngles = new Vector3(0f, 0f, PhotoTurn);
+            var cardShape = Shape(card.gameObject, Color.white, Vector4.one * 2f);
+            cardShape.shadowColor = new Color(0f, 0f, 0f, 0.25f); cardShape.shadowOffset = new Vector2(1.5f, -2f); cardShape.shadowBlur = 3f;
+            // the whole card in the photo's frame pattern (AlbumView fills and lines it up with the photo's own border)
+            var pat = Node(card, "Pattern", 0f, 0f, PhotoSize + 32f, PhotoSize + 86f, C, new Vector2(PhotoSize + 32f, PhotoSize + 86f)).gameObject.AddComponent<RawImage>();
+            pat.rectTransform.anchorMin = Vector2.zero; pat.rectTransform.anchorMax = Vector2.one; pat.rectTransform.offsetMin = pat.rectTransform.offsetMax = Vector2.zero;
+            pat.raycastTarget = false;
+            card.gameObject.SetActive(false);
             var big = Turned(book, "Photo", PhotoSize).gameObject.AddComponent<RawImage>(); big.raycastTarget = false; big.enabled = false;
             var empty = Words(book, "Empty", "아직 사진이 없어요", 34f, Brown, 0f, 0f, 300f, 50f, C, HorizontalAlignmentOptions.Center, "album.empty", Book);
             Centre(empty.rectTransform, PhotoCX, PhotoCY); empty.rectTransform.localEulerAngles = new Vector3(0f, 0f, PhotoTurn);
-            Pic(book, "Frame", "photo_frame", 231f, 267.5f, 413f, 475.5f);
             Pic(book, "Tape", "tape", 322.5f, 232f, 219.5f, 94f);
             // Figma: 39.7 px words under the frame, centred on it
             var cap = Words(book, "Caption", "", 39.7f, Brown, 437.6f - 280f - BX, 768.63f - BY, 560f, 52f, TL, HorizontalAlignmentOptions.Center, null, Book);
@@ -77,7 +88,8 @@ namespace Mongle.EditorTools
             v.nextButton = PictureButton(book, "Btn_Next", "Album/nav_next.png", 1318f - BX, 858.5f - BY, 105.5f, 105.5f, TL, Book);
             v.closeButton = PictureButton(book, "Btn_Close", "Album/close.png", 1550f - BX, 62f - BY, 106.5f, 106.5f, TL, Book);
 
-            v.bigPhoto = big; v.slot = slot.gameObject; v.caption = cap; v.emptyText = empty;
+            v.bigPhoto = big; v.slot = slot.gameObject; v.caption = cap; v.emptyText = empty; v.polaroid = card.gameObject; v.polaroidPattern = pat; v.bakedBorder = 0f;
+            v.bigSize = PhotoSize; v.polaroidSide = 16f; v.polaroidFoot = 70f;
             root.gameObject.SetActive(false);   // the village opens it (AlbumView.Open)
             return root.gameObject;
         }

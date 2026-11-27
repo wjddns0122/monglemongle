@@ -79,8 +79,10 @@ namespace Mongle.Tests
                 Assert.IsTrue(v.bigPhoto.enabled); Assert.IsFalse(v.slot.activeSelf); Assert.IsFalse(v.emptyText.gameObject.activeSelf);
                 Assert.AreEqual("2026.11.13 · 친구3", v.caption.text);
                 for (int i = 0; i < 9; i++) Assert.AreEqual(i == 3, v.cards[i].mark.activeSelf, "blue edge on " + i);
-                // the frame painted into the photo is cut off: the gingham frame goes round it
-                Assert.AreEqual(v.bakedBorder, v.bigPhoto.uvRect.xMin, 1e-5f); Assert.AreEqual(1f - v.bakedBorder, v.bigPhoto.uvRect.yMax, 1e-5f);
+                // the photo as it was taken, its own frame and all, on a white polaroid (user 2026-11-27); no gingham frame any more
+                Assert.AreEqual(0f, v.bigPhoto.uvRect.xMin, 1e-5f); Assert.AreEqual(1f, v.bigPhoto.uvRect.yMax, 1e-5f);
+                Assert.IsTrue(v.polaroid.activeSelf); Assert.IsNull(go.transform.Find("Book/Frame"));
+                Assert.IsNotNull(v.polaroidPattern.texture, "the whole polaroid in a frame pattern (user 2026-11-27)");
                 v.ShowPage(1);
                 foreach (var c in v.cards) Assert.IsFalse(c.mark.activeSelf, "the chosen card is on the other page");
                 v.Choose(10);

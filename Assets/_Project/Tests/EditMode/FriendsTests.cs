@@ -143,5 +143,23 @@ namespace Mongle.Tests
             Assert.AreEqual("치즈는", Josa.EunNeun("치즈"));
             Assert.AreEqual("몽글몽글 수선점은", Josa.EunNeun("몽글몽글 수선점"));
         }
+
+        [Test]
+        public void MongisFreeGiftsItDoesNotWearGoToTheBox()
+        {
+            AccessoryDefinition A(string id) { var a = ScriptableObject.CreateInstance<AccessoryDefinition>(); a.id = id; return a; }
+            var def = ScriptableObject.CreateInstance<ToyDefinition>();
+            var acc = new[] { A("Acc_RedRibbon"), A("Acc_BlueHat"), A("Acc_RoundGlasses") };
+            try
+            {
+                def.giftAccessories = acc;
+                var worn = new Dictionary<AccessorySlot, string> { { AccessorySlot.Neck, "Acc_RedRibbon" } };
+                CollectionAssert.AreEqual(new[] { "Acc_BlueHat", "Acc_RoundGlasses" }, GameRoot.StarterGiftsToBox(def, worn, _ => 0));
+                CollectionAssert.AreEqual(new[] { "Acc_RoundGlasses" }, GameRoot.StarterGiftsToBox(def, worn, id => id == "Acc_BlueHat" ? 1 : 0), "one already in the box is not given twice");
+                var all = new Dictionary<AccessorySlot, string> { { AccessorySlot.Neck, "Acc_RedRibbon" }, { AccessorySlot.Head, "Acc_BlueHat" }, { AccessorySlot.Face, "Acc_RoundGlasses" } };
+                CollectionAssert.IsEmpty(GameRoot.StarterGiftsToBox(def, all, _ => 0), "all worn: nothing to give");
+            }
+            finally { Object.DestroyImmediate(def); foreach (var a in acc) Object.DestroyImmediate(a); }
+        }
     }
 }
